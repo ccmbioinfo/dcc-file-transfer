@@ -66,3 +66,9 @@ target/
 
 # Emacs autosave
 *~
+
+# Virtual environment
+.virtualenv/
+
+# Uploads
+uploads/
