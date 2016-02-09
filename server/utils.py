@@ -47,4 +47,4 @@ def merge_chunks(in_paths, out_filename):
     app.logger.debug('Merged %s files -> %s', len(in_paths), out_filepath)
 
     for chunk_path in in_paths:
-        os.remove(chunk_path)
+        if os.path.isfile(chunk_path): os.remove(chunk_path)

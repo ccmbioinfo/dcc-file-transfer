@@ -40,9 +40,9 @@ def resumable_info():
         return make_response(jsonify({'Error': 'Missing parameter error'}), 400)
 
     temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], identifier)
-    chunk_file = "{}/{}.part{}".format(temp_dir, filename, chunk_number)
+    chunk_filename = "{}/{}.part{:08d}".format(temp_dir, filename, chunk_number)
 
-    if os.path.isfile(chunk_file):
+    if os.path.isfile(chunk_filename):
         return make_response(jsonify({'Download complete': 'Chunk already received successfully'}), 200)
     else:
         return make_response(jsonify({'Error': 'Chunk was not found!'}), 404)
@@ -63,8 +63,8 @@ def resumable_upload():
         return make_response(jsonify({'Error': 'Missing parameter error'}), 400)
 
     # Check for accepted filetype
-    if not allowed_file(filename):
-        return make_response(jsonify({'Error': 'Invalid file type'}), 415)
+    # if not allowed_file(filename):
+    #     return make_response(jsonify({'Error': 'Invalid file type'}), 415)
 
     # Create a temp directory using the unique identifier for the file
     temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], identifier)
@@ -73,7 +73,6 @@ def resumable_upload():
         os.makedirs(temp_dir, 0777)
 
     chunk_filename = "{}/{}.part{:08d}".format(temp_dir, filename, chunk_number)
-    app.logger.debug('Uploading chunk %s/%s for %s -> %s', chunk_number, total_chunks, filename, chunk_filename)
 
     input_file = request.files['file']
     input_file.save(chunk_filename)
@@ -84,8 +83,8 @@ def resumable_upload():
         merge_chunks(all_chunks, filename)
         # TODO integrity check (md5, .gz/.bam)
         # add file to database TODO associate file with user/owner and include file metadata
-        g.db.execute('insert into files (filename) values ("%s")' % filename)
-        g.db.commit()
+        # g.db.execute('insert into files (filename) values ("%s")' % filename)
+        # g.db.commit()
         return make_response(jsonify({'Download complete': 'Successfully received file'}), 200)
 
     return make_response(jsonify({'Download complete': 'Successfully received chunk'}), 200)
