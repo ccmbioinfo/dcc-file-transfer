@@ -109,7 +109,6 @@ if args.bytes and int(args.bytes) < total_size:
 
 else:
     # Remember that Popen with listed arguments cannot handle white space in any item listed!!
-
     resumable_form = [  '-F', 'resumableChunkNumber=1',
                         '-F', 'resumableTotalChunks=1',
                         '-F', 'resumableTotalSize=%d' % total_size,

@@ -6,6 +6,17 @@ from server import views
 from config import DATABASE
 
 
+def setup():
+    if not os.path.isfile(DATABASE):
+        views.init_db()
+
+    db = views.connect_db()
+    db.execute("PRAGMA foreign_keys=ON")
+    db.commit()
+
+    return db
+
+
 def query(db):
     while True:
         SQL = raw_input('SQL> ')
@@ -46,68 +57,6 @@ def tabular(headers, table):
             i += 1
         print ""
     print ""
-
-
-def setup():
-    if not os.path.isfile(DATABASE):
-        views.init_db()
-        db = views.connect_db()
-        db.execute("insert into USERS (USERNAME, LOGIN_SITE, AUTH_TOKEN)"
-                   "values ('DORIN', 'phenomecentral.com', '2msu48xs35')")
-        db.execute("PRAGMA foreign_keys=ON")
-        db.commit()
-
-    else:
-
-        db = views.connect_db()
-        db.execute("PRAGMA foreign_keys=ON")
-        db.commit()
-
-    return db
-
-
-'''
-db.execute("insert into USERS (USERNAME, LOGIN_SITE, AUTH_TOKEN) "
-           "values ('BOB', 'phenomecentral.com', '98jkewo9dhn')")
-
-db.execute("insert into USERS (USERNAME, LOGIN_SITE, AUTH_TOKEN) "
-           "values ('JOE', 'SomeOtherSite.com', '5iou43aa85')")
-
-db.execute("insert into USERS (USERNAME, LOGIN_SITE, AUTH_TOKEN) "
-           "values ('TOM', 'dipg.com', '09dfdf09wrw')")
-
-db.commit()
-
-print db.execute('select * from USERS').fetchall()
-
-
-db.execute("insert into GROUPS (GROUPNAME, LOGIN_SITE) "
-           "values ('ADMIN', 'admin.com')")
-
-db.execute("insert into GROUPS (GROUPNAME, LOGIN_SITE) "
-           "values ('CCMBIO', 'phenomecentral.com')")
-
-db.execute("insert into GROUPS (GROUPNAME, LOGIN_SITE) "
-           "values ('DIPG', 'dipg.com')")
-
-db.commit()
-
-
-
-
-try:
-    db.execute("insert into MEMBERSHIP (USER_ID, GROUP_ID) values (10,12)")
-    db.commit()
-except sqlite3.IntegrityError:
-    print "caught the FK constraint violation!"
-
-print 'USERS: ', db.execute("select * from USERS").fetchall()
-print 'GROUPS: ', db.execute("select * from GROUPS").fetchall()
-print 'MEMBERSHIP: ', db.execute("selecthh * from MEMBERSHIP").fetchall()
-
-db.close()
-
-'''
 
 
 query(setup())
