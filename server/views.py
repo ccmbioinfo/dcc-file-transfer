@@ -95,7 +95,7 @@ def resumable_info():
     temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], identifier)
     chunk_file = "{}/{}.part{}".format(temp_dir, filename, chunk_number)
 
-    if os.path.isfile(os.path.join(temp_dir, chunk_file)):
+    if os.path.isfile(chunk_file):
         return make_response(jsonify({'Download complete': 'Chunk already received successfully'}), 200)
     else:
         return make_response(jsonify({'Error': 'Chunk was not found!'}), 404)
