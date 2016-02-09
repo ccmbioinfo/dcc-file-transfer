@@ -9,16 +9,13 @@ Start up the server in one console:
 $ python run.py
 ```
 
-### Send a file with the client
+### Upload a file:
 Create a random gzipped file:
 ```
 $ cat /dev/random | head -c 10000000 | gzip > test.gz
 ```
 
-Upload the file in chunks of 1MB:
-```
-$ python curl_resumable_upload.py -b 1000000 test.gz
-```
+Open a browser to `localhost:5000` and drop a file in the drop aread to upload the file in chunks of 1MB:
 
 
 ## Setting up the environment
