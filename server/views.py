@@ -1,29 +1,11 @@
-#!/usr/bin/python
+import glob
+import os
+
+from flask import jsonify, make_response, request, g, render_template
 
 from server import app
-import os
-import glob
-import sqlite3
-import hashlib
-import gzip
-import json
-from flask import jsonify, make_response, request, g, abort
-from contextlib import closing
-
-
-def connect_db():
-    # connection to the database path
-    return sqlite3.connect(app.config['DATABASE'])
-
-
-def init_db():
-    # initalize the database if it doesn't already exist.
-    # this step needs to be run manually form the command line
-    # from server import views; views.init_db()
-    with closing(connect_db()) as db:
-        with open(app.config['SCHEMA'], mode='r') as f:
-            db.cursor().executescript(f.read())
-        db.commit()
+from .database import connect_db
+from .utils import allowed_file, merge_chunks
 
 
 @app.before_request
@@ -43,46 +25,9 @@ def teardown_request(exception):
         db.close()
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-
-def bam_test(filename):
-    bam_eof = \
-        '\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    with open(filename, 'rb') as f:
-        f.seek(-28, 2)
-        return f.read() == bam_eof
-
-
-def gzip_test(filename):
-    try:
-        with gzip.open(filename, 'rb') as f:
-            f.read(1024 * 1024)
-        return True
-    except IOError:
-        return False
-
-
-def md5_test(checksum, filename):
-    md5 = hashlib.md5()
-    with open(filename, 'rb') as f:
-        for chunk in iter(lambda: f.read(128 * md5.block_size), b''):
-            md5.update(chunk)
-    return checksum == md5.hexdigest()
-
-
-def merge_chunks(file_chunks, output_name):
-    file_chunks.sort()
-    output_path = os.path.dirname(os.path.realpath(file_chunks[0]))
-    with open(os.path.join(output_path, output_name), 'ab') as OUTPUT:
-        for chunk in file_chunks:
-            with open(chunk, 'r') as INPUT:
-                OUTPUT.seek(0, 2)
-                OUTPUT.write(INPUT.read())
-    for chunk in file_chunks:
-        os.remove(chunk)
+@app.route("/", methods=['GET'])
+def home():
+    return render_template('home.html')
 
 
 @app.route("/upload", methods=['GET'])
@@ -112,6 +57,7 @@ def resumable_upload():
     identifier = request.form.get('resumableIdentifier', type=str)
     filename = request.form.get('resumableFilename', type=str)
 
+
     # Check for missing or invalid parameters
     if not identifier or not filename or not chunk_number or not chunk_size or not total_chunks or not total_size:
         return make_response(jsonify({'Error': 'Missing parameter error'}), 400)
@@ -126,12 +72,13 @@ def resumable_upload():
     if not os.path.isdir(temp_dir):
         os.makedirs(temp_dir, 0777)
 
-    chunk_file = "{}/{}.part{}".format(temp_dir, filename, chunk_number)
+    chunk_filename = "{}/{}.part{:08d}".format(temp_dir, filename, chunk_number)
+    app.logger.debug('Uploading chunk %s/%s for %s -> %s', chunk_number, total_chunks, filename, chunk_filename)
 
     input_file = request.files['file']
-    input_file.save(chunk_file)
+    input_file.save(chunk_filename)
 
-    all_chunks = glob.glob(temp_dir + '/' + filename + ".*")
+    all_chunks = glob.glob("{}/{}.part*".format(temp_dir, filename))
 
     if len(all_chunks) == int(total_chunks):
         merge_chunks(all_chunks, filename)
