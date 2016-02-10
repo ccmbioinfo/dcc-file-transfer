@@ -10,12 +10,20 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-def bam_test(filename):
+def bam_test(data):
     bam_eof = \
         '\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    with open(filename, 'rb') as f:
+    with open(data, 'rb') as f:
         f.seek(-28, 2)
         return f.read() == bam_eof
+
+
+def get_tempdir(identifier):
+    return os.path.join(app.config['UPLOAD_FOLDER'], identifier)
+
+
+def get_chunk_filename(temp_dir, filename, chunk_number):
+    return os.path.join(temp_dir, "{}.part{:08d}".format(filename, chunk_number))
 
 
 def gzip_test(filename):

@@ -5,7 +5,7 @@ from flask import jsonify, make_response, request, g, render_template
 
 from server import app
 from .database import connect_db
-from .utils import allowed_file, merge_chunks
+from .utils import allowed_file, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks
 
 
 @app.before_request
@@ -39,8 +39,8 @@ def resumable_info():
     if not identifier or not filename or not chunk_number:
         return make_response(jsonify({'Error': 'Missing parameter error'}), 400)
 
-    temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], identifier)
-    chunk_filename = "{}/{}.part{:08d}".format(temp_dir, filename, chunk_number)
+    temp_dir = get_tempdir(identifier)
+    chunk_filename = get_chunk_filename(temp_dir, filename, chunk_number)
 
     if os.path.isfile(chunk_filename):
         return make_response(jsonify({'Download complete': 'Chunk already received successfully'}), 200)
@@ -67,21 +67,28 @@ def resumable_upload():
     #     return make_response(jsonify({'Error': 'Invalid file type'}), 415)
 
     # Create a temp directory using the unique identifier for the file
-    temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], identifier)
+    temp_dir = get_tempdir(identifier)
 
     if not os.path.isdir(temp_dir):
         os.makedirs(temp_dir, 0777)
 
-    chunk_filename = "{}/{}.part{:08d}".format(temp_dir, filename, chunk_number)
+    chunk_filename = get_chunk_filename(temp_dir, filename, chunk_number)
 
     input_file = request.files['file']
     input_file.save(chunk_filename)
 
     all_chunks = glob.glob("{}/{}.part*".format(temp_dir, filename))
 
+    if filename.lower().endswith("bam") and chunk_number == total_chunks:
+        if not bam_test(chunk_filename):
+            return make_response(jsonify({'Error': 'Detected truncated BAM file for %s' % filename}), 415)
+
     if len(all_chunks) == int(total_chunks):
         merge_chunks(all_chunks, filename)
-        # TODO integrity check (md5, .gz/.bam)
+
+        if filename.lower().endswith("gz") and not gzip_test(os.path.join(temp_dir, filename)):
+            return make_response(jsonify({'Error': 'Failed integrity check for %s' % filename}), 415)
+
         # add file to database TODO associate file with user/owner and include file metadata
         # g.db.execute('insert into files (filename) values ("%s")' % filename)
         # g.db.commit()
