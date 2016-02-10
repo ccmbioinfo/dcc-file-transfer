@@ -23,13 +23,21 @@ p {margin:10px 0;}
 body {text-align:center; margin:40px;}
 #frame {margin:0 auto; width:800px; text-align:left;}
 
+/* Auth token form */
+.auth-token-form {
+  margin-top: 40px;
+  font-size: 16px;
+}
+.auth-token-form input {
+  text-align: center;
+}
+
 /* Uploader: Drag & Drop */
 .resumable-error {display:none; font-size:14px; font-style:italic;}
 .resumable-drop {
   padding: 60px 0;
   font-size:16px;
   text-align:center;
-  color:#666;
   font-weight:bold;
   background-color:#eee;
   border:2px dashed #aaa;
@@ -40,8 +48,8 @@ body {text-align:center; margin:40px;}
   display:none;
 }
 .resumable-dragover {
-  color:#555;
-  background-color:#ddd;
+  color: white;
+  background-color:#333;
   border:2px solid #999;
 }
 .resumable-browse u {
@@ -62,7 +70,6 @@ body {text-align:center; margin:40px;}
   font-size: 16px;
   line-height: 30px;
   margin: 0;
-  padding: 0;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -74,10 +81,16 @@ body {text-align:center; margin:40px;}
   height: 30px;
   line-height: 30px;
 }
+.progress-bar {
+  -webkit-transition: width .2s ease;
+  -o-transition: width .2s ease;
+  transition: width .2s ease;
+}
 .progress-controls {
   float: right;
   padding-left: 15px;
 }
+.progress-retry-link,
 .progress-cancel-link {
   height: 30px;
   margin: 0;
@@ -105,3 +118,8 @@ body {text-align:center; margin:40px;}
 .is-error .uploader-item:hover, .is-active.is-error .uploader-item {border-color:#900;}
 .is-error .uploader-item:hover .uploader-item-title, .is-active.is-error .uploader-item .uploader-item-title {background-color:rgba(153,0,0,0.6);}
 .is-error .uploader-item-creating-thumbnail {display:none;}
+
+/* Footer */
+.footer {
+  margin-top: 60px;
+}

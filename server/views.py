@@ -7,6 +7,7 @@ from server import app
 from .database import connect_db
 from .utils import allowed_file, merge_chunks
 
+INVALID_AUTH_TOKEN_MSG = 'Invalid transfer code'
 
 @app.before_request
 def before_request():
@@ -35,17 +36,21 @@ def resumable_info():
     identifier = request.args.get('resumableIdentifier', type=str)
     filename = request.args.get('resumableFilename', type=str)
     chunk_number = request.args.get('resumableChunkNumber', type=int)
+    auth_token = request.form.get('authToken', type=str, default='')
 
-    if not identifier or not filename or not chunk_number:
-        return make_response(jsonify({'Error': 'Missing parameter error'}), 400)
+    if not all([identifier, filename, chunk_number, auth_token]):
+        return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
+
+    if auth_token != app.config['AUTH_TOKEN']:
+        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
     temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], identifier)
-    chunk_filename = "{}/{}.part{:08d}".format(temp_dir, filename, chunk_number)
+    chunk_filename = os.path.join(temp_dir, '{}.part{:08d}'.format(filename, chunk_number))
 
     if os.path.isfile(chunk_filename):
-        return make_response(jsonify({'Download complete': 'Chunk already received successfully'}), 200)
+        return make_response(jsonify({'message': 'Chunk already transferred'}), 200)
     else:
-        return make_response(jsonify({'Error': 'Chunk was not found!'}), 404)
+        return make_response(jsonify({'message': 'Chunk not yet transferred'}), 204)
 
 
 @app.route("/upload", methods=['POST'])
@@ -56,15 +61,14 @@ def resumable_upload():
     total_size = request.form.get('resumableTotalSize', type=int)
     identifier = request.form.get('resumableIdentifier', type=str)  # assumes this is unique per file not chunk!
     filename = request.form.get('resumableFilename', type=str)
-
+    auth_token = request.form.get('authToken', type=str, default='')
 
     # Check for missing or invalid parameters
-    if not identifier or not filename or not chunk_number or not chunk_size or not total_chunks or not total_size:
-        return make_response(jsonify({'Error': 'Missing parameter error'}), 400)
+    if not all([identifier, filename, chunk_number, chunk_size, total_chunks, total_size]):
+        return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
 
-    # Check for accepted filetype
-    # if not allowed_file(filename):
-    #     return make_response(jsonify({'Error': 'Invalid file type'}), 415)
+    if auth_token != app.config['AUTH_TOKEN']:
+        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
     # Create a temp directory using the unique identifier for the file
     temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], identifier)
@@ -72,7 +76,7 @@ def resumable_upload():
     if not os.path.isdir(temp_dir):
         os.makedirs(temp_dir, 0777)
 
-    chunk_filename = "{}/{}.part{:08d}".format(temp_dir, filename, chunk_number)
+    chunk_filename = os.path.join(temp_dir, '{}.part{:08d}'.format(filename, chunk_number))
 
     input_file = request.files['file']
     input_file.save(chunk_filename)
