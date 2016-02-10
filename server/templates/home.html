@@ -4,45 +4,52 @@
 <head>
     <meta charset="UTF-8">
     <title>DCC Large File Upload</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header><h1>Upload files to the DCC</h1></header>
 
     <section>
-        <div class="resumable-error">
-            Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.
-        </div>
 
-        <div class="resumable-drop">
-            Drop files here to upload or <a class="resumable-browse"><u>select from your computer</u></a>
-        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
 
-        <table id="resumable-transfers">
-            <thead>
-                <tr>
-                    <th>Filename</th>
-                    <th colspan="2">Progress</th>
-                    <th>Options</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr id="resumable-progress-template" class="resumable-progress">
-                    <td class="progress-filename" nowrap="nowrap"></td>
-                    <td width="100%">
-                        <div class="progress-container">
-                            <div class="progress-bar"></div>
-                        </div>
-                    </td>
-                    <td class="progress-text" nowrap="nowrap"></td>
-                    <td class="progress-pause" nowrap="nowrap">
-                        <a href="#" class="progress-resume-link">Resume</a>
-                        <a href="#" class="progress-pause-link">Pause</a>
-                        <a href="#" class="progress-cancel-link">Cancel</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                <div class="resumable-error">
+                    Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
+                </div>
+
+                <div class="resumable-drop">
+                    Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
+                </div>
+
+                <div class="current-uploads">
+                    <h2>Current uploads:</h2>
+                    <span class="all-transfer-controls">
+                        <button class="progress-resume-link btn btn-success">Resume all</button>
+                        <button class="progress-pause-link btn btn-warning">Pause all</button>
+                    </span>
+                    <ul id="resumable-transfers">
+                        <li id="resumable-progress-template" class="resumable-progress row">
+                            <p class="progress-filename col-xs-6"></p>
+                            <div class="progress-wrapper col-xs-6">
+                                <div class="progress-controls">
+                                    <button class="progress-cancel-link btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel</button>
+                                </div>
+
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="footer">
+                    If you have any questions or run into issues, please email Orion &lt;<a href="mailto:buske@cs.toronto.edu">buske@cs.toronto.edu</a>&gt; and/or Dorin &lt;<a href="mailto:dorin.manase@sickkids.ca">dorin.manase@sickkids.ca</a>&gt;.
+                </div>
+            </div>
+        </div>
     </section>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>

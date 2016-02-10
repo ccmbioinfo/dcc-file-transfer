@@ -30,7 +30,7 @@ def home():
     return render_template('home.html')
 
 
-@app.route("/upload", methods=['GET'])
+@app.route("/upload", methods=['HEAD'])
 def resumable_info():
     identifier = request.args.get('resumableIdentifier', type=str)
     filename = request.args.get('resumableFilename', type=str)

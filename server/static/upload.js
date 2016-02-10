@@ -4,7 +4,7 @@ $(function() {
         chunkSize: 1*1024*1024,
         simultaneousUploads: 3,
         testChunks: true,
-        throttleProgressCallbacks: 1,
+        testMethod: 'HEAD',
         prioritizeFirstAndLastChunk: true,
       });
 
@@ -27,36 +27,44 @@ $(function() {
           progress.attr('id', 'resumable-file-'+file.uniqueIdentifier);
           progress.attr('data-file-id', file.uniqueIdentifier);
           progress.find('.progress-filename').first().html(file.fileName);
-          progress.find('.progress-text').first().html('Uploading...');
+          progress.find('.progress-bar').html('Starting upload...');
           // Show pause, hide resume
           $('.resumable-progress .progress-resume-link').hide();
           $('.resumable-progress .progress-pause-link').show();
           // Add the file to the list
-          $('#resumable-transfers > tbody').append(progress);
+          $('#resumable-transfers').append(progress);
           // Ensure file list is shown
-          $('#resumable-transfers').show();
+          $('.current-uploads').show();
           // Actually start the upload
           r.upload();
         });
       r.on('fileSuccess', function(file,message){
           // Reflect that the file upload has completed
-          getFileProgressElt(file).find('.progress-text').html('Completed.');
-          getFileProgressElt(file).find('.progress-pause').hide();
+          var progress = getFileProgressElt(file);
+          progress.find('.progress-bar').first()
+              .removeClass('progress-bar-striped active')
+              .html('Uploaded');
+          getFileProgressElt(file).find('.progress-cancel-link').hide();
         });
       r.on('fileError', function(file, message){
           // Reflect that the file upload has resulted in error
-          getFileProgressElt(file).find('.progress-text').html('Error: '+message);
+          var progress = getFileProgressElt(file);
+          progress.find('.progress-bar')
+              .removeClass('progress-bar-striped active')
+              .html('Error');
+          progress.getFileProgressElt(file).find('.progress-cancel-link').hide();
         });
       r.on('fileProgress', function(file){
           // Handle progress for both the file and the overall upload
           var progress = getFileProgressElt(file);
-          progress.find('.progress-text').html(Math.floor(file.progress()*100) + '%');
-          progress.find('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+          var percent = Math.floor(file.progress() * 100);
+          progress.find('.progress-bar').html(percent + '%');
+          progress.find('.progress-bar').css({width: percent + '%'});
         });
       r.on('uploadStart', function(){
           // Show pause, hide resume
-          $('.resumable-progress .progress-resume-link').hide();
-          $('.resumable-progress .progress-pause-link').show();
+          $('.progress-resume-link').hide();
+          $('.progress-pause-link').show();
       });
     }
 
@@ -70,28 +78,6 @@ $(function() {
         $(this).removeClass('resumable-dragover');
     });
 
-    $('body').on('click', '.progress-resume-link', function() {
-        // Resume upload of this file
-        var progress = $(this).closest('.resumable-progress');
-        var uniqueIdentifier = progress.attr('data-file-id');
-        r.getFromUniqueIdentifier(uniqueIdentifier).pause(false);
-        r.getFromUniqueIdentifier(uniqueIdentifier).retry();
-        // Show 'pause' button, hide 'resume' button
-        progress.find('.progress-pause-link').show();
-        progress.find('.progress-resume-link').hide();
-        return false;
-    });
-    $('body').on('click', '.progress-pause-link', function() {
-        // Pause upload of this file
-        var progress = $(this).closest('.resumable-progress');
-        var uniqueIdentifier = progress.attr('data-file-id');
-        r.getFromUniqueIdentifier(uniqueIdentifier).pause();
-        console.log(r.getFromUniqueIdentifier(uniqueIdentifier));
-        // Show 'resume' button, hide 'pause' button
-        progress.find('.progress-pause-link').hide();
-        progress.find('.progress-resume-link').show();
-        return false;
-    });
     $('body').on('click', '.progress-cancel-link', function() {
         // Cancel upload of this file
         var progress = $(this).closest('.resumable-progress');
@@ -99,6 +85,22 @@ $(function() {
         r.getFromUniqueIdentifier(uniqueIdentifier).cancel();
         // Remove row
         progress.remove();
+        return false;
+    });
+    $('.progress-resume-link').on('click', function() {
+        // Resume upload of all files
+        r.upload();
+        // Show 'pause' button, hide 'resume' button
+        $('.progress-pause-link').show();
+        $('.progress-resume-link').hide();
+        return false;
+    });
+    $('.progress-pause-link').on('click', function() {
+        // Pause upload of all files
+        r.pause();
+        // Show 'resume' button, hide 'pause' button
+        $('.progress-pause-link').hide();
+        $('.progress-resume-link').show();
         return false;
     });
 });
