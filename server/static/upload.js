@@ -60,12 +60,13 @@ $(function() {
           var progress = getFileProgressElt(file);
           var errorMsg = 'Error';
           try {
-              errorMsg += ': ' + $.parseJSON(message).message;
+              errorMsg = $.parseJSON(message).message;
           } catch (e) {
           }
           progress.find('.progress-bar')
               .removeClass('progress-bar-striped active')
               .addClass('progress-bar-danger')
+              .css({width: '100%'})
               .html(errorMsg);
           progress.find('.progress-cancel-link').hide();
           progress.find('.progress-retry-link').show();

@@ -82,6 +82,7 @@ body {text-align:center; margin:40px;}
   line-height: 30px;
 }
 .progress-bar {
+  white-space: nowrap;
   -webkit-transition: width .2s ease;
   -o-transition: width .2s ease;
   transition: width .2s ease;

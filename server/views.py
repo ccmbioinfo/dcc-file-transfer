@@ -7,7 +7,7 @@ from server import app
 from .database import connect_db
 from .utils import allowed_file, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks
 
-INVALID_AUTH_TOKEN_MSG = 'Invalid transfer code'
+INVALID_AUTH_TOKEN_MSG = 'Error: Invalid transfer code'
 
 @app.before_request
 def before_request():
@@ -36,9 +36,9 @@ def resumable_info():
     identifier = request.args.get('resumableIdentifier', type=str)
     filename = request.args.get('resumableFilename', type=str)
     chunk_number = request.args.get('resumableChunkNumber', type=int)
-    auth_token = request.form.get('authToken', type=str, default='')
+    auth_token = request.args.get('authToken', type=str, default='')
 
-    if not all([identifier, filename, chunk_number, auth_token]):
+    if not all([identifier, filename, chunk_number]):
         return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
 
     if auth_token != app.config['AUTH_TOKEN']:
@@ -83,15 +83,17 @@ def resumable_upload():
 
     all_chunks = glob.glob("{}/{}.part*".format(temp_dir, filename))
 
-    if filename.lower().endswith("bam") and chunk_number == total_chunks:
+    if filename.lower().endswith(".bam") and chunk_number == total_chunks:
         if not bam_test(chunk_filename):
-            return make_response(jsonify({'Error': 'Detected truncated BAM file for %s' % filename}), 415)
+            os.remove(chunk_filename)
+            return make_response(jsonify({'message': 'Error: BAM file appears to be truncated'}), 415)
 
     if len(all_chunks) == int(total_chunks):
         merge_chunks(all_chunks, filename)
 
-        if filename.lower().endswith("gz") and not gzip_test(os.path.join(temp_dir, filename)):
-            return make_response(jsonify({'Error': 'Failed integrity check for %s' % filename}), 415)
+        if filename.lower().endswith(".gz") and not gzip_test(os.path.join(temp_dir, filename)):
+            os.remove(get_chunk_filename(temp_dir, filename, total_chunks))
+            return make_response(jsonify({'message': 'Error: GZIP file appears to be truncated'}), 415)
 
         # add file to database TODO associate file with user/owner and include file metadata
         # g.db.execute('insert into files (filename) values ("%s")' % filename)
