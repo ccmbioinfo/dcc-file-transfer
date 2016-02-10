@@ -19,8 +19,15 @@
                     Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
                 </div>
 
+                <form class="form auth-token-form">
+                    <div class="form-group">
+                        <label class="form-label" for="auth-token">1. Enter your transfer code</label>
+                        <input id="auth-token" type="text" name="authToken" placeholder="Your transfer code" class="form-control">
+                    </div>
+                </form>
+
                 <div class="resumable-drop">
-                    Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
+                    2. Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
                 </div>
 
                 <div class="current-uploads">
@@ -31,10 +38,11 @@
                     </span>
                     <ul id="resumable-transfers">
                         <li id="resumable-progress-template" class="resumable-progress row">
-                            <p class="progress-filename col-xs-6"></p>
-                            <div class="progress-wrapper col-xs-6">
+                            <p class="progress-filename col-xs-5"></p>
+                            <div class="progress-wrapper col-xs-7">
                                 <div class="progress-controls">
                                     <button class="progress-cancel-link btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel</button>
+                                    <button class="progress-retry-link btn btn-success"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Retry</button>
                                 </div>
 
                                 <div class="progress">
