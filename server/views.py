@@ -31,11 +31,6 @@ def home():
     return render_template('home.html')
 
 
-@app.route("/alternate", methods=['GET'])
-def alternate():
-    return render_template('alternate.html')
-
-
 @app.route("/authorize", methods=['POST'])
 def authorize():
     auth_token = request.form.get('authToken', type=str)
