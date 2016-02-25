@@ -4,64 +4,107 @@
 <head>
     <meta charset="UTF-8">
     <title>DCC Large File Upload</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header><h1>Upload files to the DCC</h1></header>
+<header><h1>Upload files to the DCC</h1></header>
 
-    <section>
+<section class="container">
 
-        <div class="row">
-            <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+    <div class="row">
+        <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
 
-                <div class="resumable-error">
-                    Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
-                </div>
+            <div class="resumable-error">
+                Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
+            </div>
 
-                <form class="form auth-token-form">
-                    <div class="form-group">
-                        <label class="form-label" for="auth-token">1. Enter your transfer code</label>
-                        <input id="auth-token" type="text" name="authToken" placeholder="Your transfer code" class="form-control">
+            <!-- Authorization form is presented first -->
+            <form class="row form-horizontal auth-token-form">
+                <div class="form-group has-feedback">
+                    <label for="auth-token" id="transfer-label" class="col-sm-2 control-label">Transfer code</label>
+                    <div class="col-sm-10">
+                        <input id="auth-token" type="text" name="authToken" class="form-control"
+                               placeholder="Please enter your transfer code">
                     </div>
-                </form>
+                    <!-- only show these after the transfer code form is changed -->
+                        <span id="auth-success" class="glyphicon glyphicon-ok form-control-feedback"
+                              aria-hidden="true"></span>
+                        <span id="auth-fail" class="glyphicon glyphicon-remove form-control-feedback"
+                              aria-hidden="true"></span>
 
-                <div class="resumable-drop">
-                    2. Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
+
                 </div>
+            </form>
 
-                <div class="current-uploads">
-                    <h2>Current uploads:</h2>
+
+            <!-- Upon authorization, present add-sample button -->
+            <div class="add-sample row">
+
+                <button type="button" class="add-sample-button btn btn-success active">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Sample
+                </button>
+
+            </div>
+
+            <!-- Upon clicking add-sample request a sample name -->
+            <form class="row form-horizontal sample-name-form">
+                <div class="form-group">
+                    <label class="control-label" id="sample-name-label" for="sample-name">Please enter a sample
+                        name: </label>
+                    <input id="sample-name" type="text" name="sampleName" placeholder="Sample name"
+                           class="form-control">
+                </div>
+            </form>
+
+            <!-- Upon sample name submission, present file drop options -->
+            <div class="sample-tree"></div>
+
+            <div class="resumable-drop">
+                3. Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
+            </div>
+
+            <div class="current-uploads">
+                <h2>Current uploads:</h2>
                     <span class="all-transfer-controls">
                         <button class="progress-resume-link btn btn-success">Resume all</button>
                         <button class="progress-pause-link btn btn-warning">Pause all</button>
                     </span>
-                    <ul id="resumable-transfers">
-                        <li id="resumable-progress-template" class="resumable-progress row">
-                            <p class="progress-filename col-xs-5"></p>
-                            <div class="progress-wrapper col-xs-7">
-                                <div class="progress-controls">
-                                    <button class="progress-cancel-link btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel</button>
-                                    <button class="progress-retry-link btn btn-success"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Retry</button>
-                                </div>
-
-                                <div class="progress">
-                                    <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
-                                </div>
+                <ul id="resumable-transfers">
+                    <li id="resumable-progress-template" class="resumable-progress row">
+                        <p class="progress-filename col-xs-5"></p>
+                        <div class="progress-wrapper col-xs-7">
+                            <div class="progress-controls">
+                                <button class="progress-cancel-link btn btn-danger"><span
+                                        class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
+                                </button>
+                                <button class="progress-retry-link btn btn-success"><span
+                                        class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Retry
+                                </button>
                             </div>
-                        </li>
-                    </ul>
-                </div>
 
-                <div class="footer">
-                    If you have any questions or run into issues, please email Orion &lt;<a href="mailto:buske@cs.toronto.edu">buske@cs.toronto.edu</a>&gt; and/or Dorin &lt;<a href="mailto:dorin.manase@sickkids.ca">dorin.manase@sickkids.ca</a>&gt;.
-                </div>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="footer">
+                If you have any questions or run into issues, please email Orion &lt;<a
+                    href="mailto:buske@cs.toronto.edu">buske@cs.toronto.edu</a>&gt; and/or Dorin &lt;<a
+                    href="mailto:dorin.manase@sickkids.ca">dorin.manase@sickkids.ca</a>&gt;.
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="{{ url_for('static', filename='resumable.js') }}"></script>
-    <script src="{{ url_for('static', filename='upload.js') }}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="{{ url_for('static', filename='resumable.js') }}"></script>
+<script src="{{ url_for('static', filename='upload.js') }}"></script>
+<script src="{{ url_for('static', filename='navigation.js') }}"></script>
 </body>
 </html>

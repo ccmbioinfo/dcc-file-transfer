@@ -31,6 +31,20 @@ def home():
     return render_template('home.html')
 
 
+@app.route("/alternate", methods=['GET'])
+def alternate():
+    return render_template('alternate.html')
+
+
+@app.route("/authorize", methods=['POST'])
+def authorize():
+    auth_token = request.form.get('authToken', type=str)
+    if auth_token != app.config['AUTH_TOKEN']:
+        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
+    else:
+        return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
+
+
 @app.route("/upload", methods=['HEAD'])
 def resumable_info():
     identifier = request.args.get('resumableIdentifier', type=str)

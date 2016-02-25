@@ -6,5 +6,5 @@ DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME = 'admin'
 PASSWORD = 'default'
-AUTH_TOKEN = ''
+AUTH_TOKEN = 'test'
 UPLOAD_FOLDER = os.path.join(os.getcwd(),'uploads')
