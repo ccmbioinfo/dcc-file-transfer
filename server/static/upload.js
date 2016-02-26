@@ -164,6 +164,21 @@ $(function(){
         $(this).parents('tr').remove();
     });
 
+    // Remove Sample
+    $('.table-data').on('click', '.remove-sample', function(e){
+        //obtain all tr's below until next sample-header?
+        var fileNames = []
+        fileRows = $(this).parents('tr').nextUntil('.sample-header-template')
+        fileRows.each(function(key, value) {
+                        fileNames.push($(value).find('.file-name').text())
+                     });
+        for (i=0; i < fileNames.length; i++) {
+            removeResumableFile(fileNames[i])
+        };
+        fileRows.remove();
+        $(this).parents('tr').remove();
+    });
+
     // Begin uploading files
     $('.upload-sample-button').on('click', function(e){
         if ($(this).hasClass('disabled') == false) {
