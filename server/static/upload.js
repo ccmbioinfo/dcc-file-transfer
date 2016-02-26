@@ -25,7 +25,7 @@ $(function(){
             $('.cancel-sample-button').addClass('disabled');
             $('#sample-name').removeAttr('value');
             $('#sample-name').prop('disabled', false);
-            $('.edit-sample-name').css("background-color", "#eee")
+            $('.edit-sample-name').css('background-color', '#eee')
 
             // Show the sample table
             $('.sample-table').show();
@@ -38,7 +38,7 @@ $(function(){
             sampleTemplate.show();
 
             headerDone = true;
-            $('.upload-sample-button').addClass('active').show();
+            $('.upload-sample-button').addClass('active').show().removeClass('disabled');
         };
 
         var fileTemplate = $('.sample-file-template').first().clone();
@@ -53,7 +53,7 @@ $(function(){
         var percent = Math.floor(file.progress() * 100);
         progress.find('.progress-bar').html(percent + '%');
         progress.find('.progress-bar').css({width: percent + '%'});
-        progress.find('.progress-bar').css("color", "white");
+        progress.find('.progress-bar').css('color', 'white');
     });
     r.on('uploadStart', function(){
         //should probably hide options, or grey them out
@@ -84,14 +84,20 @@ $(function(){
         return $('#'+file.uniqueIdentifier);
     };
 
-    // Helper function from Orion, not 100% sure where necessary yet...
     function getExtraParams(file, chunk) {
         return {'authToken': $('#auth-token').val()};
     };
 
+    // Remove file from resumable array using the file name
+    function removeResumableFile(fileName) {
+        fileObj = r.files.filter(function(obj){return obj.fileName == fileName})[0];
+        fileIndex = r.files.indexOf(fileObj);
+        r.files.splice(fileIndex, 1);
+    };
+
     // Authentication displays option to add sample
-    $('.auth-token-form').on("submit", function(e){
-        $.post("/authorize",
+    $('.auth-token-form').on('submit', function(e){
+        $.post('/authorize',
             {
                 'authToken': $('#auth-token').val()
             }
@@ -100,10 +106,10 @@ $(function(){
             $('.add-sample-button').show();
             $('.cancel-sample-button').show().addClass('disabled');
             $('#auth-token').prop('disabled', true);
-            $('.auth-success').css("background-color", "#5cb85c");
+            $('.auth-success').css('background-color', '#5cb85c');
         }).fail(function(data){
             $('.transfer-symbol').removeClass('glyphicon-exclamation-sign').addClass('glyphicon-remove-sign')
-            $('.auth-success').css("background-color", "#d9534f");
+            $('.auth-success').css('background-color', '#d9534f');
         });
         // make sure we don't actually submit the form,
         // since this will refresh the whole page!
@@ -112,45 +118,55 @@ $(function(){
 
     // Clicking add sample disables it until name and files have been supplied
     $('.add-sample-button').on('click', function(e){
-        if ($( ".add-sample-button" ).hasClass( "disabled" ) == false) {
-            $('.add-sample-button').addClass('disabled');
+        if ($(this).hasClass( 'disabled' ) == false) {
+            $(this).addClass('disabled');
+            $('.upload-sample-button').addClass('disabled');
             $('.cancel-sample-button').removeClass('disabled');
             $('.sample-name-form').show();
         }
      });
 
     // Submitting a sample name will open the drop area and enable name editing
-    $('.sample-name-form').on("submit", function(e){
+    $('.sample-name-form').on('submit', function(e){
         sampleName = $('#sample-name').val();
         $('#sample-name').prop('disabled', true);
         $('.resumable-drop').show();
-        $('.edit-sample-name').css("background-color", "white");
+        $('.edit-sample-name').css('background-color', 'white');
         headerDone = false;
         return false;
     });
 
     // Cancel sample will clear/hide the sample name and hide the drop area
     $('.cancel-sample-button').on('click', function(e){
-        if ($( ".cancel-sample-button" ).hasClass( "disabled" ) == false) {
+        if ($( '.cancel-sample-button' ).hasClass( 'disabled' ) == false) {
             $('.add-sample-button').removeClass('disabled');
+            $('.upload-sample-button').removeClass('disabled');
             $('.cancel-sample-button').addClass('disabled');
             $('.sample-name-form').hide();
             $('.resumable-drop').hide();
             $('#sample-name').removeAttr('value');
             $('#sample-name').prop('disabled', false);
-            $('.edit-sample-name').css("background-color", "#eee")
+            $('.edit-sample-name').css('background-color', '#eee')
         }
      });
 
     // Editing the sample name will remove the drop area
-    $('.edit-sample-name').on("click", function(e){
+    $('.edit-sample-name').on('click', function(e){
         $('#sample-name').prop('disabled', false);
         $('.resumable-drop').hide();
-        $('.edit-sample-name').css("background-color", "#eee")
+        $('.edit-sample-name').css('background-color', '#eee')
     });
 
-    $('.upload-sample-button').on("click", function(e){
-        if ($( ".upload-sample-button" ).hasClass('disabled') == false) {
+    // Remove file
+    $('.table-data').on('click', '.remove-file', function(e){
+        fileName = $(this).parents('tr').find('.file-name').text();
+        removeResumableFile(fileName);
+        $(this).parents('tr').remove();
+    });
+
+    // Begin uploading files
+    $('.upload-sample-button').on('click', function(e){
+        if ($(this).hasClass('disabled') == false) {
             $(this).removeClass('active').addClass('disabled');
             $('.add-sample-button').addClass('disabled');
             r.upload();

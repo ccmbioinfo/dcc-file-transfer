@@ -46,13 +46,13 @@
     <!-- Upon authorization, present add-sample and cancel-sample button -->
     <div class="row col-sm-8 col-sm-offset-2 add-sample">
 
-        <button type="button" class="btn btn-success active col-xs-3 add-sample-button">
+        <button type="button" class="btn btn-success active col-xs-3 add-sample-button" data-toggle="tooltip" title="Add new sample" >
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Sample
         </button>
-        <button type="button" class="btn btn-danger col-xs-2 cancel-sample-button">
+        <button type="button" class="btn btn-danger col-xs-2 cancel-sample-button" data-toggle="tooltip" title="Cancel sample creation">
             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
         </button>
-        <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button">
+        <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button" data-toggle="tooltip" title="Upload all files to the DCC">
             <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload
         </button>
     </div>
@@ -69,7 +69,7 @@
                     <input id="sample-name" type="text" name="sampleName" class="form-control"
                            placeholder="Please enter a sample name">
                         <span class="input-group-addon edit-sample-name">
-                            <span class="glyphicon glyphicon-pencil"></span>
+                            <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit the sample name"></span>
                         </span>
 
 
@@ -96,7 +96,10 @@
             <!-- Top panel contents -->
             <div class="panel-heading">Selected Samples</div>
             <div class="panel-body">
-                <p>Some instructions on how to select/indicate correct meta data?</p>
+                <p>
+                    Some instructions on how to select/indicate correct meta data?
+                    For example, the same file cannot be included in multiple samples!
+                </p>
             </div>
 
             <!-- Table -->
@@ -117,9 +120,9 @@
                     <td></td>
                     <td></td>
                     <td class="sample-option">
-                        <span class="glyphicon glyphicon-plus"></span> |
-                        <span class="glyphicon glyphicon-pencil"></span> |
-                        <span class="glyphicon glyphicon-remove"></span>
+                        <span class="option-icon glyphicon glyphicon-plus" data-toggle="tooltip" title="Add file(s) to sample"></span> &thinsp;
+                        <span class="option-icon glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit sample name"></span> &thinsp;
+                        <span class="option-icon glyphicon glyphicon-remove" data-toggle="tooltip" title="Remove sample"></span>
                     </td>
                 </tr>
                 <tr class="sample-file-template">
@@ -129,7 +132,9 @@
                     <td class="progress">
                         <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                     </td>
-                    <td class="option"><span class="glyphicon glyphicon-remove"></span></td>
+                    <td class="option">
+                        <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip" title="Remove file"></span>
+                    </td>
                 </tr>
                 </tbody>
 
