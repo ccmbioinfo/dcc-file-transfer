@@ -1,7 +1,5 @@
 $(function(){
 
-    var sampleName
-
     // Create a new resumable object
     var r = new Resumable({
         target: '/upload',
@@ -18,35 +16,35 @@ $(function(){
     r.on('fileAdded', function(file){
     // Ensures that sample header is written once
     // (there has to be a better way to do this??)
-        if (headerDone == false) {
-            $('.resumable-drop').hide();
-            $('.sample-name-form').hide();
-            $('.add-sample-button').removeClass('disabled');
-            $('.cancel-sample-button').addClass('disabled');
-            $('#sample-name').removeAttr('value');
-            $('#sample-name').prop('disabled', false);
-            $('.edit-sample-name').css('background-color', '#eee')
-
-            // Show the sample table
-            $('.sample-table').show();
-
+        if ($('#'+sampleName).length == 0) {
             // Add the sample header
             var sampleTemplate = $('.sample-header-template').first().clone();
-            sampleTemplate.attr('id', sampleName);
             sampleTemplate.find('.sample-name').html(sampleName)
-            $('.table-data').append(sampleTemplate)
+            sampleTemplate.wrap('<tbody></tbody>');
+            sampleTemplate.parent().attr('id', sampleName);
+            $('.table-data').append(sampleTemplate.parent())
             sampleTemplate.show();
-
-            headerDone = true;
-            $('.upload-sample-button').addClass('active').show().removeClass('disabled');
+            r.assignBrowse(sampleTemplate.find('.resumable-add'));
         };
+        
+        // Show the sample table
+        $('#sample-text').removeAttr('value').prop('disabled', false);
+        $('.edit-sample-name').css('background-color', '#eee')
+        $('.sample-table').show();
+        $('.resumable-drop').hide();
+        $('.sample-name-form').hide();
+        $('.upload-sample-button').addClass('active').show().removeClass('disabled');
+        $('.add-sample-button').removeClass('disabled');
+        $('.cancel-sample-button').addClass('disabled');
 
         var fileTemplate = $('.sample-file-template').first().clone();
         fileTemplate.attr('id', file.uniqueIdentifier);
         fileTemplate.find('.file-name').html(file.fileName);
         fileTemplate.find('.progress-bar').html('Ready...');
-        $('.table-data').append(fileTemplate);
+        $('#'+sampleName).append(fileTemplate);
         fileTemplate.show();
+        
+            
     });
     r.on('fileProgress', function(file){
         var progress = getFileProgressElt(file);
@@ -128,11 +126,10 @@ $(function(){
 
     // Submitting a sample name will open the drop area and enable name editing
     $('.sample-name-form').on('submit', function(e){
-        sampleName = $('#sample-name').val();
-        $('#sample-name').prop('disabled', true);
+        sampleName = $('#sample-text').val();
+        $('#sample-text').prop('disabled', true);
         $('.resumable-drop').show();
         $('.edit-sample-name').css('background-color', 'white');
-        headerDone = false;
         return false;
     });
 
@@ -144,15 +141,15 @@ $(function(){
             $('.cancel-sample-button').addClass('disabled');
             $('.sample-name-form').hide();
             $('.resumable-drop').hide();
-            $('#sample-name').removeAttr('value');
-            $('#sample-name').prop('disabled', false);
+            $('#sample-text').removeAttr('value');
+            $('#sample-text').prop('disabled', false);
             $('.edit-sample-name').css('background-color', '#eee')
         }
      });
 
     // Editing the sample name will remove the drop area
     $('.edit-sample-name').on('click', function(e){
-        $('#sample-name').prop('disabled', false);
+        $('#sample-text').prop('disabled', false);
         $('.resumable-drop').hide();
         $('.edit-sample-name').css('background-color', '#eee')
     });
@@ -166,8 +163,8 @@ $(function(){
 
     // Remove Sample
     $('.table-data').on('click', '.remove-sample', function(e){
-        //obtain all tr's below until next sample-header?
         var fileNames = []
+        
         fileRows = $(this).parents('tr').nextUntil('.sample-header-template')
         fileRows.each(function(key, value) {
                         fileNames.push($(value).find('.file-name').text())
@@ -179,9 +176,16 @@ $(function(){
         $(this).parents('tr').remove();
     });
 
+    
+    // Add files to sample
+    $('.table-data').on('click', '.add-files', function(e){
+        sampleName = $(this).parents('tr').find('.sample-name').text();
+    });
+    
+
     // Begin uploading files
     $('.upload-sample-button').on('click', function(e){
-        if ($(this).hasClass('disabled') == false) {
+        if ($(this).hasClass('disabled') == false && r.files.length>0) {
             $(this).removeClass('active').addClass('disabled');
             $('.add-sample-button').addClass('disabled');
             r.upload();
