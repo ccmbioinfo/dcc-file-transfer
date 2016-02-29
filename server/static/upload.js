@@ -16,12 +16,12 @@ $(function(){
     r.on('fileAdded', function(file){
     // Ensures that sample header is written once
     // (there has to be a better way to do this??)
-        if ($('#'+sampleName).length == 0) {
+        if ($('tbody[name="'+sampleName+'"]').length == 0) {
             // Add the sample header
             var sampleTemplate = $('.sample-header-template').first().clone();
             sampleTemplate.find('.sample-name').html(sampleName)
             sampleTemplate.wrap('<tbody></tbody>');
-            sampleTemplate.parent().attr('id', sampleName);
+            sampleTemplate.parent().attr('name', sampleName);
             $('.table-data').append(sampleTemplate.parent())
             sampleTemplate.show();
             r.assignBrowse(sampleTemplate.find('.resumable-add'));
@@ -41,7 +41,7 @@ $(function(){
         fileTemplate.attr('id', file.uniqueIdentifier);
         fileTemplate.find('.file-name').html(file.fileName);
         fileTemplate.find('.progress-bar').html('Ready...');
-        $('#'+sampleName).append(fileTemplate);
+        $('tbody[name="'+sampleName+'"]').append(fileTemplate);
         fileTemplate.show();
         
             
@@ -181,6 +181,22 @@ $(function(){
     $('.table-data').on('click', '.add-files', function(e){
         sampleName = $(this).parents('tr').find('.sample-name').text();
     });
+    
+    // Edit sample name in table
+    $('.table-data').on('click', '.edit-table-sample-name', function(e){
+        sampleNode = $(this).parents('tr').find('.sample-name');
+        sampleNode.replaceWith(function(){
+            return $('<td class="sample-name"><form class=edit-sample-name-form><input id="sample-table-text" type="text" name="sampleName" class="form-control"></form></td>');
+            });
+     });
+
+    $('.table-data').on('submit', '.edit-sample-name-form', function(e){
+            newName = $(this).find('#sample-table-text').val();
+            tbodyElem = $(this).parents('tbody');
+            $(this).remove();
+            tbodyElem.attr('name', newName).find('.sample-name').html(newName);
+            return false;
+     });
     
 
     // Begin uploading files

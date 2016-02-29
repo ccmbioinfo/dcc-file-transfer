@@ -93,6 +93,15 @@ th {
     display: none;
 }
 
+#sample-table-text {
+    height: 28px;
+}
+
+.edit-sample-name-form {
+    background-color: #f5f5f5;
+}
+
+
 /* Uploader: Drag & Drop */
 .resumable-error {
     display:none;
