@@ -6,7 +6,7 @@
     <title>DCC Large File Upload</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
           integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
                 <label for="auth-token" class="control-label">Transfer code</label>
 
                 <div class="input-group">
-                    <input id="auth-token" type="text" name="authToken" class="form-control"
+                    <input id="auth-token" type="password" name="authToken" class="form-control"
                            placeholder="Please enter your transfer code">
 
                     <!-- only show these after the transfer code form is changed -->
@@ -42,8 +42,7 @@
         </form>
 
     </div>
-
-    <!-- Upon authorization, present add-sample and cancel-sample button -->
+    <!--
     <div class="row col-sm-8 col-sm-offset-2 add-sample">
 
         <button type="button" class="btn btn-success active col-xs-3 add-sample-button" data-toggle="tooltip" title="Add new sample" >
@@ -57,7 +56,6 @@
         </button>
     </div>
 
-    <!-- Upon clicking add-sample request a sample name -->
     <div class="row col-sm-8 col-sm-offset-2 sample">
 
         <form class="form-horizontal sample-name-form col-sm-12">
@@ -80,33 +78,67 @@
 
     </div>
 
-    <!-- Upon sample name submission, present file drop options -->
     <div class="row col-sm-8 col-sm-offset-2 drop-area">
 
         <div class="resumable-drop col-sm-12">
             Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
         </div>
 
-    </div>
+    </div-->
+    
 
     <!-- Table showing selected files, the progress bars should likely be displayed below -->
     <div class="row col-sm-8 col-sm-offset-2 sample-table">
 
         <div class="panel panel-default">
             <!-- Top panel contents -->
-            <div class="panel-heading">Selected Samples</div>
+            <div class="panel-heading">Samples Selected for Upload</div>
             <div class="panel-body">
                 <p>
                     Some instructions on how to select/indicate correct meta data?
                     For example, the same file cannot be included in multiple samples!
+                    Indicate that in the event the download is interrupted, the partial
+                    file will continue where it was left off.
                 </p>
+
+                <button type="button" class="btn btn-success active col-xs-3 add-sample-button" data-toggle="tooltip" title="Add new sample" >
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Sample
+        </button>
+        <button type="button" class="btn btn-danger col-xs-2 cancel-sample-button" data-toggle="tooltip" title="Cancel sample creation">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
+        </button>
+        <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button" data-toggle="tooltip" title="Upload all files to the DCC">
+            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload
+        </button>
+
+        <form class="form-horizontal sample-name-form col-sm-12 col-xs-12">
+            <div class="form-group">
+
+                <label for="sample-text" class="control-label">Sample name</label>
+
+                <div class="input-group">
+                    <input id="sample-text" type="text" name="sampleName" class="form-control"
+                           placeholder="Please enter a sample name">
+                        <span class="input-group-addon edit-sample-name">
+                            <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit the sample name"></span>
+                        </span>
+
+
+                </div>
+
+            </div>
+        </form>
+
+        <div class="resumable-drop col-sm-12">
+            Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
+        </div>
             </div>
 
             <!-- Table -->
             <table class="table table-condensed table-data">
                 <thead>
                 <tr class="active">
-                    <th></th>
+                    <th>Sample Name</th>
                     <th>Files</th>
                     <th>Meta Data</th>
                     <th>Status</th>
@@ -160,7 +192,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='resumable.js') }}"></script>
 <script src="{{ url_for('static', filename='upload.js') }}"></script>
-
 
 </body>
 </html>
