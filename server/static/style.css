@@ -24,12 +24,20 @@ body {text-align:center; margin:40px;}
 #frame {margin:0 auto; width:800px; text-align:left;}
 
 /* Table properties */
-.sample-table, .sample-file-template, .sample-header-template {display:none;}
+.dcc-table, .sample-table, .sample-file-template, .sample-header-template, .panel-body, .table {display:none;}
 .panel {margin-top: 30px;}
 .panel-heading {
     font-weight: bold;
     font-size: 16px;
 }
+.panel-heading:hover {cursor: pointer;}
+/*
+.dcc-table>.panel-default>.panel-heading,
+.dcc-table>.panel-default>.table>thead>.active>th {
+    background-color: #31b0d5;
+    color: white;
+}
+*/
 th {
     font-weight:bold;
     font-size: 14px;

@@ -6,7 +6,7 @@
     <title>DCC Large File Upload</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
           integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
@@ -15,7 +15,6 @@
 
 <div class="container-fluid">
 
-    <!-- Authorization form is presented first -->
     <div class="row col-sm-8 col-sm-offset-2 transfer-code">
 
         <div class="resumable-error">
@@ -31,45 +30,10 @@
                     <input id="auth-token" type="password" name="authToken" class="form-control"
                            placeholder="Please enter your transfer code">
 
-                    <!-- only show these after the transfer code form is changed -->
                         <span class="input-group-addon auth-success">
                             <span class="glyphicon glyphicon-exclamation-sign transfer-symbol"></span>
                         </span>
-
-                </div>
-
-            </div>
-        </form>
-
-    </div>
-    <!--
-    <div class="row col-sm-8 col-sm-offset-2 add-sample">
-
-        <button type="button" class="btn btn-success active col-xs-3 add-sample-button" data-toggle="tooltip" title="Add new sample" >
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Sample
-        </button>
-        <button type="button" class="btn btn-danger col-xs-2 cancel-sample-button" data-toggle="tooltip" title="Cancel sample creation">
-            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
-        </button>
-        <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button" data-toggle="tooltip" title="Upload all files to the DCC">
-            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload
-        </button>
-    </div>
-
-    <div class="row col-sm-8 col-sm-offset-2 sample">
-
-        <form class="form-horizontal sample-name-form col-sm-12">
-            <div class="form-group">
-
-                <label for="sample-text" class="control-label">Sample name</label>
-
-                <div class="input-group">
-                    <input id="sample-text" type="text" name="sampleName" class="form-control"
-                           placeholder="Please enter a sample name">
-                        <span class="input-group-addon edit-sample-name">
-                            <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit the sample name"></span>
-                        </span>
-
+                        
 
                 </div>
 
@@ -78,21 +42,13 @@
 
     </div>
 
-    <div class="row col-sm-8 col-sm-offset-2 drop-area">
-
-        <div class="resumable-drop col-sm-12">
-            Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
-        </div>
-
-    </div-->
-    
-
-    <!-- Table showing selected files, the progress bars should likely be displayed below -->
+    <!-- Table showing selected sample files -->
     <div class="row col-sm-8 col-sm-offset-2 sample-table">
 
         <div class="panel panel-default">
-            <!-- Top panel contents -->
-            <div class="panel-heading">Samples Selected for Upload</div>
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-triangle-bottom pull-left table-collapse" aria-hidden="true"></span>Select Samples for Upload
+            </div>
             <div class="panel-body">
                 <p>
                     Some instructions on how to select/indicate correct meta data?
@@ -101,40 +57,41 @@
                     file will continue where it was left off.
                 </p>
 
-                <button type="button" class="btn btn-success active col-xs-3 add-sample-button" data-toggle="tooltip" title="Add new sample" >
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Sample
-        </button>
-        <button type="button" class="btn btn-danger col-xs-2 cancel-sample-button" data-toggle="tooltip" title="Cancel sample creation">
-            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
-        </button>
-        <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button" data-toggle="tooltip" title="Upload all files to the DCC">
-            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload
-        </button>
+                <button type="button" class="btn btn-success active col-xs-3 add-sample-button" data-toggle="tooltip"
+                        title="Add new sample">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Sample
+                </button>
+                <button type="button" class="btn btn-danger col-xs-2 cancel-sample-button" data-toggle="tooltip"
+                        title="Cancel sample creation">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
+                </button>
+                <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button"
+                        data-toggle="tooltip" title="Upload all files to the DCC">
+                    <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload
+                </button>
 
-        <form class="form-horizontal sample-name-form col-sm-12 col-xs-12">
-            <div class="form-group">
+                <form class="form-horizontal sample-name-form col-sm-12 col-xs-12">
+                    <div class="form-group">
 
-                <label for="sample-text" class="control-label">Sample name</label>
+                        <label for="sample-text" class="control-label">Sample name</label>
 
-                <div class="input-group">
-                    <input id="sample-text" type="text" name="sampleName" class="form-control"
-                           placeholder="Please enter a sample name">
-                        <span class="input-group-addon edit-sample-name">
-                            <span class="glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit the sample name"></span>
-                        </span>
+                        <div class="input-group">
+                            <input id="sample-text" type="text" name="sampleName" class="form-control"
+                                   placeholder="Please enter a sample name">
+                                <span class="input-group-addon edit-sample-name">
+                                    <span class="glyphicon glyphicon-pencil" data-toggle="tooltip"
+                                          title="Edit the sample name"></span>
+                                </span>
+                        </div>
 
+                    </div>
+                </form>
 
+                <div class="resumable-drop col-sm-12 col-xs-12">
+                    Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
                 </div>
-
-            </div>
-        </form>
-
-        <div class="resumable-drop col-sm-12">
-            Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
-        </div>
             </div>
 
-            <!-- Table -->
             <table class="table table-condensed table-data">
                 <thead>
                 <tr class="active">
@@ -152,9 +109,12 @@
                     <td></td>
                     <td></td>
                     <td class="sample-option">
-                        <span class="option-icon resumable-add add-files glyphicon glyphicon-plus" data-toggle="tooltip" title="Add file(s) to sample"></span> &thinsp;
-                        <span class="option-icon edit-table-sample-name glyphicon glyphicon-pencil" data-toggle="tooltip" title="Edit sample name"></span> &thinsp;
-                        <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip" title="Remove sample"></span>
+                        <span class="option-icon resumable-add add-files glyphicon glyphicon-plus" data-toggle="tooltip"
+                              title="Add file(s) to sample"></span> &thinsp;
+                        <span class="option-icon edit-table-sample-name glyphicon glyphicon-pencil"
+                              data-toggle="tooltip" title="Edit sample name"></span> &thinsp;
+                        <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
+                              title="Remove sample"></span>
                     </td>
                 </tr>
                 <tr class="sample-file-template">
@@ -165,19 +125,42 @@
                         <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                     </td>
                     <td class="option">
-                        <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip" title="Remove file"></span>
+                        <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
+                              title="Remove file"></span>
                     </td>
                 </tr>
                 </tbody>
 
             </table>
-
-
         </div>
     </div>
 
+    <!-- Table showing the files currently sitting on the DCC -->
+    <div class="row col-sm-8 col-sm-offset-2 dcc-table">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-triangle-bottom pull-left table-collapse" aria-hidden="true"></span>DCC
+            </div>
+            <div class="panel-body">
+                <p>
+                    Instructions on how to request files that are currently sitting on the DCC. Files won't be available
+                    for direct download immediately.
+                </p>
+            </div>
+            <table class="table table-condensed">
+                <thead>
+                    <tr class="active">
+                        <th>Sample Name</th>
+                        <th>Files</th>
+                        <th>Meta Data</th>
+                        <th>Status</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
 
-    <!-- Footer, leave at bottom -->
     <div class="row col-sm-8 col-sm-offset-2 footer-row">
         <div class="footer">
             If you have any questions or run into issues, please email Orion &lt;<a

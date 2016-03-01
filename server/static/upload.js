@@ -57,7 +57,8 @@ $(function() {
         progress.find('.progress-bar').css('min-width', '2em')
     });
     r.on('uploadStart', function() {
-    //should probably hide options, or grey them out
+        //should probably hide options, or grey them out
+        //send message to server indicating token, samples, and files for db storage
     });
     r.on('fileSuccess', function(file, message) {
         var progress = getFileProgressElt(file);
@@ -81,6 +82,10 @@ $(function() {
             width: '100%'
         })
         .html(errorMsg);
+    });
+    r.on('complete', function() {
+        //enable ability to add new samples/files? allow for upload again?
+        //populate the DCC table with files and empty the upload table?
     });
     
     function getFileProgressElt(file) {
@@ -114,10 +119,10 @@ $(function() {
         ).done(function(data) {
             $('.transfer-symbol').removeClass('glyphicon-exclamation-sign').addClass('glyphicon-ok-sign');
             $('.add-sample-button').show();
-            //$('.cancel-sample-button').show().addClass('disabled');
             $('#auth-token').prop('disabled', true);
             $('.auth-success').css('background-color', '#5cb85c');
             $('.sample-table').show();
+            $('.dcc-table').show();
         
         }).fail(function(data) {
             $('.transfer-symbol').removeClass('glyphicon-exclamation-sign').addClass('glyphicon-remove-sign')
@@ -128,11 +133,13 @@ $(function() {
         return false;
     });
     
-    // Clicking add sample disables it until name and files have been supplied
+    // Clicking add sample hides it until name and files have been supplied
     $('.add-sample-button').on('click', function(e) {
-        $(this).hide();
-        $('.cancel-sample-button').show();
-        $('.sample-name-form').show();
+        if ($(this).hasClass('active') == true) {
+            $(this).hide();
+            $('.cancel-sample-button').show();
+            $('.sample-name-form').show();
+        }
     });
     
     // Submitting a sample name will open the drop area and enable name editing
@@ -164,14 +171,14 @@ $(function() {
         $('.edit-sample-name').css('background-color', '#eee')
     });
     
-    // Remove file
+    // Remove file from add sample table
     $('.table-data').on('click', '.remove-file', function(e) {
         fileName = $(this).parents('tr').find('.file-name').text();
         removeResumableFile(fileName);
         $(this).parents('tr').remove();
     });
     
-    // Remove Sample
+    // Remove entire sample from add sample table
     $('.table-data').on('click', '.remove-sample', function(e) {
         var fileNames = []
         
@@ -186,16 +193,13 @@ $(function() {
         fileRows.remove();
         $(this).parents('tr').remove();
     });
-    
-    
-    // Add files to sample
+
+    // Add files to a specific sample
     $('.table-data').on('click', '.add-files', function(e) {
         sampleName = $(this).parents('tr').find('.sample-name').text();
     });
-    
-    
 
-    // Edit sample name in table
+    // Edit a sample name in table
     $('.table-data').on('click', '.edit-table-sample-name', function(e){
         sampleNode = $(this).parents('tr').find('.sample-name');
         currentName = sampleNode.text()
@@ -204,21 +208,33 @@ $(function() {
             '<input id="sample-table-text" type="text" name="sampleName" class="form-control"'+
             'placeholder="'+currentName+'"></form></td>')
             });
-     });
-
+    });
     $('.table-data').on('submit', '.edit-sample-name-form', function(e){
             newName = $(this).find('#sample-table-text').val();
             tbodyElem = $(this).parents('tbody');
             $(this).remove();
             tbodyElem.attr('name', newName).find('.sample-name').html(newName);
             return false;
-     });
-            
+    });
+
+    // Collapse the table contents and show only the panel header
+    $('.panel-heading').on('click', function(e) {
+         if ($(this).find('.table-collapse').hasClass('glyphicon-triangle-right') == true) {
+             $(this).parents('.panel').find('.panel-body').hide();
+             $(this).parents('.panel').find('.table').hide();
+             $(this).find('.table-collapse').removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
+         } else if ($(this).find('.table-collapse').hasClass('glyphicon-triangle-bottom') == true) {
+             $(this).parents('.panel').find('.panel-body').show();
+             $(this).parents('.panel').find('.table').show();
+             $(this).find('.table-collapse').removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
+         }
+    });
+
     // Begin uploading files
     $('.upload-sample-button').on('click', function(e) {
         if ($(this).hasClass('disabled') == false && r.files.length > 0) {
             $(this).removeClass('active').addClass('disabled');
-            $('.add-sample-button').addClass('disabled');
+            $('.add-sample-button').removeClass('active').addClass('disabled');
             r.upload();
         }
     });
