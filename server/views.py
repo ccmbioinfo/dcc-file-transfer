@@ -31,8 +31,18 @@ def home():
     return render_template('home.html')
 
 
+@app.route("/get-auth-token", methods=['POST'])
+def get_auth_token():
+    # check if request is from recognized/allowed hosts
+    # if so, generate a token using UUID4 (random) and an expiry date
+    # store token and user/host in db with expiry date and status(open/expired)?? -> may not be necessary since
+    #   open tokens can be queried easily anyway by looking for dates greater than now
+    pass
+
+
 @app.route("/authorize", methods=['POST'])
 def authorize():
+    # update to check for token in db along with correct user, host, and whether expired or not
     auth_token = request.form.get('authToken', type=str)
     if auth_token != app.config['AUTH_TOKEN']:
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)

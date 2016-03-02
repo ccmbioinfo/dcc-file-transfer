@@ -27,7 +27,7 @@
                 <label for="auth-token" class="control-label">Transfer code</label>
 
                 <div class="input-group">
-                    <input id="auth-token" type="password" name="authToken" class="form-control"
+                    <input id="auth-token" type="text" name="authToken" class="form-control"
                            placeholder="Please enter your transfer code">
 
                         <span class="input-group-addon auth-success">
@@ -65,10 +65,6 @@
                         title="Cancel sample creation">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
                 </button>
-                <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button"
-                        data-toggle="tooltip" title="Upload all files to the DCC">
-                    <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload
-                </button>
 
                 <form class="form-horizontal sample-name-form col-sm-12 col-xs-12">
                     <div class="form-group">
@@ -97,13 +93,13 @@
                 <tr class="active">
                     <th>Sample Name</th>
                     <th>Files</th>
-                    <th>Meta Data</th>
+                    <th>Metadata</th>
                     <th>Status</th>
                     <th>Options</th>
                 </tr>
                 </thead>
                 <tbody class="sample-template">
-                <tr class="active sample-header-template">
+                <tr class="active sample-header-template" id="sample-header-row">
                     <td class="sample-name"></td>
                     <td></td>
                     <td></td>
@@ -130,8 +126,14 @@
                     </td>
                 </tr>
                 </tbody>
-
+                
             </table>
+            <div class="panel-footer">
+                <button type="button" class="btn btn-info col-xs-2 pull-left upload-sample-button disabled"
+                        data-toggle="tooltip" title="Upload all files to the DCC">
+                    <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
+                </button>
+            </div>
         </div>
     </div>
 
@@ -152,7 +154,7 @@
                     <tr class="active">
                         <th>Sample Name</th>
                         <th>Files</th>
-                        <th>Meta Data</th>
+                        <th>Metadata</th>
                         <th>Status</th>
                         <th>Options</th>
                     </tr>

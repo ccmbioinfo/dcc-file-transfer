@@ -28,9 +28,15 @@ body {text-align:center; margin:40px;}
 .panel {margin-top: 30px;}
 .panel-heading {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 16px;    
 }
 .panel-heading:hover {cursor: pointer;}
+.panel-footer {
+    height: 64px;
+    padding: 15px;
+    display: none;
+    background-color: white;
+}
 /*
 .dcc-table>.panel-default>.panel-heading,
 .dcc-table>.panel-default>.table>thead>.active>th {
@@ -45,11 +51,23 @@ th {
     }
 
 .table>tbody>tr>td {vertical-align:middle;}
+.table>tbody>tr>.option, .table>tbody>tr>.sample-option{
+  text-align:right;
+  padding-right: 10px;
+}
+
+#sample-header-row>td {
+  background-color: #FCFDFC;
+  font-size: 14px
+}
 
 .sample-header, .sample-name {
-    font-size: 14px;
     text-align: center;
 }
+
+
+
+
 .file-icon, .sample-option, .option, .metadata, .progress-bar{
     text-align: center;
 }
@@ -93,8 +111,9 @@ th {
 .add-sample-button, .cancel-sample-button, .upload-sample-button {
     width: 120px;
     margin-right: 10px;
-    display: none;
-}
+    }
+
+.add-sample-button, .cancel-sample-button {display: none;}
 
 .sample-name-form {
     margin-top: 20px;

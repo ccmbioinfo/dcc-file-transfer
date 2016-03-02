@@ -34,6 +34,7 @@ $(function() {
         $('.resumable-drop').hide();
         $('.sample-name-form').hide();
         $('.upload-sample-button').addClass('active').show().removeClass('disabled');
+        $('.panel-footer').show();
         $('.add-sample-button').show();
         $('.cancel-sample-button').hide();
         
@@ -86,6 +87,7 @@ $(function() {
     r.on('complete', function() {
         //enable ability to add new samples/files? allow for upload again?
         //populate the DCC table with files and empty the upload table?
+        console.log(r.files.length);
     });
     
     function getFileProgressElt(file) {
@@ -176,6 +178,7 @@ $(function() {
         fileName = $(this).parents('tr').find('.file-name').text();
         removeResumableFile(fileName);
         $(this).parents('tr').remove();
+        if (r.files.length == 0) {$('.upload-sample-button').removeClass('active').addClass('disabled')};
     });
     
     // Remove entire sample from add sample table
@@ -192,6 +195,8 @@ $(function() {
         ;
         fileRows.remove();
         $(this).parents('tr').remove();
+
+        if (r.files.length == 0) {$('.upload-sample-button').removeClass('active').addClass('disabled')};
     });
 
     // Add files to a specific sample
@@ -222,10 +227,12 @@ $(function() {
          if ($(this).find('.table-collapse').hasClass('glyphicon-triangle-right') == true) {
              $(this).parents('.panel').find('.panel-body').hide();
              $(this).parents('.panel').find('.table').hide();
+             $(this).parents('.panel').find('.panel-footer').hide();
              $(this).find('.table-collapse').removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
          } else if ($(this).find('.table-collapse').hasClass('glyphicon-triangle-bottom') == true) {
              $(this).parents('.panel').find('.panel-body').show();
              $(this).parents('.panel').find('.table').show();
+             $(this).parents('.panel').find('.panel-footer').show();
              $(this).find('.table-collapse').removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
          }
     });
