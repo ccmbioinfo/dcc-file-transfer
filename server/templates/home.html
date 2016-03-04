@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Based off of example: https://raw.githubusercontent.com/23/resumable.js/master/samples/Node.js/public/index.html -->
 
 <head>
     <meta charset="UTF-8">
@@ -8,149 +9,127 @@
           integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
-
-<header><h1>Upload files to the DCC</h1></header>
-
-<div class="container-fluid">
-
-    <div class="row col-sm-8 col-sm-offset-2 transfer-code">
-
-        <div class="resumable-error">
-            Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
-        </div>
-
-        <form class="form-horizontal auth-token-form col-sm-12">
-            <div class="form-group">
-
-                <label for="auth-token" class="control-label">Transfer code</label>
-
-                <div class="input-group">
-                    <input id="auth-token" type="text" name="authToken" class="form-control"
-                           placeholder="Please enter your transfer code">
-
-                        <span class="input-group-addon auth-success">
-                            <span class="glyphicon glyphicon-exclamation-sign transfer-symbol"></span>
-                        </span>
-                        
-
-                </div>
-
+    <header><h1>Upload files to the DCC</h1></header>
+    <div class="container-fluid">
+        <div class="row col-sm-8 col-sm-offset-2 transfer-code">
+            <div class="resumable-error">
+                Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
             </div>
-        </form>
-
-    </div>
-
-    <!-- Table showing selected sample files -->
-    <div class="row col-sm-8 col-sm-offset-2 sample-table">
-
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <span class="glyphicon glyphicon-triangle-bottom pull-left table-collapse" aria-hidden="true"></span>Select Samples for Upload
-            </div>
-            <div class="panel-body">
-                <p>
-                    Some instructions on how to select/indicate correct meta data?
-                    For example, the same file cannot be included in multiple samples!
-                    Indicate that in the event the download is interrupted, the partial
-                    file will continue where it was left off.
-                </p>
-
-                <button type="button" class="btn btn-success active col-xs-3 add-sample-button" data-toggle="tooltip"
-                        title="Add new sample">
-                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Sample
-                </button>
-                <button type="button" class="btn btn-danger col-xs-2 cancel-sample-button" data-toggle="tooltip"
-                        title="Cancel sample creation">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel
-                </button>
-
-                <form class="form-horizontal sample-name-form col-sm-12 col-xs-12">
-                    <div class="form-group">
-
-                        <label for="sample-text" class="control-label">Sample name</label>
-
-                        <div class="input-group">
-                            <input id="sample-text" type="text" name="sampleName" class="form-control"
-                                   placeholder="Please enter a sample name">
-                                <span class="input-group-addon edit-sample-name">
-                                    <span class="glyphicon glyphicon-pencil" data-toggle="tooltip"
-                                          title="Edit the sample name"></span>
-                                </span>
-                        </div>
-
+            <form class="form-horizontal auth-token-form col-sm-12">
+                <div class="form-group">
+                    <label for="auth-token" class="control-label">Transfer code</label>
+                    <div class="input-group">
+                        <input id="auth-token" type="text" name="authToken" class="form-control"
+                               placeholder="Please enter your transfer code">
+                            <span class="input-group-addon auth-success label-warning">
+                                <span class="glyphicon glyphicon-exclamation-sign transfer-symbol"></span>
+                            </span>
                     </div>
-                </form>
+                </div>
+            </form>
+        </div>
 
-                <div class="resumable-drop col-sm-12 col-xs-12">
-                    Drop files here or <a class="resumable-browse btn btn-default">Browse your computer</a>
+        <!-- Table showing selected sample files -->
+        <div class="row col-sm-8 col-sm-offset-2 sample-table">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-triangle-bottom pull-left" aria-hidden="true"></span>Select
+                    Samples for Upload
+                </div>
+                <div class="panel-body">
+                    <p>
+                        Some instructions on how to select/indicate correct metadata?
+                        For example, the same file cannot be included in multiple samples!
+                        Indicate that in the event the download is interrupted, the partial
+                        file will continue where it was left off.
+                    </p>
+                    <form class="form-horizontal sample-name-form col-sm-12 col-xs-12">
+                        <div class="form-group">
+                            <label for="sample-text" class="control-label">Sample name</label>
+                            <div class="input-group">
+                                <input id="sample-text" type="text" name="sampleName" class="form-control"
+                                       placeholder="Please enter a sample name">
+                                    <span class="input-group-addon btn btn-success active add-sample-button">
+                                        <span class="glyphicon glyphicon-plus" data-toggle="tooltip"
+                                              title="Add a new sample"></span>
+                                        Add Sample
+                                    </span>
+                                    <span class="input-group-addon btn btn-danger active cancel-sample-button">
+                                        <span class="glyphicon glyphicon-remove" data-toggle="tooltip"
+                                              title="Cancel sample creation"></span>
+                                        Cancel
+                                    </span>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="resumable-drop col-sm-12 col-xs-12">
+                        <span>Drop files here or</span>
+                        <a class="resumable-browse btn btn-default">Browse your computer</a>
+                    </div>
+                </div>
+                <table class="table table-condensed table-data">
+                    <thead>
+                    <tr class="active">
+                        <th>Sample Name</th>
+                        <th>Files</th>
+                        <th>Metadata</th>
+                        <th>Upload Status</th>
+                        <th>Options</th>
+                    </tr>
+                    </thead>
+                    <tbody class="sample-template">
+                    <tr class="active sample-header-template">
+                        <td class="sample-name"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="sample-option">
+                            <span class="option-icon resumable-add add-files glyphicon glyphicon-plus" data-toggle="tooltip"
+                                  title="Add file(s) to sample"></span>
+                            <span class="option-icon edit-table-sample-name glyphicon glyphicon-pencil"
+                                  data-toggle="tooltip" title="Edit sample name"></span>
+                            <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
+                                  title="Remove sample"></span>
+                        </td>
+                    </tr>
+                    <tr class="sample-file-template">
+                        <td class="file-icon"><span class="glyphicon glyphicon-arrow-right"></span></td>
+                        <td class="file-name"></td>
+                        <td class="metadata">...</td>
+                        <td class="progress">
+                            <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
+                        </td>
+                        <td class="option">
+                            <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
+                                  title="Remove file"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="panel-footer">
+                    <button type="button" class="btn btn-info col-xs-2 pull-left upload-sample-button disabled"
+                            data-toggle="tooltip" title="Upload all files to the DCC">
+                        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
+                    </button>
                 </div>
             </div>
-
-            <table class="table table-condensed table-data">
-                <thead>
-                <tr class="active">
-                    <th>Sample Name</th>
-                    <th>Files</th>
-                    <th>Metadata</th>
-                    <th>Status</th>
-                    <th>Options</th>
-                </tr>
-                </thead>
-                <tbody class="sample-template">
-                <tr class="active sample-header-template" id="sample-header-row">
-                    <td class="sample-name"></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td class="sample-option">
-                        <span class="option-icon resumable-add add-files glyphicon glyphicon-plus" data-toggle="tooltip"
-                              title="Add file(s) to sample"></span> &thinsp;
-                        <span class="option-icon edit-table-sample-name glyphicon glyphicon-pencil"
-                              data-toggle="tooltip" title="Edit sample name"></span> &thinsp;
-                        <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
-                              title="Remove sample"></span>
-                    </td>
-                </tr>
-                <tr class="sample-file-template">
-                    <td class="file-icon"><span class="glyphicon glyphicon-arrow-right"></span></td>
-                    <td class="file-name"></td>
-                    <td class="metadata">...</td>
-                    <td class="progress">
-                        <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
-                    </td>
-                    <td class="option">
-                        <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
-                              title="Remove file"></span>
-                    </td>
-                </tr>
-                </tbody>
-                
-            </table>
-            <div class="panel-footer">
-                <button type="button" class="btn btn-info col-xs-2 pull-left upload-sample-button disabled"
-                        data-toggle="tooltip" title="Upload all files to the DCC">
-                    <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
-                </button>
-            </div>
         </div>
-    </div>
 
-    <!-- Table showing the files currently sitting on the DCC -->
-    <div class="row col-sm-8 col-sm-offset-2 dcc-table">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <span class="glyphicon glyphicon-triangle-bottom pull-left table-collapse" aria-hidden="true"></span>DCC
-            </div>
-            <div class="panel-body">
-                <p>
-                    Instructions on how to request files that are currently sitting on the DCC. Files won't be available
-                    for direct download immediately.
-                </p>
-            </div>
-            <table class="table table-condensed">
-                <thead>
+        <!-- Table showing the files currently sitting on the DCC -->
+        <div class="row col-sm-8 col-sm-offset-2 dcc-table">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-triangle-bottom pull-left" aria-hidden="true"></span>DCC
+                </div>
+                <div class="panel-body">
+                    <p>
+                        Instructions on how to request files that are currently sitting on the DCC. Files won't be available
+                        for direct download immediately.
+                    </p>
+                </div>
+                <table class="table table-condensed">
+                    <thead>
                     <tr class="active">
                         <th>Sample Name</th>
                         <th>Files</th>
@@ -158,25 +137,21 @@
                         <th>Status</th>
                         <th>Options</th>
                     </tr>
-                </thead>
-            </table>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="row col-sm-8 col-sm-offset-2 footer-row">
+            <div class="footer">
+                If you have any questions or run into issues, please email Orion
+                &lt;<a href="mailto:buske@cs.toronto.edu">buske@cs.toronto.edu</a>&gt;
+                and/or Dorin
+                &lt;<a href="mailto:dorin.manase@sickkids.ca">dorin.manase@sickkids.ca</a>&gt;.
+            </div>
         </div>
     </div>
-
-    <div class="row col-sm-8 col-sm-offset-2 footer-row">
-        <div class="footer">
-            If you have any questions or run into issues, please email Orion &lt;<a
-                href="mailto:buske@cs.toronto.edu">buske@cs.toronto.edu</a>&gt; and/or Dorin &lt;<a
-                href="mailto:dorin.manase@sickkids.ca">dorin.manase@sickkids.ca</a>&gt;.
-        </div>
-    </div>
-
-
-</div>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="{{ url_for('static', filename='resumable.js') }}"></script>
-<script src="{{ url_for('static', filename='upload.js') }}"></script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='resumable.js') }}"></script>
+    <script src="{{ url_for('static', filename='upload.js') }}"></script>
 </body>
 </html>
