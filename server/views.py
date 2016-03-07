@@ -1,5 +1,7 @@
 import glob
 import os
+import uuid
+import datetime
 
 from flask import jsonify, make_response, request, g, render_template
 
@@ -31,23 +33,39 @@ def home():
     return render_template('home.html')
 
 
-@app.route("/get-auth-token", methods=['POST'])
+@app.route("/get-auth-token", methods=['GET'])
 def get_auth_token():
-    # check if request is from recognized/allowed hosts
-    # if so, generate a token using UUID4 (random) and an expiry date
-    # store token and user/host in db with expiry date and status(open/expired)?? -> may not be necessary since
-    #   open tokens can be queried easily anyway by looking for dates greater than now
-    pass
+    # check if request has a recognized access code in header
+    if 'x-access-code' in request.headers and request.headers['x-access-code'] in app.config['ACCESS_CODES']:
+        auth_token = uuid.uuid4().hex
+        current_date = datetime.datetime.today()
+        expiry_date = current_date + datetime.timedelta(days=1)  # Code expires in 24 hours
+        g.db.execute('insert into access (site_access_code,auth_token,date_created,date_expired) '
+                     'values ("%s","%s","%s","%s")' % (request.headers['x-access-code'],
+                                                       auth_token,
+                                                       current_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                                                       expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
+        g.db.commit()
+        return make_response(
+            jsonify({'Access_code': auth_token, 'Expiry_date': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")}), 200)
+    else:
+        return make_response(jsonify({'Error': 'unauthorized'}), 401)
 
 
 @app.route("/authorize", methods=['POST'])
 def authorize():
-    # update to check for token in db along with correct user, host, and whether expired or not
     auth_token = request.form.get('authToken', type=str)
-    if auth_token != app.config['AUTH_TOKEN']:
-        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
+    current_time = datetime.datetime.today()
+    expiry_date = g.db.execute('select date_expired from access where auth_token = "%s"' % auth_token).fetchone()
+
+    if expiry_date:
+        expiry_date = datetime.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
+        if current_time <= expiry_date:
+            return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
+        else:
+            return make_response(jsonify({'message': 'Error: Expired transfer code'}), 403)
     else:
-        return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
+        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
 
 @app.route("/upload", methods=['HEAD'])
@@ -125,12 +143,11 @@ def resumable_upload():
 @app.route('/users', methods=['GET'])
 def show_users():
     users = g.db.execute('select * from users order by user_id asc').fetchall()
-    return make_response(jsonify({t[0]:t[1:] for t in users}))
+    return make_response(jsonify({t[0]: t[1:] for t in users}))
 
 
 @app.route('/user/<username>', methods=['GET'])
 def show_user_files(username):
     # query db to check for appropriate auth-token first?
     user_files = g.db.execute('select * from files where owner = "%s"' % username).fetchall()
-    return make_response(jsonify({t[0]:t[1:] for t in user_files}))
-
+    return make_response(jsonify({t[0]: t[1:] for t in user_files}))

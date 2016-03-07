@@ -41,24 +41,26 @@ create table runs (
 
 drop table if exists fileruns;
 create table fileruns (
-    file_id integer references files(file_id),
-    run_id integer references runs(run_id)
+	file_id integer references files(file_id),
+  run_id integer references runs(run_id)
 );
 
 
 drop table if exists access;
 create table access (
-    access_id integer primary key autoincrement,
-    description varchar,
-    level_value integer not null
+  access_id integer primary key autoincrement,
+  site_access_code varchar not null,
+  auth_token varchar not null,
+	date_created varchar not null,
+	date_expired varchar not null
 );
 
 
 drop table if exists permissions;
 create table permissions (
-    permission_id integer primary key autoincrement,
-    run_id references runs(run_id),
-    access_id references access(access_id),
-    user_id references users(user_id),
-    group_id references groups(group_id)
+  permission_id integer primary key autoincrement,
+  run_id references runs(run_id),
+  access_id references access(access_id),
+  user_id references users(user_id),
+  group_id references groups(group_id)
 );

@@ -15,7 +15,7 @@ $(function () {
     r.assignBrowse($('.resumable-browse'));
     r.on('fileAdded', function (file) {
         // Ensures that sample header is written once
-        if ($('tbody[name="' + $('#sample-text').val() + '"]').length == 0) {
+        if ($('tbody[name="' + $('#sample-text').val() + '"]').length === 0) {
             // Add the sample header
             sampleName = $('#sample-text').val();
             var sampleTemplate = $('.sample-header-template').first().clone();
@@ -165,7 +165,7 @@ $(function () {
         resumableFile = r.getFromUniqueIdentifier(uniqueId);
         r.removeFile(resumableFile);
         $(this).closest('tr').remove();
-        if (r.files.length == 0) {
+        if (r.files.length === 0) {
             $('.upload-sample-button').removeClass('active').addClass('disabled');
         }
     });
@@ -183,7 +183,7 @@ $(function () {
         }
         fileRows.remove();
         $(this).closest('tbody').remove();
-        if (r.files.length == 0) {
+        if (r.files.length === 0) {
             $('.upload-sample-button').removeClass('active').addClass('disabled');
         }
     });
@@ -214,7 +214,7 @@ $(function () {
     // Collapse the table contents and show only the panel header
     $('.panel-heading').on('click', function (e) {
         $(this).closest('.panel').find('.panel-body, table, .panel-footer').toggleClass('collapsed');
-        if ($(this).next('.panel-body').hasClass('collapsed') == true) {
+        if ($(this).next('.panel-body').hasClass('collapsed') === true) {
             $(this).find('.glyphicon').removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
         } else {
             $(this).find('.glyphicon').removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
@@ -223,7 +223,7 @@ $(function () {
 
     // Begin uploading files
     $('.upload-sample-button').on('click', function (e) {
-        if ($(this).hasClass('disabled') == false && r.files.length > 0) {
+        if ($(this).hasClass('disabled') === false && r.files.length > 0) {
             $(this).removeClass('active').addClass('disabled');
             $('.add-sample-button').removeClass('active').addClass('disabled');
             r.upload();
