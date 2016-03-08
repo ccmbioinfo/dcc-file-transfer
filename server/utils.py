@@ -1,6 +1,9 @@
 import gzip
 import hashlib
 import os
+import datetime
+
+from flask import g
 
 from server import app
 
@@ -54,5 +57,14 @@ def merge_chunks(in_paths, out_filename):
 
     app.logger.debug('Merged %s files -> %s', len(in_paths), out_filepath)
 
-    # for chunk_path in in_paths:
-    #     os.remove(chunk_path)
+
+def valid_auth_token(auth_token):
+    current_time = datetime.datetime.today()
+    expiry_date = g.db.execute('select date_expired from access where auth_token = "%s"' % auth_token).fetchone()
+
+    if expiry_date:
+        expiry_date = datetime.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
+        if current_time <= expiry_date:
+            return True
+
+    return False

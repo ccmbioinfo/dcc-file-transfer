@@ -73,34 +73,37 @@
                     <tr class="active">
                         <th>Sample Name</th>
                         <th>Files</th>
-                        <th>Metadata</th>
+                        <th>Readset</th>
+                        <th>Library</th>
+                        <th>Run Type</th>
+                        <th>Platform</th>
+                        <th>Capture Kit</th>
                         <th>Upload Status</th>
                         <th>Options</th>
                     </tr>
                     </thead>
                     <tbody class="sample-template">
                     <tr class="active sample-header-template">
-                        <td class="sample-name"></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td class="sample-option">
+                        <td class="sample-name" colspan="7"></td>
+                        <td class="sample-option edit-disabled">
                             <span class="option-icon resumable-add add-files glyphicon glyphicon-plus" data-toggle="tooltip"
                                   title="Add file(s) to sample"></span>
-                            <span class="option-icon edit-table-sample-name glyphicon glyphicon-pencil"
-                                  data-toggle="tooltip" title="Edit sample name"></span>
                             <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
                                   title="Remove sample"></span>
                         </td>
                     </tr>
                     <tr class="sample-file-template">
-                        <td class="file-icon"><span class="glyphicon glyphicon-arrow-right"></span></td>
-                        <td class="file-name"></td>
-                        <td class="metadata">...</td>
+                        <td class="file-icon edit-disabled"><span class="glyphicon glyphicon-arrow-right"></span></td>
+                        <td class="file-name edit-disabled"></td>
+                        <td class="readset">N/A</td>
+                        <td class="library">N/A</td>
+                        <td class="run-type">N/A</td>
+                        <td class="platform">N/A</td>
+                        <td class="capture-kit">N/A</td>
                         <td class="progress">
                             <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                         </td>
-                        <td class="option">
+                        <td class="option edit-disabled">
                             <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
                                   title="Remove file"></span>
                         </td>
@@ -128,7 +131,7 @@
                         for direct download immediately.
                     </p>
                 </div>
-                <table class="table table-condensed collapsed">
+                <table class="table table-condensed collapsed" id="dcc-table-data">
                     <thead>
                     <tr class="active">
                         <th>Sample Name</th>
@@ -150,8 +153,10 @@
             </div>
         </div>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='resumable.js') }}"></script>
     <script src="{{ url_for('static', filename='upload.js') }}"></script>
+    <script src="{{ url_for('static', filename='mindmup-editabletable.js') }}"></script>
 </body>
 </html>

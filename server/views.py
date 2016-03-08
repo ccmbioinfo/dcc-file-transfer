@@ -7,7 +7,7 @@ from flask import jsonify, make_response, request, g, render_template
 
 from server import app
 from .database import connect_db
-from .utils import allowed_file, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks
+from .utils import valid_auth_token, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks
 
 INVALID_AUTH_TOKEN_MSG = 'Error: Invalid transfer code'
 
@@ -55,15 +55,8 @@ def get_auth_token():
 @app.route("/authorize", methods=['POST'])
 def authorize():
     auth_token = request.form.get('authToken', type=str)
-    current_time = datetime.datetime.today()
-    expiry_date = g.db.execute('select date_expired from access where auth_token = "%s"' % auth_token).fetchone()
-
-    if expiry_date:
-        expiry_date = datetime.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
-        if current_time <= expiry_date:
-            return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
-        else:
-            return make_response(jsonify({'message': 'Error: Expired transfer code'}), 403)
+    if valid_auth_token(auth_token):
+        return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
     else:
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
@@ -78,7 +71,7 @@ def resumable_info():
     if not all([identifier, filename, chunk_number]):
         return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
 
-    if auth_token != app.config['AUTH_TOKEN']:
+    if not valid_auth_token(auth_token):
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
     temp_dir = get_tempdir(identifier)
@@ -104,7 +97,7 @@ def resumable_upload():
     if not all([identifier, filename, chunk_number, chunk_size, total_chunks, total_size]):
         return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
 
-    if auth_token != app.config['AUTH_TOKEN']:
+    if not valid_auth_token(auth_token):
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
     # Create a temp directory using the unique identifier for the file

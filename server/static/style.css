@@ -54,10 +54,13 @@ th {
 }
 .panel>.table>tbody>.sample-header-template>td {
     background-color: #FCFDFC;
-    font-size: 14px
+    font-size: 14px;
 }
-.sample-header,
-.sample-name {
+.sample-header-template>td.sample-name {
+    text-align: left;
+    padding-left: 25px;
+}
+.sample-header{
     text-align: center;
 }
 .file-icon,
@@ -75,8 +78,8 @@ th {
 .form-group .control-label {
     margin-bottom: 5px;
 }
-.sample-table td:nth-child(4),
-.sample-table th:nth-child(4) {
+.sample-table td:nth-child(8),
+.sample-table th:nth-child(8) {
     padding-right: 10px;
     width: 100px;
     display: none;
@@ -88,6 +91,14 @@ th {
 .edit-table-sample-name, 
 .remove-sample {
     padding-left: 5px;
+}
+td.edit-disabled,
+td.edit-disabled:focus {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    outline: none;
+    cursor: default;
 }
 
 /* Auth token form */
@@ -122,8 +133,9 @@ th {
 #sample-table-text {
     height: 28px;
 }
-.edit-sample-name-form {
-    background-color: #f5f5f5;
+.upload-sample-button.disabled,
+.add-sample-button.disabled {
+    pointer-events: none;
 }
 
 /* Uploader: Drag & Drop */

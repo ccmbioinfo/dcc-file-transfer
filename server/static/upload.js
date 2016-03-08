@@ -41,7 +41,7 @@ $(function () {
 
         // Wait until all files have been added before clearing the sample name
         if ($('.sample-file-template').length == r.files.length+1) {
-            $('#sample-text').removeAttr('value');
+            $('#sample-text').val('');
         }
 
     });
@@ -57,8 +57,8 @@ $(function () {
     });
     r.on('uploadStart', function () {
         //hide the options column and show the status column
-        $('.sample-table td:nth-child(5), .sample-table th:nth-child(5)').toggle();
-        $('.sample-table td:nth-child(4), .sample-table th:nth-child(4)').toggle();
+        $('.sample-table td:nth-child(9), .sample-table th:nth-child(9)').toggle();
+        $('.sample-table td:nth-child(8), .sample-table th:nth-child(8)').toggle();
         //send message to server indicating token, samples, and files for db storage
     });
     r.on('fileSuccess', function (file, message) {
@@ -179,7 +179,8 @@ $(function () {
             uniqueIds.push($(value).attr('id'));
         });
         for (i = 0; i < uniqueIds.length; i++) {
-            r.removeFile(uniqueIds[i]);
+            resumableFile = r.getFromUniqueIdentifier(uniqueIds[i]);
+            r.removeFile(resumableFile);
         }
         fileRows.remove();
         $(this).closest('tbody').remove();
@@ -193,23 +194,9 @@ $(function () {
         sampleName = $(this).parents('tr').find('.sample-name').text();
     });
 
-    // Edit a sample name in table
-    $('.table-data').on('click', '.edit-table-sample-name', function (e) {
-        sampleNode = $(this).parents('tr').find('.sample-name');
-        currentName = sampleNode.text();
-        sampleNode.replaceWith(function () {
-            return $('<td class="sample-name"><form class=edit-sample-name-form>' +
-                '<input id="sample-table-text" type="text" name="sampleName" class="form-control"' +
-                'value="' + currentName + '"></form></td>')
-        });
-    });
-    $('.table-data').on('submit', '.edit-sample-name-form', function (e) {
-        newName = $(this).find('#sample-table-text').val();
-        tbodyElem = $(this).closest('tbody');
-        $(this).remove();
-        tbodyElem.attr('name', newName).find('.sample-name').html(newName);
-        return false;
-    });
+    // Edit data in table
+    // need to block editing of certain fields!!
+    $('.table-data').editableTableWidget();
 
     // Collapse the table contents and show only the panel header
     $('.panel-heading').on('click', function (e) {
@@ -226,6 +213,7 @@ $(function () {
         if ($(this).hasClass('disabled') === false && r.files.length > 0) {
             $(this).removeClass('active').addClass('disabled');
             $('.add-sample-button').removeClass('active').addClass('disabled');
+            $('#sample-text').prop('disabled', true);
             r.upload();
         }
     });
