@@ -21,6 +21,7 @@ def query(db):
     while True:
         SQL = raw_input('SQL> ')
         if SQL.lower() == 'close':
+            db.commit()
             db.close()
             break
         else:

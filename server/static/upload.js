@@ -15,7 +15,7 @@ $(function () {
     r.assignBrowse($('.resumable-browse'));
     r.on('fileAdded', function (file) {
         // Ensures that sample header is written once
-        if ($('tbody[name="' + $('#sample-text').val() + '"]').length === 0) {
+        if ($('tbody[name="'+$('#sample-text').val()+'"]').length === 0 && $('#sample-text').val() !== "") {
             // Add the sample header
             sampleName = $('#sample-text').val();
             var sampleTemplate = $('.sample-header-template').first().clone();
@@ -28,7 +28,6 @@ $(function () {
         }
         // Show the sample table
         $('.resumable-drop').hide();
-        $('.upload-sample-button').addClass('active').removeClass('disabled');
         $('.add-sample-button').show();
         $('.cancel-sample-button').hide();
 
@@ -43,7 +42,10 @@ $(function () {
         if ($('.sample-file-template').length == r.files.length+1) {
             $('#sample-text').val('');
         }
-
+        // This method for checking required fields will need to be changed when field types are updated
+        if ($("em:contains('Required')").length > 5 && r.files.length > 0) {
+            $('.upload-sample-button').addClass('disabled').removeClass('active');
+        }
     });
     r.on('fileProgress', function (file) {
         var progress = getFileProgressElt(file);
@@ -57,8 +59,9 @@ $(function () {
     });
     r.on('uploadStart', function () {
         //hide the options column and show the status column
+        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
         $('.sample-table td:nth-child(9), .sample-table th:nth-child(9)').toggle();
-        $('.sample-table td:nth-child(8), .sample-table th:nth-child(8)').toggle();
+        $('.sample-option').addClass('disabled');
         //send message to server indicating token, samples, and files for db storage
     });
     r.on('fileSuccess', function (file, message) {
@@ -155,7 +158,6 @@ $(function () {
     $('.cancel-sample-button').on('click', function (e) {
         $('.cancel-sample-button').toggle();
         $('.add-sample-button').toggle();
-        $('.upload-sample-button').removeClass('disabled');
         $('.resumable-drop').hide();
     });
 
@@ -195,8 +197,18 @@ $(function () {
     });
 
     // Edit data in table
-    // need to block editing of certain fields!!
     $('.table-data').editableTableWidget();
+    $('.table-data').on('change', 'td', function(evt, newValue) {
+        // This method for checking required fields will need to be changed when field types are updated
+        if ($("em:contains('Required')").length === 5 && r.files.length > 0) {
+            $('.upload-sample-button').addClass('active').removeClass('disabled');
+        }
+    });
+    $('.table-data').on('validate', 'td', function(evt, newValue) {
+        if (newValue === '') {
+            return false; // mark cell as invalid
+        }
+    });
 
     // Collapse the table contents and show only the panel header
     $('.panel-heading').on('click', function (e) {
@@ -205,6 +217,21 @@ $(function () {
             $(this).find('.glyphicon').removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
         } else {
             $(this).find('.glyphicon').removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
+        }
+    });
+
+    // Collapse samples
+    $('.table-data').on('click', '.sample-collapse', function (e){
+        fileRows = $(this).closest('tr').nextUntil('.sample-header-template');
+        fileRows.each(function (key, value) {
+            $(value).toggle();
+        });
+        //find closest glyphicon
+        triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
+        if ($(triangle).hasClass('glyphicon-triangle-bottom') === true) {
+            $(triangle).removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
+        } else {
+            $(triangle).removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
         }
     });
 

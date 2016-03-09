@@ -90,7 +90,7 @@ $.fn.editableTableWidget = function (options) {
 			}
 		});
 		element.on('click keypress dblclick', showEditor)
-		.css('cursor', 'pointer')
+		.css('cursor', 'text')
 		.keydown(function (e) {
 			var prevent = true,
 				possibleMove = movement($(e.target), e.which);

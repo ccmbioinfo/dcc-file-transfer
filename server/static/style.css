@@ -41,35 +41,43 @@ body {text-align:center; margin:40px;}
 th {
     font-weight:bold;
     font-size: 14px;
-    text-align: center;
+    text-align: left;
 }
 .table>tbody>tr>td {
     vertical-align:middle;
     padding:  5px;
 }
 .table>tbody>tr>.option,
-.table>tbody>tr>.sample-option {
+.table>tbody>tr>.sample-option,
+.table>thead>tr>th:nth-child(9) {
     text-align:right;
-    padding-right: 10px;
+    padding-right: 20px;
+}
+.sample-collapse {
+    text-align: center;
+}
+.sample-option.disabled {
+    color: #aaaaaa;
+    pointer-events: none;
 }
 .panel>.table>tbody>.sample-header-template>td {
     background-color: #FCFDFC;
     font-size: 14px;
 }
-.sample-header-template>td.sample-name {
+.sample-header-template>td.sample-name,
+.sample-name-header {
     text-align: left;
-    padding-left: 25px;
 }
-.sample-header{
-    text-align: center;
-}
+.sample-header,
 .file-icon,
-.sample-option,
-.option,
-.metadata,
+.panel>.table>thead>tr>.upload-status,
+.panel>.table>thead>tr>.options,
 .progress-bar {
     text-align: center;
 }
+td.sample-collapse,
+td.sample-collapse:focus,
+.sample-collapse,
 .option-icon {
     cursor: pointer;
 }
@@ -78,8 +86,8 @@ th {
 .form-group .control-label {
     margin-bottom: 5px;
 }
-.sample-table td:nth-child(8),
-.sample-table th:nth-child(8) {
+.sample-table td:nth-child(9),
+.sample-table th:nth-child(9) {
     padding-right: 10px;
     width: 100px;
     display: none;
@@ -89,16 +97,24 @@ th {
 }
 .add-files, 
 .edit-table-sample-name, 
-.remove-sample {
+.remove-sample,
+.sample-collapse {
     padding-left: 5px;
 }
-td.edit-disabled,
-td.edit-disabled:focus {
+.edit-disabled,
+.edit-disabled,
+.edit-disabled:focus {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
     outline: none;
     cursor: default;
+}
+input.error {
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
+    outline: thin auto red;
 }
 
 /* Auth token form */
@@ -119,6 +135,10 @@ td.edit-disabled:focus {
 .add-sample {
     margin-top: 20px;
     text-align: left;
+}
+.auth-token-form,
+.panel {
+    min-width: 775px;
 }
 .panel .input-group .btn  {
     border-radius: 0px 4px 4px 0px;
