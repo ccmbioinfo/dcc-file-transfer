@@ -72,43 +72,77 @@
                     <thead>
                     <tr class="active">
                         <th class="edit-disabled"></th>
-                        <th class="sample-name-header edit-disabled">Sample Name</th>
-                        <th class="edit-disabled">Files</th>
+                        <th class="edit-disabled" colspan="2">Files</th>
                         <th class="edit-disabled">Readset</th>
                         <th class="edit-disabled">Library</th>
                         <th class="edit-disabled">Run Type</th>
                         <th class="edit-disabled">Platform</th>
                         <th class="edit-disabled">Capture Kit</th>
-                        <th class="upload-status edit-disabled">Upload Status</th>
+                        <th class="upload-status edit-disabled">Status</th>
                         <th class="options edit-disabled">Options</th>
                     </tr>
                     </thead>
                     <tbody class="sample-template">
                     <tr class="active sample-header-template">
                         <td class="edit-disabled"><span class="sample-collapse glyphicon glyphicon-triangle-bottom"></span></td>
-                        <td class="sample-name" colspan="2"></td>
-                        <td class="sample-collapse edit-disabled" colspan="5"></td>
+                        <td class="sample-name"></td>
+                        <td class="sample-collapse edit-disabled" colspan="6"></td>
                         <td class="sample-option edit-disabled">
                              <span class="option-icon edit-sample-metadata glyphicon glyphicon-list-alt"
-                                  data-toggle="modal"
-                                  data-target="#myModal"
-                                  title="Edit metadata for entire sample"></span>
-                            <span class="option-icon resumable-add add-files glyphicon glyphicon-plus" data-toggle="tooltip"
+                                   data-toggle="modal"
+                                   data-target="#sample-modal"
+                                   title="Edit metadata for entire sample"></span>
+                            <span class="option-icon resumable-add add-files glyphicon glyphicon-plus"
+                                  data-toggle="tooltip"
                                   title="Add file(s) to sample"></span>
                             <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
                                   title="Remove sample"></span>
                         </td>
                     </tr>
                     <tr class="sample-file-template">
-                        <td class="edit-disabled"></td>
-                        <td class="file-icon edit-disabled"><span class="glyphicon glyphicon-arrow-right"></span></td>
-                        <td class="file-name edit-disabled"></td>
-                        <td class="readset"><em>Required</em></td>
-                        <td class="library"><em>Required</em></td>
-                        <td class="run-type"><em>Required</em></td>
-                        <td class="platform"><em>Required</em></td>
-                        <td class="capture-kit"><em>Required</em></td>
-                        <td class="progress">
+                        <td class="file-icon edit-disabled"><span class="glyphicon glyphicon-file pull-right"></span></td>
+                        <td class="file-name edit-disabled" colspan="2"></td>
+                        <td class="readset">* <em>Required</em></td>
+                        <td class="library">* <em>Required</em></td>
+                        <td class="run-type edit-disabled dropdown">
+                            <button id="run-type-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
+                               aria-haspopup="true" aria-expanded="true">
+                                Select <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="run-type-menu">
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Paired end</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Single end</a></li>
+                                <li role="presentation" class="divider"></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">N/A</a></li>
+                            </ul>
+                        </td>
+                        <td class="platform edit-disabled dropdown">
+                            <button id="platform-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
+                               aria-haspopup="true" aria-expanded="true">
+                                Select <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="platform-menu">
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Illumina HiSeq</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Illumina X10</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">SOLiDv4</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">PacBio</a></li>
+                                <li role="presentation" class="divider"></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other</a></li>
+                            </ul>
+                        </td>
+                        <td class="capture-kit edit-disabled dropdown">
+                            <button id="capture-kit-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
+                               aria-haspopup="true" aria-expanded="true">
+                                Select <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="capture-kit-menu">
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Agilent SureSelect V3</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Agilent SureSelect V4</a></li>
+                                <li role="presentation" class="divider"></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other (please include BED)</a></li>
+                            </ul>
+                        </td>
+                        <td class="progress edit-disabled">
                             <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                         </td>
                         <td class="option edit-disabled">
@@ -123,25 +157,26 @@
                             data-toggle="tooltip" title="Upload all files to the DCC">
                         <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
                     </button>
-                    <!-- Modal -->
-                    <div id="myModal" class="modal fade" role="dialog">
-                      <div class="modal-dialog">
 
-                        <!-- Modal content-->
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                            <h4 class="modal-title">Modal Header</h4>
-                          </div>
-                          <div class="modal-body">
-                            <p>Some text in the modal.</p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                          </div>
-                        </div>
+                </div>
+            </div>
+        </div>
 
-                      </div>
+        <!-- Modal -->
+        <div id="sample-modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Sample Name</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Metadata Options to go here</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
                     </div>
                 </div>
             </div>

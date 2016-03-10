@@ -40,16 +40,19 @@ body {text-align:center; margin:40px;}
 }
 th {
     font-weight:bold;
-    font-size: 14px;
+    font-size: 12px;
     text-align: left;
 }
 .table>tbody>tr>td {
     vertical-align:middle;
     padding:  5px;
 }
+.table>thead>tr>th:nth-child(2){
+    text-align: center;
+}
 .table>tbody>tr>.option,
 .table>tbody>tr>.sample-option,
-.table>thead>tr>th:nth-child(9) {
+.table>thead>tr>th:nth-child(8) {
     text-align:right;
     padding-right: 20px;
 }
@@ -62,7 +65,7 @@ th {
 }
 .panel>.table>tbody>.sample-header-template>td {
     background-color: #FCFDFC;
-    font-size: 14px;
+    font-size: 15px;
 }
 .sample-header-template>td.sample-name,
 .sample-name-header {
@@ -78,7 +81,8 @@ th {
 td.sample-collapse,
 td.sample-collapse:focus,
 .sample-collapse,
-.option-icon {
+.option-icon,
+a.menu-item {
     cursor: pointer;
 }
 .option {font-size: 10px;}
@@ -86,8 +90,8 @@ td.sample-collapse:focus,
 .form-group .control-label {
     margin-bottom: 5px;
 }
-.sample-table td:nth-child(9),
-.sample-table th:nth-child(9) {
+.sample-table td:nth-child(8),
+.sample-table th:nth-child(8) {
     padding-right: 10px;
     width: 100px;
     display: none;
@@ -102,7 +106,6 @@ td.sample-collapse:focus,
     padding-left: 5px;
 }
 .edit-disabled,
-.edit-disabled,
 .edit-disabled:focus {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
@@ -115,6 +118,25 @@ input.error {
     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
     outline: thin auto red;
+}
+.btn.dropdown-toggle {
+    width: 100%;
+    background-color: whitesmoke;
+    font-size: 12px;
+
+}
+.btn.no-selection {
+    background-color: white;
+}
+.btn.selection-made {
+    background-color: white;
+    border: dotted;
+    border-color: whitesmoke;
+    border-width: 1px;
+}
+.btn .caret {
+    float: right;
+    margin-top: 6px;
 }
 
 /* Auth token form */

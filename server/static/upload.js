@@ -36,15 +36,33 @@ $(function () {
         fileTemplate.find('.file-name').html(file.fileName);
         fileTemplate.find('.progress-bar');
         $('tbody[name="' + sampleName + '"]').append(fileTemplate);
+        if ($('tbody[name="' + sampleName + '"]').find('tr').hasClass('files-collapsed') === true) {
+            fileTemplate.addClass('collapsed');
+        }
+        // Check for file type and auto-fill options with blanks for non-bam or fastq files
+        var metadataRequired = false;
+        var fileTypes = ['bam','sam','fastq','fq'];
+        for (i = 0; i < fileTypes.length; i++) {
+            if (file.fileName.toLowerCase().indexOf(fileTypes[i]) > -1){
+                metadataRequired = true;
+                break;
+            }
+        }
+        if (metadataRequired === false) {
+            fileTemplate.find('.readset').html('');
+            fileTemplate.find('.library').html('');
+            fileTemplate.find('.run-type>button').addClass('no-selection').text('');
+            fileTemplate.find('.platform>button').addClass('no-selection').text('');
+            fileTemplate.find('.capture-kit>button').addClass('no-selection').text('');
+        }
         fileTemplate.show();
 
         // Wait until all files have been added before clearing the sample name
         if ($('.sample-file-template').length == r.files.length+1) {
             $('#sample-text').val('');
         }
-        // This method for checking required fields will need to be changed when field types are updated
-        if ($("em:contains('Required')").length > 5 && r.files.length > 0) {
-            $('.upload-sample-button').addClass('disabled').removeClass('active');
+        if (r.files.length > 0) {
+            $('.upload-sample-button').removeClass('disabled').addClass('active');
         }
     });
     r.on('fileProgress', function (file) {
@@ -59,8 +77,8 @@ $(function () {
     });
     r.on('uploadStart', function () {
         //hide the options column and show the status column
-        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
         $('.sample-table td:nth-child(9), .sample-table th:nth-child(9)').toggle();
+        $('.sample-table td:nth-child(8), .sample-table th:nth-child(8)').toggle();
         $('.sample-option').addClass('disabled');
         //send message to server indicating token, samples, and files for db storage
     });
@@ -199,10 +217,7 @@ $(function () {
     // Edit data in table
     $('.table-data').editableTableWidget();
     $('.table-data').on('change', 'td', function(evt, newValue) {
-        // This method for checking required fields will need to be changed when field types are updated
-        if ($("em:contains('Required')").length === 5 && r.files.length > 0) {
-            $('.upload-sample-button').addClass('active').removeClass('disabled');
-        }
+        // may be useful for resizing
     });
     $('.table-data').on('validate', 'td', function(evt, newValue) {
         if (newValue === '') {
@@ -222,17 +237,28 @@ $(function () {
 
     // Collapse samples
     $('.table-data').on('click', '.sample-collapse', function (e){
+        triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
         fileRows = $(this).closest('tr').nextUntil('.sample-header-template');
         fileRows.each(function (key, value) {
-            $(value).toggle();
+            if ($(value).hasClass('collapsed') === true) {
+                $(value).removeClass('collapsed').css('display','table-row');
+            } else {
+                $(value).addClass('collapsed').css('display','none');
+            }
         });
-        //find closest glyphicon
-        triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
-        if ($(triangle).hasClass('glyphicon-triangle-bottom') === true) {
-            $(triangle).removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
-        } else {
+        if ($(this).closest('tr').hasClass('files-collapsed') === true) {
+            $(this).closest('tr').removeClass('files-collapsed');
             $(triangle).removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
+        } else {
+            $(this).closest('tr').addClass('files-collapsed');
+            $(triangle).removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
         }
+    });
+
+    // Drop-down menu selection
+    $('.table-data').on('click', '.menu-item', function (e){
+        var item = $(this).text();
+        $(this).closest('td').find('button').html(item+'<span class="caret"></span>').addClass('selection-made');
     });
 
     // Begin uploading files
