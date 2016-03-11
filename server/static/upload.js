@@ -41,19 +41,24 @@ $(function () {
         }
         // Check for file type and auto-fill options with blanks for non-bam or fastq files
         var metadataRequired = false;
-        var fileTypes = ['bam','sam','fastq','fq'];
-        for (i = 0; i < fileTypes.length; i++) {
+        var fileTypes = ['.bam','.sam','.fastq','.fq'];
+        for (var i = 0; i < fileTypes.length; i++) {
             if (file.fileName.toLowerCase().indexOf(fileTypes[i]) > -1){
                 metadataRequired = true;
+                if (i > 1) {
+                    fileTemplate.find('.file-type>button').html('FASTQ'+'<span class="caret"></span>').addClass('selection-made');
+                } else {
+                    fileTemplate.find('.file-type>button').html('BAM/SAM'+'<span class="caret"></span>').addClass('selection-made');
+                }
                 break;
             }
         }
         if (metadataRequired === false) {
-            fileTemplate.find('.readset').html('');
-            fileTemplate.find('.library').html('');
-            fileTemplate.find('.run-type>button').addClass('no-selection').text('');
-            fileTemplate.find('.platform>button').addClass('no-selection').text('');
-            fileTemplate.find('.capture-kit>button').addClass('no-selection').text('');
+            fileTemplate.find('.file-type>button').html('Other'+'<span class="caret"></span>').addClass('selection-made');
+            fileTemplate.find('.library').addClass('edit-disabled').text('');
+            fileTemplate.find('.run-type').addClass('edit-disabled').find('button').addClass('no-selection disabled').text('');
+            fileTemplate.find('.platform').addClass('edit-disabled').find('button').addClass('no-selection disabled').text('');
+            fileTemplate.find('.capture-kit').addClass('edit-disabled').find('button').addClass('no-selection disabled').text('');
         }
         fileTemplate.show();
 
@@ -61,9 +66,7 @@ $(function () {
         if ($('.sample-file-template').length == r.files.length+1) {
             $('#sample-text').val('');
         }
-        if (r.files.length > 0) {
-            $('.upload-sample-button').removeClass('disabled').addClass('active');
-        }
+        checkUploadReady();
     });
     r.on('fileProgress', function (file) {
         var progress = getFileProgressElt(file);
@@ -77,9 +80,12 @@ $(function () {
     });
     r.on('uploadStart', function () {
         //hide the options column and show the status column
+        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
         $('.sample-table td:nth-child(9), .sample-table th:nth-child(9)').toggle();
-        $('.sample-table td:nth-child(8), .sample-table th:nth-child(8)').toggle();
         $('.sample-option').addClass('disabled');
+        //disable all metadata options
+        $('.table-data').find('tbody').nextAll().find('button').addClass('disabled');
+        $('.table-data').find('tbody').nextAll().find('.sample-name, .readset, .library').addClass('edit-disabled');
         //send message to server indicating token, samples, and files for db storage
     });
     r.on('fileSuccess', function (file, message) {
@@ -137,6 +143,20 @@ $(function () {
         }
     }
 
+    function checkUploadReady() {
+        // Check to see if all files have metadata completed before enabling the upload button
+        var samples = $('.table-data').find('tbody').nextAll();
+        if (r.files.length > 0 &&
+            samples.find('button').length === samples.find('button').filter('.selection-made, .no-selection').length &&
+            samples.find('.readset, .library').filter(function (index) {
+                return $(this).html() === '* <em>Required</em>'
+            }).length === 0) {
+            $('.upload-sample-button').removeClass('disabled').addClass('active');
+        } else {
+            $('.upload-sample-button').addClass('disabled').removeClass('active');
+        }
+    }
+
     // Authentication displays option to add sample
     $('.auth-token-form').on('submit', function (e) {
         $.post('/authorize', {'authToken': $('#auth-token').val()})
@@ -185,9 +205,7 @@ $(function () {
         resumableFile = r.getFromUniqueIdentifier(uniqueId);
         r.removeFile(resumableFile);
         $(this).closest('tr').remove();
-        if (r.files.length === 0) {
-            $('.upload-sample-button').removeClass('active').addClass('disabled');
-        }
+        checkUploadReady();
     });
 
     // Remove entire sample from add sample table
@@ -204,9 +222,7 @@ $(function () {
         }
         fileRows.remove();
         $(this).closest('tbody').remove();
-        if (r.files.length === 0) {
-            $('.upload-sample-button').removeClass('active').addClass('disabled');
-        }
+        checkUploadReady();
     });
 
     // Add files to a specific sample
@@ -218,6 +234,7 @@ $(function () {
     $('.table-data').editableTableWidget();
     $('.table-data').on('change', 'td', function(evt, newValue) {
         // may be useful for resizing
+        checkUploadReady();
     });
     $('.table-data').on('validate', 'td', function(evt, newValue) {
         if (newValue === '') {
@@ -259,11 +276,27 @@ $(function () {
     $('.table-data').on('click', '.menu-item', function (e){
         var item = $(this).text();
         $(this).closest('td').find('button').html(item+'<span class="caret"></span>').addClass('selection-made');
+        // For changes to the file-type, adjust other metadata options accordingly
+        if ($(this).closest('td').hasClass('file-type') && (item === 'BAM/SAM' || item === 'FASTQ')) {
+            $(this).closest('tr').find('.library').removeClass('edit-disabled').html('* '+'<em>Required</em>');
+            $(this).closest('tr').find('.run-type>button, .platform>button, .capture-kit>button')
+                .removeClass('no-selection selection-made disabled')
+                .html('Select'+'<span class="caret"></span>');
+        } else if ($(this).closest('td').hasClass('file-type') && item === 'Other') {
+            $(this).closest('tr').find('.library').addClass('edit-disabled').text('');
+            $(this).closest('tr').find('.run-type, .platform, .capture-kit')
+                .addClass('edit-disabled')
+                .find('button')
+                .removeClass('selection-made')
+                .addClass('no-selection disabled')
+                .text('');
+        }
+        checkUploadReady();
     });
 
     // Begin uploading files
     $('.upload-sample-button').on('click', function (e) {
-        if ($(this).hasClass('disabled') === false && r.files.length > 0) {
+        if ($(this).hasClass('disabled') === false) {
             $(this).removeClass('active').addClass('disabled');
             $('.add-sample-button').removeClass('active').addClass('disabled');
             $('#sample-text').prop('disabled', true);

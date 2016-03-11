@@ -73,6 +73,7 @@
                     <tr class="active">
                         <th class="edit-disabled"></th>
                         <th class="edit-disabled" colspan="2">Files</th>
+                        <th class="edit-disabled">File Type</th>
                         <th class="edit-disabled">Readset</th>
                         <th class="edit-disabled">Library</th>
                         <th class="edit-disabled">Run Type</th>
@@ -86,7 +87,7 @@
                     <tr class="active sample-header-template">
                         <td class="edit-disabled"><span class="sample-collapse glyphicon glyphicon-triangle-bottom"></span></td>
                         <td class="sample-name"></td>
-                        <td class="sample-collapse edit-disabled" colspan="6"></td>
+                        <td class="sample-collapse edit-disabled" colspan="7"></td>
                         <td class="sample-option edit-disabled">
                              <span class="option-icon edit-sample-metadata glyphicon glyphicon-list-alt"
                                    data-toggle="modal"
@@ -102,6 +103,18 @@
                     <tr class="sample-file-template">
                         <td class="file-icon edit-disabled"><span class="glyphicon glyphicon-file pull-right"></span></td>
                         <td class="file-name edit-disabled" colspan="2"></td>
+                        <td class="file-type edit-disabled dropdown">
+                            <button id="file-type-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
+                               aria-haspopup="true" aria-expanded="true">
+                                Select <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="file-type-menu">
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">BAM/SAM</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">FASTQ</a></li>
+                                <li role="presentation" class="divider"></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other</a></li>
+                            </ul>
+                        </td>
                         <td class="readset">* <em>Required</em></td>
                         <td class="library">* <em>Required</em></td>
                         <td class="run-type edit-disabled dropdown">
@@ -139,7 +152,7 @@
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Agilent SureSelect V3</a></li>
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Agilent SureSelect V4</a></li>
                                 <li role="presentation" class="divider"></li>
-                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other (please include BED)</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other</a></li>
                             </ul>
                         </td>
                         <td class="progress edit-disabled">
@@ -153,7 +166,7 @@
                     </tbody>
                 </table>
                 <div class="panel-footer collapsed">
-                    <button type="button" class="btn btn-info col-xs-2 pull-left upload-sample-button disabled"
+                    <button type="button" class="btn btn-info col-xs-2 pull-right upload-sample-button disabled"
                             data-toggle="tooltip" title="Upload all files to the DCC">
                         <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
                     </button>
