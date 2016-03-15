@@ -25,8 +25,12 @@ create table membership (
 drop table if exists files;
 create table files (
 	file_id integer primary key autoincrement,
-	filename varchar not null, 
-	owner integer references users(user_id)
+	site_access_code varchar not null,
+  auth_token varchar not null,
+	date_uploaded varchar not null,
+	filename varchar not null,
+	identifier varchar not null,
+	total_size varchar not null
 );
 
 

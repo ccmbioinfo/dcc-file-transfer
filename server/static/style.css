@@ -104,10 +104,7 @@ a.menu-item {
 .collapsed {
     display: none;
 }
-.add-files, 
-.edit-table-sample-name, 
-.remove-sample,
-.sample-collapse {
+.add-files, .edit-sample-metadata, .edit-table-sample-name, .remove-sample, .sample-collapse, .remove-file, .edit-file {
     padding-left: 5px;
 }
 .edit-disabled,
@@ -189,8 +186,10 @@ input.error {
     font-style:italic;
     margin-top:40px;
 }
+.resumable-modal-drop,
 .resumable-drop {
     padding: 60px 0;
+    margin-top: 20px;
     font-size:16px;
     text-align:center;
     font-weight:bold;
@@ -198,7 +197,8 @@ input.error {
     border:2px dashed #aaa;
     border-radius:10px;
     z-index:9999;
-    display:none;
+    display: none;
+    width: 89%;
 }
 .resumable-dragover {
     color: white;

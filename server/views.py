@@ -118,7 +118,7 @@ def resumable_upload():
             os.remove(chunk_filename)
             return make_response(jsonify({'message': 'Error: BAM file appears to be truncated'}), 415)
 
-    if len(all_chunks) == int(total_chunks):
+    if len(all_chunks) == int(total_chunks) and not os.path.isfile(os.path.join(temp_dir, filename)):
         merge_chunks(all_chunks, filename)
 
         if filename.lower().endswith(".gz") and not gzip_test(os.path.join(temp_dir, filename)):
@@ -126,8 +126,17 @@ def resumable_upload():
             return make_response(jsonify({'message': 'Error: GZIP file appears to be truncated'}), 415)
 
         # add file to database TODO associate file with user/owner and include file metadata
-        # g.db.execute('insert into files (filename) values ("%s")' % filename)
-        # g.db.commit()
+        current_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
+        site_access_code = g.db.execute('select site_access_code from access where auth_token = "%s"' % auth_token).fetchone()[0]
+
+        g.db.execute('insert into files (site_access_code,auth_token,date_uploaded,filename,identifier,total_size) '
+                     'values ("%s","%s","%s","%s","%s","%s")' % (site_access_code,
+                                                                 auth_token,
+                                                                 current_date,
+                                                                 filename,
+                                                                 identifier,
+                                                                 total_size))
+        g.db.commit()
         return make_response(jsonify({'Download complete': 'Successfully received file'}), 200)
 
     return make_response(jsonify({'Download complete': 'Successfully received chunk'}), 200)

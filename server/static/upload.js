@@ -11,13 +11,13 @@ $(function () {
         query: getExtraParams,
         permanentErrors: [400, 403, 404, 415, 500, 501]
     });
-    r.assignDrop($('.resumable-drop'));
+    r.assignDrop($('.resumable-drop, .resumable-modal-drop'));
     r.assignBrowse($('.resumable-browse'));
     r.on('fileAdded', function (file) {
         // Ensures that sample header is written once
-        if ($('tbody[name="'+$('#sample-text').val()+'"]').length === 0 && $('#sample-text').val() !== "") {
+        if ($('tbody[name="'+$('#sampleName').val()+'"]').length === 0 && $('#sampleName').val() !== "") {
             // Add the sample header
-            sampleName = $('#sample-text').val();
+            sampleName = $('#sampleName').val();
             var sampleTemplate = $('.sample-header-template').first().clone();
             sampleTemplate.find('.sample-name').html(sampleName);
             sampleTemplate.wrap('<tbody></tbody>');
@@ -26,11 +26,10 @@ $(function () {
             sampleTemplate.show();
             r.assignBrowse(sampleTemplate.find('.resumable-add'));
         }
-        // Show the sample table
-        $('.resumable-drop').hide();
-        $('.add-sample-button').show();
-        $('.cancel-sample-button').hide();
-
+        // If modal open, then capture sampleName from sample-modal form
+        if ($('#sample-modal').hasClass('in')) {
+            sampleName = $('#sampleName').val();
+        }
         var fileTemplate = $('.sample-file-template').first().clone();
         fileTemplate.attr('id', file.uniqueIdentifier);
         fileTemplate.find('.file-name').html(file.fileName);
@@ -53,20 +52,27 @@ $(function () {
                 break;
             }
         }
+        fileTemplate.find('.readset').text($('#readset').val());
         if (metadataRequired === false) {
             fileTemplate.find('.file-type>button').html('Other'+'<span class="caret"></span>').addClass('selection-made');
-            fileTemplate.find('.library').addClass('edit-disabled').text('');
-            fileTemplate.find('.run-type').addClass('edit-disabled').find('button').addClass('no-selection disabled').text('');
-            fileTemplate.find('.platform').addClass('edit-disabled').find('button').addClass('no-selection disabled').text('');
-            fileTemplate.find('.capture-kit').addClass('edit-disabled').find('button').addClass('no-selection disabled').text('');
+            fileTemplate.find('.library, .run-type, .platform, .capture-kit').addClass('edit-disabled').find('button').addClass('no-selection disabled').text('');
+        } else {
+            fileTemplate.find('.library').text($('#libraryName').val());
+            fileTemplate.find('.run-type, .platform, .capture-kit').addClass('edit-disabled');
+            fileTemplate.find('.run-type, .platform, .capture-kit').find('button').addClass('selection-made');
+            fileTemplate.find('.run-type').find('button').html($('.run-type-selection').find("option:selected").text()+'<span class="caret"></span>');
+            fileTemplate.find('.platform').find('button').html($('.platform-selection').find("option:selected").text()+'<span class="caret"></span>');
+            fileTemplate.find('.capture-kit').find('button').html($('.capture-kit-selection').find("option:selected").text()+'<span class="caret"></span>');
         }
         fileTemplate.show();
 
         // Wait until all files have been added before clearing the sample name
         if ($('.sample-file-template').length == r.files.length+1) {
-            $('#sample-text').val('');
+            $('#sampleName').val('').closest('.form-group').addClass('has-error');
         }
         checkUploadReady();
+        $('#sample-modal').modal('hide');
+        $('.resumable-modal-drop').hide();
     });
     r.on('fileProgress', function (file) {
         var progress = getFileProgressElt(file);
@@ -116,19 +122,19 @@ $(function () {
         //populate the DCC table with files and empty the upload table?
     });
 
-    $('.resumable-drop').on('dragenter', function() {
+    $('.resumable-drop, .resumable-modal-drop').on('dragenter', function() {
         $(this).addClass('resumable-dragover').find('span').css('pointer-events','none');
         $(this).find('.resumable-browse').css('pointer-events','none');
     });
-    $('.resumable-drop').on('dragleave', function() {
+    $('.resumable-drop, .resumable-modal-drop').on('dragleave', function() {
         $(this).removeClass('resumable-dragover').find('span').css('pointer-events','auto');
         $(this).find('.resumable-browse').css('pointer-events','auto');
     });
-    $('.resumable-drop').on('dragend', function() {
+    $('.resumable-drop, .resumable-modal-drop').on('dragend', function() {
         $(this).removeClass('resumable-dragover');
         $(this).find('.resumable-browse').css('pointer-events','auto');
     });
-    $('.resumable-drop').on('drop', function() {
+    $('.resumable-drop, .resumable-modal-drop').on('drop', function() {
         $(this).removeClass('resumable-dragover');
         $(this).find('.resumable-browse').css('pointer-events','auto');
     });
@@ -191,6 +197,17 @@ $(function () {
         }
         return false;
     });
+    $('#sampleName, #readset').change(function (e) {
+        if ($(this).val().length > 0) {
+            $(this).closest('.form-group').removeClass('has-error');
+        } else {
+            $(this).closest('.form-group').addClass('has-error');
+            $('.resumable-modal-drop').hide();
+        }
+        if ($('#sampleName').val().length > 0 && $('#readset').val().length > 0) {
+            $('.resumable-modal-drop').show();
+        }
+    });
 
     // Cancel sample will clear/hide the sample name and hide the drop area
     $('.cancel-sample-button').on('click', function (e) {
@@ -237,7 +254,8 @@ $(function () {
         checkUploadReady();
     });
     $('.table-data').on('validate', 'td', function(evt, newValue) {
-        if (newValue === '') {
+        //ignore library field here since it is optional
+        if (newValue === '' && !$(this).hasClass('library')) {
             return false; // mark cell as invalid
         }
     });
@@ -278,7 +296,7 @@ $(function () {
         $(this).closest('td').find('button').html(item+'<span class="caret"></span>').addClass('selection-made');
         // For changes to the file-type, adjust other metadata options accordingly
         if ($(this).closest('td').hasClass('file-type') && (item === 'BAM/SAM' || item === 'FASTQ')) {
-            $(this).closest('tr').find('.library').removeClass('edit-disabled').html('* '+'<em>Required</em>');
+            $(this).closest('tr').find('.library').removeClass('edit-disabled').text('');
             $(this).closest('tr').find('.run-type>button, .platform>button, .capture-kit>button')
                 .removeClass('no-selection selection-made disabled')
                 .html('Select'+'<span class="caret"></span>');

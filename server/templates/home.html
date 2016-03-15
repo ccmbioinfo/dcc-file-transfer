@@ -44,29 +44,12 @@
                         Indicate that in the event the download is interrupted, the partial
                         file will continue where it was left off.
                     </p>
-                    <form class="form-horizontal sample-name-form col-sm-12 col-xs-12">
-                        <div class="form-group">
-                            <label for="sample-text" class="control-label">Sample name</label>
-                            <div class="input-group">
-                                <input id="sample-text" type="text" name="sampleName" class="form-control"
-                                       placeholder="Please enter a sample name">
-                                    <span class="input-group-addon btn btn-success active add-sample-button">
-                                        <span class="glyphicon glyphicon-plus" data-toggle="tooltip"
-                                              title="Add a new sample"></span>
-                                        Add Sample
-                                    </span>
-                                    <span class="input-group-addon btn btn-danger active cancel-sample-button">
-                                        <span class="glyphicon glyphicon-remove" data-toggle="tooltip"
-                                              title="Cancel sample creation"></span>
-                                        Cancel
-                                    </span>
-                            </div>
-                        </div>
-                    </form>
-                    <div class="resumable-drop col-sm-12 col-xs-12">
-                        <span>Drop files here or</span>
-                        <a class="resumable-browse btn btn-default">Browse your computer</a>
-                    </div>
+                    <button class="btn btn-success active pull-right modal-add-sample-button"
+                            data-toggle="modal"
+                            data-target="#sample-modal">
+                        <span class="glyphicon glyphicon-plus" data-toggle="tooltip" title="Add a new sample"></span>
+                        Add Sample
+                    </button>
                 </div>
                 <table class="table table-condensed table-data collapsed">
                     <thead>
@@ -89,9 +72,9 @@
                         <td class="sample-name"></td>
                         <td class="sample-collapse edit-disabled" colspan="7"></td>
                         <td class="sample-option edit-disabled">
-                             <span class="option-icon edit-sample-metadata glyphicon glyphicon-list-alt"
+                             <span class="option-icon edit-sample-metadata glyphicon glyphicon-pencil"
                                    data-toggle="modal"
-                                   data-target="#sample-modal"
+                                   data-target=""
                                    title="Edit metadata for entire sample"></span>
                             <span class="option-icon resumable-add add-files glyphicon glyphicon-plus"
                                   data-toggle="tooltip"
@@ -115,22 +98,20 @@
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other</a></li>
                             </ul>
                         </td>
-                        <td class="readset">* <em>Required</em></td>
-                        <td class="library">* <em>Required</em></td>
-                        <td class="run-type edit-disabled dropdown">
-                            <button id="run-type-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
+                        <td class="readset"></td>
+                        <td class="library"></td>
+                        <td class="run-type edit-disabled dropdown"><button id="run-type-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
                                aria-haspopup="true" aria-expanded="true">
                                 Select <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="run-type-menu">
-                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Paired end</a></li>
-                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Single end</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Single End</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Paired End</a></li>
                                 <li role="presentation" class="divider"></li>
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">N/A</a></li>
                             </ul>
                         </td>
-                        <td class="platform edit-disabled dropdown">
-                            <button id="platform-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
+                        <td class="platform edit-disabled dropdown"><button id="platform-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
                                aria-haspopup="true" aria-expanded="true">
                                 Select <span class="caret"></span>
                             </button>
@@ -140,19 +121,19 @@
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">SOLiDv4</a></li>
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">PacBio</a></li>
                                 <li role="presentation" class="divider"></li>
-                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">N/A</a></li>
                             </ul>
                         </td>
-                        <td class="capture-kit edit-disabled dropdown">
-                            <button id="capture-kit-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
+                        <td class="capture-kit edit-disabled dropdown"><button id="capture-kit-menu" class="btn dropdown-toggle" href="" data-toggle="dropdown" role="button"
                                aria-haspopup="true" aria-expanded="true">
                                 Select <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="capture-kit-menu">
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Agilent SureSelect V3</a></li>
                                 <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Agilent SureSelect V4</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Agilent SureSelect V5</a></li>
                                 <li role="presentation" class="divider"></li>
-                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">Other</a></li>
+                                <li role="presentation"><a class="menu-item" role="menuitem" tabindex="-1">N/A</a></li>
                             </ul>
                         </td>
                         <td class="progress edit-disabled">
@@ -182,14 +163,75 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Sample Name</h4>
+                        <h4 class="modal-title">Sample Metadata</h4>
                     </div>
                     <div class="modal-body">
-                        <p>Metadata Options to go here</p>
+                        <form class="form-horizontal modal-sample-form">
+                            <p>
+                                Please specify all applicable metadata for the sample you wish to upload. You may
+                                also alter sample and individual metadata options after attaching your files.
+                            </p>
+                            <div class="form-group has-error">
+                                <label for="sampleName" class="col-sm-3 control-label">Sample Name</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="sampleName" placeholder="Sample name">
+                                </div>
+                            </div>
+                            <div class="form-group has-error">
+                                <label for="readset" class="col-sm-3 control-label">Readset</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="readset" placeholder="Readset name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="libraryName" class="col-sm-3 control-label">Library Name</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="libraryName" placeholder="Library name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Run Type</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control run-type-selection">
+                                        <option>Single End</option>
+                                        <option>Paired End</option>
+                                        <option selected>N/A</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Platform</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control platform-selection">
+                                        <option>Illumina HiSeq</option>
+                                        <option>Illumina X10</option>
+                                        <option>SOLiDv4</option>
+                                        <option>PacBio</option>
+                                        <option selected>N/A</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Capture Kit</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control capture-kit-selection">
+                                        <option>Agilent SureSelect V3</option>
+                                        <option>Agilent SureSelect V4</option>
+                                        <option>Agilent SureSelect V5</option>
+                                        <option selected>N/A</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="resumable-modal-drop col-sm-10 col-sm-offset-1">
+                                    <span>Drop files here or</span>
+                                    <a class="resumable-browse btn btn-default">Browse your computer</a>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>
