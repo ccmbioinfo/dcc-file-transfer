@@ -3,6 +3,17 @@
 
 ## Quickstart
 
+### Initialize the database
+Initialize the database according to schema.sql:
+```
+$ python 
+>>> from server import database
+>>> database.init()
+```
+
+### Generate a Transfer Code
+
+
 ### Start up the server
 Start up the server in one console:
 ```
