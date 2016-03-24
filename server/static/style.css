@@ -20,14 +20,34 @@ h4 {font-size:14px; font-weight:bold;}
 h5 {font-size:12px; font-weight:bold;}
 p {margin:10px 0;}
 th, tr, td, p {text-align: left;}
-body {text-align:center; margin:40px;}
+body {text-align:center;margin:40px;}
 #frame {margin:0 auto; width:800px; text-align:left;}
 
+.dcc-table,
+.sample-table,
+.sample-file-template,
+.sample-header-template,
+.cancel-upload,
+.pause-upload,
+.resume-upload {
+    display:none;
+}
+
+/* Transfer code input */
+.input-group-addon.btn {
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+.input-group-addon.btn:hover {
+    color: #fff;
+    background-color: #286090;
+    border-color: #204d74;
+}
+
 /* Table properties */
-.dcc-table, .sample-table, .sample-file-template, .sample-header-template {display:none;}
 .panel, .auth-token-form {
     margin-top: 30px;
-    min-width: 1000px;
 }
 .panel-heading {
     font-size: 16px;
@@ -51,11 +71,13 @@ th {
 }
 .table>thead>tr>th:nth-child(2),
 .table>tbody>tr>td:nth-child(2) {
-    min-width: 223px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .table>tbody>tr>.option,
 .table>tbody>tr>.sample-option,
-.table>thead>tr>th:nth-child(9) {
+.table>thead>tr>th:nth-child(10) {
     text-align:right;
     padding-right: 20px;
 }
@@ -87,7 +109,8 @@ td.sample-collapse,
 td.sample-collapse:focus,
 .sample-collapse,
 .option-icon,
-a.menu-item {
+a.menu-item,
+.edit-checkbox {
     cursor: pointer;
 }
 .option {font-size: 10px;}
@@ -95,8 +118,8 @@ a.menu-item {
 .form-group .control-label {
     margin-bottom: 5px;
 }
-.sample-table td:nth-child(9),
-.sample-table th:nth-child(9) {
+.sample-table td:nth-child(10),
+.sample-table th:nth-child(10) {
     padding-right: 10px;
     width: 100px;
     display: none;
@@ -104,7 +127,13 @@ a.menu-item {
 .collapsed {
     display: none;
 }
-.add-files, .edit-sample-metadata, .edit-table-sample-name, .remove-sample, .sample-collapse, .remove-file, .edit-file {
+.add-files,
+.edit-sample-metadata,
+.edit-table-sample-name,
+.remove-sample,
+.sample-collapse,
+.remove-file,
+.edit-file {
     padding-left: 5px;
 }
 .edit-disabled,
@@ -141,6 +170,66 @@ input.error {
     margin-top: 6px;
     margin-right: 6px;
 }
+.readset-input,
+.library-input {
+    font-size: 12px;
+    height: 20px;
+}
+.twitter-typeahead {
+    width: 100%;
+}
+.typeahead,
+.tt-query,
+.tt-hint {
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+}
+.typeahead:focus {
+    border-color: #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+}
+.tt-hint {
+    color: #999;
+}
+.tt-hint[readonly] {
+    background-color: white !important;
+}
+.tt-hint[readonly][disabled] {
+    background-color: #eee !important;
+}
+.tt-input {
+    background-color: transparent !important;
+}
+.tt-input[disabled] {
+    background-color: #eee !important;
+}
+.tt-menu {
+    width: 100%;
+    margin: 2px 0;
+    padding: 8px 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: left;
+}
+.tt-suggestion {
+  padding: 3px 20px;
+  font-size: 14px;
+}
+.tt-suggestion:hover {
+  cursor: pointer;
+  color: white;
+  background-color: #31b0d5;
+}
+.tt-suggestion.tt-cursor {
+  color: #fff;
+  background-color: #31b0d5;
+}
 
 /* Auth token form */
 .auth-token-form, .sample-name-form {
@@ -148,12 +237,21 @@ input.error {
     font-size: 15px;
     text-align: left;
 }
-.auth-success {
+.auth-success, .auth-success:hover {
     color: white;
+}
+.auth-success.login.label-warning,
+.auth-success.login.label-danger {
+    pointer-events: none;
 }
 #auth-token, #sample-name {
     text-align: left;
     font-size: 15px;
+}
+.logout {
+    margin-top: 68px;
+    padding: 0;
+    display: none;
 }
 
 /* Add Sample */
@@ -164,10 +262,14 @@ input.error {
 .panel .input-group .btn  {
     border-radius: 0px 4px 4px 0px;
 }
-.upload-sample-button {
+.upload-sample-button,
+.resume-upload,
+.pause-upload {
     width: 120px;
-    }
-.cancel-sample-button {display: none;}
+}
+.cancel-upload {
+    margin-right: 10px;
+}
 .sample-name-form {
     margin-top: 20px;
 }
@@ -186,8 +288,7 @@ input.error {
     font-style:italic;
     margin-top:40px;
 }
-.resumable-modal-drop,
-.resumable-drop {
+.resumable-modal-drop {
     padding: 60px 0;
     margin-top: 20px;
     font-size:16px;
@@ -198,7 +299,6 @@ input.error {
     border-radius:10px;
     z-index:9999;
     display: none;
-    width: 89%;
 }
 .resumable-dragover {
     color: white;
@@ -207,6 +307,17 @@ input.error {
 }
 .resumable-browse u {
     cursor: pointer;
+}
+
+/* Edit Sample Modal*/
+.edit-checkbox {
+    margin-top: 8px;
+}
+
+/* Edit File Modal */
+.form-group>.file-name-title {
+    text-align: center;
+    font-weight: normal;
 }
 
 /* Uploader: Progress bar */
@@ -243,6 +354,7 @@ input.error {
     transition: width .2s ease;
     color: black;
 }
+
 .progress-controls {
     float: right;
     padding-left: 15px;

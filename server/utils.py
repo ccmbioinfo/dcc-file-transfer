@@ -21,8 +21,11 @@ def bam_test(data):
         return f.read() == bam_eof
 
 
-def get_tempdir(identifier):
-    return os.path.join(app.config['UPLOAD_FOLDER'], identifier)
+def get_tempdir(*args):
+    path = app.config['UPLOAD_FOLDER']
+    for subdir in list(args):
+        path = os.path.join(path, subdir)
+    return path
 
 
 def get_chunk_filename(temp_dir, filename, chunk_number):
@@ -50,21 +53,32 @@ def merge_chunks(in_paths, out_filename):
     in_paths.sort()
     out_dir = os.path.dirname(os.path.realpath(in_paths[0]))
     out_filepath = os.path.join(out_dir, out_filename)
-    with open(out_filepath, 'wb') as OUTPUT:
-        for chunk_path in in_paths:
-            with open(chunk_path, 'rb') as INPUT:
-                OUTPUT.write(INPUT.read())
-
-    app.logger.debug('Merged %s files -> %s', len(in_paths), out_filepath)
+    try:
+        with open(out_filepath, 'wb') as OUTPUT:
+            for chunk_path in in_paths:
+                with open(chunk_path, 'rb') as INPUT:
+                    OUTPUT.write(INPUT.read())
+        app.logger.debug('Merged %s files -> %s', len(in_paths), out_filepath)
+        # Indicate that file merged successfully
+        return True
+    except IOError:
+        # TODO: handle other types of potential errors here?
+        os.remove(out_filepath)
+        return False
 
 
 def valid_auth_token(auth_token):
     current_time = datetime.datetime.today()
-    expiry_date = g.db.execute('select date_expired from access where auth_token = "%s"' % auth_token).fetchone()
-
+    expiry_date = g.db.execute('select date_expired from access where auth_token=?',(auth_token,)).fetchone()
     if expiry_date:
         expiry_date = datetime.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
         if current_time <= expiry_date:
             return True
-
     return False
+
+
+def remove_from_uploads(tempdir):
+    all_chunks = os.listdir(tempdir)
+    for chunk in all_chunks:
+        os.remove(os.path.join(tempdir, chunk))
+    os.rmdir(tempdir)
