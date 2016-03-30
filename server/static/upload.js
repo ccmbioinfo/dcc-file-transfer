@@ -30,9 +30,11 @@ $(function () {
                 // Add the sample header
                 var sampleTemplate = $('.sample-header-template').first().clone();
                 sampleTemplate.find('.sample-name').html(sampleName);
-                sampleTemplate.wrap('<tbody></tbody>');
-                sampleTemplate.parent().attr('name', sampleName);
-                $('.table-data').append(sampleTemplate.parent());
+                sampleTemplate
+                    .wrap('<tbody></tbody>')
+                    .parent()
+                    .attr('name', sampleName)
+                    .appendTo($('.table-data'));
                 sampleTemplate.show();
                 r.assignBrowse(sampleTemplate.find('.resumable-add'));
             }
@@ -149,26 +151,32 @@ $(function () {
     }
 
     function createFileRow(file, sampleName) {
+        var sampleTable = $('tbody[name="' + sampleName + '"]');
         var fileTemplate = $('.sample-file-template').first().clone();
-        fileTemplate.attr('id', file.uniqueIdentifier);
-        fileTemplate.find('.file-name').html(file.fileName);
-        fileTemplate.find('.progress-bar');
-        $('tbody[name="' + sampleName + '"]').append(fileTemplate);
-        if ($('tbody[name="' + sampleName + '"]').find('tr').hasClass('files-collapsed') === true) {
+        fileTemplate
+            .attr('id', file.uniqueIdentifier)
+            .find('.file-name')
+            .html(file.fileName);
+
+        sampleTable.append(fileTemplate);
+        if (sampleTable.find('tr').hasClass('files-collapsed')) {
             fileTemplate.addClass('collapsed');
         }
         // Check for file type to determine whether metadata options should be shown
         var fileType = 'Other';
-        var fileTypes = ['.bam','.sam','.fastq','.fq', '.vcf'];
-        for (var i = 0; i < fileTypes.length; i++) {
-            if (file.fileName.toLowerCase().indexOf(fileTypes[i]) > -1) {
-                if (i<2){
-                    fileType = 'BAM/SAM';
-                } else if (i === 4) {
-                    fileType = 'VCF';
-                } else {
-                    fileType = 'FASTQ';
-                }
+        var fileTypes = {'.bam': 'BAM/SAM',
+                         '.sam': 'BAM/SAM',
+                         '.sam.gz': 'BAM/SAM',
+                         '.fastq': 'FASTQ',
+                         '.fastq.gz': 'FASTQ',
+                         '.fq': 'FASTQ',
+                         '.fq.gz': 'FASTQ',
+                         '.vcf': 'VCF',
+                         '.vcf.gz': 'VCF'};
+        for (var ext in fileTypes) {
+            if (fileTypes.hasOwnProperty(ext) &&
+                file.fileName.toLowerCase().indexOf(ext) > -1) {
+                fileType = fileTypes[ext];
             }
         }
         fileTemplate.find('.file-type').text(fileType);
@@ -194,11 +202,7 @@ $(function () {
     }
 
     function checkUploadReady() {
-        if (r.files.length > 0) {
-            $('.upload-sample-button').removeClass('disabled');
-        } else {
-            $('.upload-sample-button').addClass('disabled');
-        }
+        $('.upload-sample-button').toggleClass('disabled', r.files.length === 0);
     }
 
     var substringMatcher = function(strs) {
@@ -335,59 +339,47 @@ $(function () {
         $('#edit-sample-name').val(currentName);
     });
     $('#edit-sample-name, #edit-readset, #edit-library').on('input', function (e) {
-        if (/^[A-Z\d\-_]+$/i.test($('#edit-sample-name').val()) &&
-            /^[A-Z\d\-_]*$/i.test($('#edit-readset').val()) &&
-            /^[A-Z\d\-_]*$/i.test($('#edit-library').val())) {
-            $('.save-edit-sample').prop('disabled', false);
-        } else {
-            $('.save-edit-sample').prop('disabled', true);
-        }
-        if (/^[A-Z\d\-_]+$/i.test($('#edit-sample-name').val())) {
-            $('#edit-sample-name').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-sample-name').closest('.form-group').addClass('has-error');
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-readset').val())) {
-            $('#edit-readset').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-readset').closest('.form-group').addClass('has-error');
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-library').val())) {
-            $('#edit-library').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-library').closest('.form-group').addClass('has-error');
-        }
+        var saveEnabled = reSampleName.test($('#edit-sample-name').val()) &&
+            reReadset.test($('#edit-readset').val()) &&
+            reLibrary.test($('#edit-library').val());
+        $('.save-edit-sample').prop('disabled', !saveEnabled);
+
+        $('#edit-sample-name')
+            .closest('.form-group')
+            .toggleClass('has-error', !reSampleName.test($('#edit-sample-name').val()));
+
+        $('#edit-readset')
+            .closest('.form-group')
+            .toggleClass('has-error', !reReadset.test($('#edit-readset').val()))
+
+        $('#edit-library')
+            .closest('.form-group')
+            .toggleClass('has-error', !reLibrary.test($('#edit-library').val()));
     });
+
     $('body').on('click', '.save-edit-sample', function (e) {
         var newName = $('#edit-sample-name').val();
         sampleRow.closest('tbody').attr('name', newName).find('.sample-name').text(newName);
         var fileRows = sampleRow.nextUntil();
-        fileRows.each(function (i, row) {
-            var fileType = $(row).find('.file-type').text();
-            if ($('#edit-readset').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-readset').text($('#edit-readset').val());
-                }
+        fileRows.each(function (i) {
+            var fileType = $(this).find('.file-type').text();
+            var fieldNames = ['readset'];
             if (fileType !== 'Other') {
-                if ($('#edit-platform').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-platform').text($('#edit-platform').val());
-                }
-                if ($('#edit-run-type').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-run-type').text($('#edit-run-type').val());
-                }
-                if ($('#edit-capture-kit').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-capture-kit').text($('#edit-capture-kit').val());
-                }
-                if ($('#edit-library').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-library').text($('#edit-library').val());
-                }
+                fieldNames.push('platform', 'run-type', 'capture-kit', 'library');
             }
             if (fileType === 'BAM/SAM' || fileType === 'VCF') {
-                if ($('#edit-reference').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-reference').text($('#edit-reference').val());
+                fieldNames.push('reference');
+            }
+
+            for (var i = 0; i < fieldNames.length; i++) {
+                var fieldName = fieldNames[i];
+                if ($('#edit-' + fieldName).closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
+                    $(this).find('.file-' + fieldName).text($('#edit-' + fieldName).val());
                 }
             }
         });
         $('#edit-sample-modal').modal('hide');
+        return false;
     });
     $('body').on('click', '.cancel-edit-sample', function (e) {
         // remove error on sample name so it won't linger when edit sample is clicked again
@@ -443,22 +435,15 @@ $(function () {
     });
 
     $('#edit-single-readset, #edit-single-library').on('input', function (e) {
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-single-readset').val()) &&
-            /^[A-Z\d\-_]*$/i.test($('#edit-single-library').val())) {
-            $('.save-edit-file').prop('disabled', false);
-        } else {
-            $('.save-edit-file').prop('disabled', true);
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-single-readset').val())) {
-            $('#edit-single-readset').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-single-readset').closest('.form-group').addClass('has-error');
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-single-library').val())) {
-            $('#edit-single-library').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-single-library').closest('.form-group').addClass('has-error');
-        }
+        var saveEnabled = reReadset.test($('#edit-single-readset').val()) &&
+            reLibrary.test($('#edit-single-library').val());
+        $('.save-edit-file').prop('disabled', !saveEnabled);
+        $('#edit-single-readset')
+            .closest('.form-group')
+            .toggleClass('has-error', !reReadset.test($('#edit-single-readset').val()));
+        $('#edit-single-library')
+            .closest('.form-group')
+            .toggleClass('has-error', !reLibrary.test($('#edit-single-library').val()));
     });
 
     $('body').on('click', '.save-edit-file', function (e) {
@@ -492,7 +477,6 @@ $(function () {
 
     // Collapse samples
     $('.table-data').on('click', '.sample-collapse', function (e){
-        var triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
         var fileRows = $(this).closest('tr').nextUntil('.sample-header-template');
         fileRows.each(function (i, value) {
             if ($(value).hasClass('collapsed')) {
@@ -501,12 +485,15 @@ $(function () {
                 $(value).addClass('collapsed').css('display','none');
             }
         });
-        if ($(this).closest('tr').hasClass('files-collapsed') === true) {
-            $(this).closest('tr').removeClass('files-collapsed');
-            $(triangle).removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
+
+        var triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
+        var sampleRow = $(this).closest('tr');
+        if (sampleRow.hasClass('files-collapsed')) {
+            sampleRow.removeClass('files-collapsed');
+            triangle.removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
         } else {
-            $(this).closest('tr').addClass('files-collapsed');
-            $(triangle).removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
+            sampleRow.addClass('files-collapsed');
+            triangle.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
         }
     });
 
@@ -524,17 +511,22 @@ $(function () {
         }
     });
 
+    function resetSession() {
+        $('.pause-upload, .resume-upload, .cancel-upload').hide();
+        $('.upload-sample-button').show();
+        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
+        //hide the options column and show the status column
+        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
+        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
+        $('.sample-option').removeClass('disabled');
+    }
+
     // Cancel uploading files
     $('body').on('click', '.cancel-upload', function (e){
         for (var i = 0; i < r.files.length; i++) {
             r.files[i].abort();
         }
-        $('.pause-upload, .resume-upload, .cancel-upload').hide();
-        $('.upload-sample-button').show();
-        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
-        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
-        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-        $('.sample-option').removeClass('disabled');
+        resetSession();
     });
 
     // Pause uploading files
@@ -554,13 +546,9 @@ $(function () {
         for (var i = 0; i < r.files.length; i++) {
             r.removeFile(r.files[i]);
         }
+        resetSession();
         $('tbody:first').nextUntil().remove();
-        $('.pause-upload, .resume-upload, .cancel-upload').hide();
-        $('.upload-sample-button').show().addClass('disabled');
-        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
-        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
-        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-        $('.sample-option').removeClass('disabled');
+        $('.upload-sample-button').addClass('disabled');
         $('#upload-complete-modal').modal('hide');
     });
 
