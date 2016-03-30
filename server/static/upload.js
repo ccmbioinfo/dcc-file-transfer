@@ -379,7 +379,6 @@ $(function () {
             }
         });
         $('#edit-sample-modal').modal('hide');
-        return false;
     });
     $('body').on('click', '.cancel-edit-sample', function (e) {
         // remove error on sample name so it won't linger when edit sample is clicked again
