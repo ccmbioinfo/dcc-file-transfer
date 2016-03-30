@@ -7,7 +7,8 @@ from flask import jsonify, make_response, request, g, render_template
 
 from server import app
 from .database import connect_db
-from .utils import valid_auth_token, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks, remove_from_uploads
+from .utils import valid_auth_token, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks, \
+    remove_from_uploads, check_cancelled_status, update_files_table
 
 INVALID_AUTH_TOKEN_MSG = 'Error: Invalid transfer code'
 
@@ -89,56 +90,55 @@ def resumable_info():
 
 @app.route("/upload", methods=['POST'])
 def resumable_upload():
-    chunk_number = request.form.get('resumableChunkNumber', type=int)
-    total_chunks = request.form.get('resumableTotalChunks', type=int)
-    chunk_size = request.form.get('resumableChunkSize', type=int)
-    total_size = request.form.get('resumableTotalSize', type=int)
-    identifier = request.form.get('resumableIdentifier', type=str)
-    filename = request.form.get('resumableFilename', type=str)
-    auth_token = request.form.get('authToken', type=str, default='')
-
-    # File metadata
-    sample_name = request.form.get('sampleName', type=str, default='')
-    file_type = request.form.get('fileType', type=str, default='')
-    read_set = request.form.get('readset', type=str, default='')
-    library = request.form.get('library', type=str, default='')
-    run_type = request.form.get('runType', type=str, default='')
-    platform = request.form.get('platform', type=str, default='')
-    capture_kit = request.form.get('captureKit', type=str, default='')
-    reference = request.form.get('reference', type=str, default='')
+    form_dict = {
+        'chunk_number': request.form.get('resumableChunkNumber', type=int),
+        'total_chunks': request.form.get('resumableTotalChunks', type=int),
+        'chunk_size': request.form.get('resumableChunkSize', type=int),
+        'total_size': request.form.get('resumableTotalSize', type=int),
+        'identifier': request.form.get('resumableIdentifier', type=str),
+        'filename': request.form.get('resumableFilename', type=str),
+        'auth_token': request.form.get('authToken', type=str, default=''),
+        'sample_name': request.form.get('sampleName', type=str, default=''),
+        'file_type': request.form.get('fileType', type=str, default=''),
+        'readset': request.form.get('readset', type=str, default=''),
+        'library': request.form.get('library', type=str, default=''),
+        'run_type': request.form.get('runType', type=str, default=''),
+        'platform': request.form.get('platform', type=str, default=''),
+        'capture_kit': request.form.get('captureKit', type=str, default=''),
+        'reference': request.form.get('reference', type=str, default=''),
+    }
 
     # Check for missing or invalid parameters
-    if not all([identifier, filename, chunk_number, chunk_size, total_chunks, total_size]):
+    if not all([form_dict['identifier'],
+                form_dict['filename'],
+                form_dict['chunk_number'],
+                form_dict['chunk_size'],
+                form_dict['total_chunks'],
+                form_dict['total_size']]):
         return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
 
-    if not valid_auth_token(auth_token):
+    # Check for valid auth-token
+    if not valid_auth_token(form_dict['auth_token']):
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
-    # TODO: Check db to see if the file identifier has status cancelled in FILES table, ensure identifier is UNIQUE
-        # Create a temp directory using the unique identifier for the file
-    temp_dir = get_tempdir(auth_token, identifier)
-    if not os.path.isdir(temp_dir) \
-            and g.db.execute('select status from files where identifier=?', (identifier,)).fetchone()[0] != 'cancelled':
-        try:
-            os.makedirs(temp_dir, 0777)
-        except OSError:
-            # TODO: handle situation where temporary directory cannot be created on the server
-            pass
-
-        # This is the first chunk, therefore a new upload should be recorded in the db
-        site_access_code = g.db.execute('select site_access_code from access where auth_token=?',(auth_token,)).fetchone()[0]
-        start_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
-        g.db.execute('insert into files (site_access_code,auth_token,identifier,sample_name,filename,total_size,'
-                     'file_type,readset,platform,run_type,capture_kit,library,reference,upload_status,date_upload_start)'
-                     'values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                     (site_access_code,auth_token,identifier,sample_name,filename,total_size,file_type,read_set,
-                      platform,run_type,capture_kit,library,reference,'partial',start_date))
-        g.db.commit()
-
-    chunk_filename = get_chunk_filename(temp_dir, filename, chunk_number)
+    if form_dict['chunk_number'] == 1:
+        # Update the db to indicate the ongoing transfer
+        update_files_table(form_dict)
 
     input_file = request.files['file']
-    if g.db.execute('select status from files where identifier=?', (identifier,)).fetchone()[0] != 'cancelled':
+    temp_dir = get_tempdir(form_dict['auth_token'], form_dict['identifier'])
+    chunk_filename = get_chunk_filename(temp_dir, form_dict['filename'], form_dict['chunk_number'])
+
+    # Check that the upload_status was not changed to cancel before saving the chunk
+    if not check_cancelled_status(form_dict['identifier']):
+        if not os.path.isdir(temp_dir):
+            try:
+                # Create a temp directory using the unique identifier for the file
+                os.makedirs(temp_dir, 0777)
+            except OSError:
+                # TODO: handle situation where temporary directory cannot be created on the server
+                pass
+
         try:
             input_file.save(chunk_filename)
         except IOError:
@@ -146,32 +146,36 @@ def resumable_upload():
             os.remove(chunk_filename)
             return make_response(jsonify({'message': 'Error: Chunk could not be saved'}), 500)
 
-    all_chunks = glob.glob("{}/{}.part*".format(temp_dir, filename))
+    all_chunks = glob.glob("{}/{}.part*".format(temp_dir, form_dict['filename']))
 
     # TODO: check sent file_type for BAM/SAM instead of looking at filename
-    if filename.lower().endswith(".bam") and chunk_number == total_chunks:
+    if form_dict['filename'].lower().endswith(".bam") and form_dict['chunk_number'] == form_dict['total_chunks']:
         if not bam_test(chunk_filename):
             remove_from_uploads(temp_dir)
-            g.db.execute('update files set upload_status="truncated" where identifier=?',(identifier,))
+            g.db.execute('update files set upload_status="truncated" where identifier=?',(form_dict['identifier'],))
             g.db.commit()
             return make_response(jsonify({'message': 'Error: Truncated BAM file'}), 415)
 
     # Merge only when all chunks are downloaded and the file has not yet been created/merged
-    if len(all_chunks) == int(total_chunks) and not os.path.isfile(os.path.join(temp_dir, filename)):
-        if merge_chunks(all_chunks, filename):
-            if filename.lower().endswith(".gz") and not gzip_test(os.path.join(temp_dir, filename)):
+    if len(all_chunks) == int(form_dict['total_chunks']) and \
+            not os.path.isfile(os.path.join(temp_dir, form_dict['filename'])):
+        if merge_chunks(all_chunks, form_dict['filename']):
+            if form_dict['filename'].lower().endswith(".gz") and \
+                    not gzip_test(os.path.join(temp_dir, form_dict['filename'])):
                 remove_from_uploads(temp_dir)
-                g.db.execute('update files set upload_status="truncated" where identifier=?',(identifier,))
+                g.db.execute('update files set upload_status="truncated" where identifier=?',
+                             (form_dict['identifier'],))
                 g.db.commit()
                 return make_response(jsonify({'message': 'Error: Truncated GZIP file'}), 415)
-            elif os.path.getsize(os.path.join(temp_dir, filename)) != total_size:
+            elif os.path.getsize(os.path.join(temp_dir, form_dict['filename'])) != form_dict['total_size']:
                  return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
 
             # Update db on file completion
             # TODO: associate file with user/owner and include file metadata
             current_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
-            g.db.execute('update files set date_upload_end=? where identifier=?',(current_date,identifier))
-            g.db.execute('update files set upload_status="complete" where identifier=?',(identifier,))
+            g.db.execute('update files set date_upload_end=? where identifier=?',
+                         (current_date, form_dict['identifier']))
+            g.db.execute('update files set upload_status="complete" where identifier=?', (form_dict['identifier'],))
             g.db.commit()
             return make_response(jsonify({'Download complete': 'Successfully received file'}), 200)
         else:
@@ -192,7 +196,7 @@ def cancel_upload():
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
     remove_from_uploads(get_tempdir(auth_token, identifier))
-    g.db.execute('update files set upload_status="cancelled" where identifier=?',(identifier,))
+    g.db.execute('update files set upload_status="cancelled" where identifier=?', (identifier,))
     g.db.commit()
 
     return make_response(jsonify({'message': 'Cancel received'}), 200)

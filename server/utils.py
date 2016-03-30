@@ -21,6 +21,14 @@ def bam_test(data):
         return f.read() == bam_eof
 
 
+def check_cancelled_status(identifier):
+    # Check if identifier is in the db
+    if g.db.execute('select exists(select 1 from files where identifier=? LIMIT 1)', (identifier,)).fetchone()[0]:
+        return g.db.execute('select upload_status from files where identifier=?',
+                            (identifier,)).fetchone()[0] == 'cancelled'
+    return False
+
+
 def get_tempdir(*args):
     path = app.config['UPLOAD_FOLDER']
     for subdir in list(args):
@@ -67,9 +75,40 @@ def merge_chunks(in_paths, out_filename):
         return False
 
 
+def update_files_table(form_dict):
+    # Values that need to be inserted/updated in the db
+    update_keys = ['auth_token', 'identifier', 'sample_name', 'filename', 'total_size', 'file_type',
+                   'readset', 'platform', 'run_type', 'capture_kit', 'library', 'reference']
+    update_dict = {
+        'site_access_code': g.db.execute('select site_access_code from access where auth_token=?',
+                                        (form_dict['auth_token'],)).fetchone()[0],
+        'date_upload_start': datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        'upload_status': 'ongoing'
+    }
+
+    for key in update_keys:
+        update_dict[key] = form_dict[key]
+
+    keys = sorted(update_dict)
+    values = [update_dict[key] for key in keys]
+
+    # If the identifier exists, update the metadata
+    if g.db.execute('select exists(select 1 from files where identifier=? LIMIT 1)',
+                    (update_dict['identifier'],)).fetchone()[0]:
+        SQL = 'UPDATE files SET {} WHERE identifier=?'.format(', '.join([key+'=?' for key in keys]))
+        values.append(update_dict['identifier'])
+    else:
+        SQL = 'INSERT INTO files ({}) VALUES ({})'.format(', '.join(keys), ','.join('?' * len(keys)))
+    app.logger.debug(SQL)
+    app.logger.debug(values)
+
+    g.db.execute(SQL, values)
+    g.db.commit()
+
+
 def valid_auth_token(auth_token):
     current_time = datetime.datetime.today()
-    expiry_date = g.db.execute('select date_expired from access where auth_token=?',(auth_token,)).fetchone()
+    expiry_date = g.db.execute('SELECT date_expired FROM access WHERE auth_token=?',(auth_token,)).fetchone()
     if expiry_date:
         expiry_date = datetime.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
         if current_time <= expiry_date:

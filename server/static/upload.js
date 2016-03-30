@@ -1,7 +1,7 @@
 $(function () {
     var reSampleName = /^[A-Z\d\-_]+$/i;
     var reLibrary = /^[A-Z\d\-_]*$/i;
-    var reReadset = /^[A-Z\d\-_]*$/i;
+    var reReadset = reLibrary;
 
     // Create a new resumable object
     var r = new Resumable({
@@ -16,7 +16,7 @@ $(function () {
         permanentErrors: [400, 403, 404, 415, 500, 501]
     });
 
-    r.assignDrop($('.resumable-drop, .resumable-modal-drop'));
+    r.assignDrop($('.resumable-droparea'));
 
     r.assignBrowse($('.resumable-browse'));
 
@@ -85,23 +85,23 @@ $(function () {
         //populate the DCC table with files and empty the upload table?
     });
 
-    $('.resumable-drop, .resumable-modal-drop').on({
-        'dragenter': function() {
-            $(this).addClass('resumable-dragover').find('span').css('pointer-events','none');
-            $(this).find('.resumable-browse').css('pointer-events','none');
-        },
-        'dragleave': function() {
-            $(this).removeClass('resumable-dragover').find('span').css('pointer-events','auto');
-            $(this).find('.resumable-browse').css('pointer-events','auto');
-        },
-        'dragend': function() {
-            $(this).removeClass('resumable-dragover');
-            $(this).find('.resumable-browse').css('pointer-events','auto');
-        },
-        'drop': function() {
-            $(this).removeClass('resumable-dragover');
-            $(this).find('.resumable-browse').css('pointer-events','auto');
-        }
+    function toggleDropArea(toggle) {
+        $(this).toggleClass('resumable-dragging', toggle);
+    }
+
+    function activateDropArea() {
+        toggleDropArea.call(this, true);
+    }
+
+    function deactivateDropArea() {
+        toggleDropArea.call(this, false);
+    }
+
+    $('.resumable-droparea').on({
+        'dragenter': activateDropArea,
+        'dragleave': deactivateDropArea,
+        'dragend': deactivateDropArea,
+        'drop': deactivateDropArea
     });
 
     function createIdentifier(file) {
@@ -199,7 +199,7 @@ $(function () {
         }
         checkUploadReady();
         $('#add-sample-modal').modal('hide');
-        $('.resumable-modal-drop').hide();
+        $('.resumable-droparea').hide();
     }
 
     function checkUploadReady() {
@@ -237,23 +237,30 @@ $(function () {
 
 
     // Submitting a sample name will open the drop area and enable name editing
-    $('#sampleName, #add-library').on('input', function (e) {
-        if (reSampleName.test($('#sampleName').val()) &&
-            reLibrary.test($('#add-library').val())) {
-            $('.resumable-modal-drop').show();
-        } else {
-            $('.resumable-modal-drop').hide();
-        }
-        if (reSampleName.test($('#sampleName').val())) {
-            $('#sampleName').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#sampleName').closest('.form-group').addClass('has-error');
-        }
-        if (reLibrary.test($('#add-library').val())) {
-            $('#add-library').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#add-library').closest('.form-group').addClass('has-error');
-        }
+    function validateField(regex) {
+        var isValid = regex.test($(this).val());
+
+        $(this)
+            .closest('.form-group')
+            .toggleClass('has-error', !isValid);
+
+        $(this).closest('.modal').trigger('fieldValidation');
+    }
+
+    $('.field-sample-name').on('input', function (e) {
+        validateField.call(this, reSampleName);
+    });
+    $('.field-readset').on('input', function (e) {
+        validateField.call(this, reReadset);
+    });
+    $('.field-library').on('input', function (e) {
+        validateField.call(this, reLibrary);
+    });
+    $('#add-sample-modal').on('fieldValidation', function(e) {
+        $('.resumable-droparea').toggle($(this).find('.has-error').length === 0);
+    });
+    $('#edit-sample-modal, #edit-file-modal').on('fieldValidation', function(e) {
+        $('.save-edit-button').prop('disabled', $(this).find('.has-error').length);
     });
 
     // Platform typeahead
@@ -320,7 +327,7 @@ $(function () {
     $('.table-data').on('click', '.add-files', function (e) {
         sampleName = $(this).parents('tr').find('.sample-name').text();
         $('#sampleName').val(sampleName).prop('disabled', true).closest('.form-group').removeClass('has-error');
-        $('.resumable-modal-drop').show();
+        $('.resumable-droparea').show();
     });
 
     // Enable editing of metadata options on entire sample
@@ -350,24 +357,6 @@ $(function () {
             $(modalId).modal('show');
         }
         return false;
-    });
-    $('#edit-sample-name, #edit-readset, #edit-library').on('input', function (e) {
-        var saveEnabled = reSampleName.test($('#edit-sample-name').val()) &&
-            reReadset.test($('#edit-readset').val()) &&
-            reLibrary.test($('#edit-library').val());
-        $('.save-edit-sample').prop('disabled', !saveEnabled);
-
-        $('#edit-sample-name')
-            .closest('.form-group')
-            .toggleClass('has-error', !reSampleName.test($('#edit-sample-name').val()));
-
-        $('#edit-readset')
-            .closest('.form-group')
-            .toggleClass('has-error', !reReadset.test($('#edit-readset').val()))
-
-        $('#edit-library')
-            .closest('.form-group')
-            .toggleClass('has-error', !reLibrary.test($('#edit-library').val()));
     });
 
     $('body').on('click', '.save-edit-sample', function (e) {
@@ -447,17 +436,6 @@ $(function () {
        }
     });
 
-    $('#edit-single-readset, #edit-single-library').on('input', function (e) {
-        var saveEnabled = reReadset.test($('#edit-single-readset').val()) &&
-            reLibrary.test($('#edit-single-library').val());
-        $('.save-edit-file').prop('disabled', !saveEnabled);
-        $('#edit-single-readset')
-            .closest('.form-group')
-            .toggleClass('has-error', !reReadset.test($('#edit-single-readset').val()));
-        $('#edit-single-library')
-            .closest('.form-group')
-            .toggleClass('has-error', !reLibrary.test($('#edit-single-library').val()));
-    });
 
     $('body').on('click', '.save-edit-file', function (e) {
         fileRow.find('.file-type').text($('#edit-single-file-type').val());
@@ -514,7 +492,7 @@ $(function () {
         if (!$(this).hasClass('disabled')) {
             $(this).hide();
             $('.modal-add-sample-button').removeClass('active').addClass('disabled');
-            $('.cancel-upload, .pause-upload').show();
+            $('.cancel-upload, .resume-upload').show();
             //hide the options column and show the status column
             $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
             $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
@@ -525,8 +503,7 @@ $(function () {
     });
 
     function resetSession() {
-        $('.pause-upload, .resume-upload, .cancel-upload').hide();
-        $('.upload-sample-button').show();
+        $('.pause-upload, .cancel-upload').hide();
         $('.modal-add-sample-button').removeClass('disabled').addClass('active');
         //hide the options column and show the status column
         $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
@@ -538,20 +515,28 @@ $(function () {
     $('body').on('click', '.cancel-upload', function (e){
         for (var i = 0; i < r.files.length; i++) {
             r.files[i].abort();
+            $.post('/cancel', {
+                'authToken': $('#auth-token').val(),
+                'resumableIdentifier': r.files[i].uniqueIdentifier
+            })
+
         }
         resetSession();
-    });
-
-    // Pause uploading files
-    $('body').on('click', '.pause-upload', function (e){
-        r.pause();
-        $('.pause-upload, .resume-upload').toggle();
+        $('.resume-upload').removeClass('disabled');
     });
 
     // Resume uploading files
     $('body').on('click', '.resume-upload', function (e){
-        r.upload();
-        $('.pause-upload, .resume-upload').toggle();
+        for (var i = 0; i < r.files.length; i++) {
+            r.files[i].retry();
+        }
+        $(this).addClass('disabled');
+        $('.modal-add-sample-button').removeClass('active').addClass('disabled');
+        $('.cancel-upload, .resume-upload').show();
+        //hide the options column and show the status column
+        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
+        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
+        $('.sample-option, .file-name, .sample-name').addClass('disabled');
     });
 
     // Continue session after completed upload
@@ -560,8 +545,10 @@ $(function () {
             r.removeFile(r.files[i]);
         }
         resetSession();
+
         $('tbody:first').nextUntil().remove();
-        $('.upload-sample-button').addClass('disabled');
+        $('.resume-upload').hide().addClass('disabled');
+        $('.upload-sample-button').show().addClass('disabled');
         $('#upload-complete-modal').modal('hide');
     });
 

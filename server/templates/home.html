@@ -125,9 +125,9 @@
                             data-toggle="tooltip" title="Upload all files to the DCC">
                         <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
                     </button>
-                    <!--button type="button" class="btn btn-primary pull-right resume-upload"
+                    <button type="button" class="btn btn-primary pull-right resume-upload disabled"
                             data-toggle="tooltip" title="Resume upload of all files">
-                        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Resume All</button-->
+                        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All</button>
                     <!--button type="button" class="btn btn-primary pull-right pause-upload"
                             data-toggle="tooltip" title="Pause upload of all files">
                         <span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause All</button-->
@@ -158,17 +158,17 @@
                             <div class="form-group has-error">
                                 <label for="sampleName" class="col-sm-3 control-label">Sample Name *</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control" id="sampleName" placeholder="Sample name">
+                                    <input type="text" class="form-control field-sample-name" id="sampleName" placeholder="Sample name">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Platform</label>
+                                <label for="add-platform" class="col-sm-3 control-label">Platform</label>
                                 <div class="col-sm-9">
                                     <input class="typeahead" id="add-platform" type="text" placeholder="Sequencing platform">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Run Type</label>
+                                <label for="add-run-type" class="col-sm-3 control-label">Run Type</label>
                                 <div class="col-sm-9">
                                     <select class="form-control" id="add-run-type">
                                         <option>Single End</option>
@@ -178,26 +178,26 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Capture Kit</label>
+                                <label for="add-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
                                 <div class="col-sm-9">
                                     <input class="typeahead" id="add-capture-kit" type="text" placeholder="Capture kit name">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Library Name</label>
+                                <label for="add-library" class="col-sm-3 control-label">Library Name</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control" id="add-library" placeholder="Library name">
+                                    <input type="text" class="form-control field-library" id="add-library" placeholder="Library name">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Reference Genome</label>
+                                <label for="add-reference" class="col-sm-3 control-label">Reference Genome</label>
                                 <div class="col-sm-9">
                                     <input class="typeahead" id="add-reference" type="text" placeholder="Reference genome">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-11 col-sm-offset-1">
-                                    <div class="resumable-modal-drop">
+                                    <div class="resumable-droparea">
                                         <span>Drop files here or</span>
                                         <input type="button" class="resumable-browse btn btn-default" value="Browse your computer">
                                     </div>
@@ -233,15 +233,15 @@
                                 file row.
                             </p>
                             <div class="form-group">
-                                <label for="sampleName" class="col-sm-3 control-label">Sample Name</label>
+                                <label for="edit-sample-name" class="col-sm-3 control-label">Sample Name</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control" id="edit-sample-name">
+                                    <input type="text" class="form-control field-sample-name" id="edit-sample-name">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Readset</label>
+                                <label for="edit-readset" class="col-sm-3 control-label">Readset</label>
                                 <div class="col-sm-7">
-                                    <input type="text" class="form-control" id="edit-readset" placeholder="Readset name" disabled>
+                                    <input type="text" class="form-control field-readset" id="edit-readset" placeholder="Readset name" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -249,7 +249,7 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Platform</label>
+                                <label for="edit-platform" class="col-sm-3 control-label">Platform</label>
                                 <div class="col-sm-7">
                                     <input class="typeahead form-control" id="edit-platform" type="text" placeholder="Sequencing platform" disabled>
                                 </div>
@@ -259,7 +259,7 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Run Type</label>
+                                <label for="edit-run-type" class="col-sm-3 control-label">Run Type</label>
                                 <div class="col-sm-7">
                                     <select class="form-control" id="edit-run-type" disabled>
                                         <option>Single End</option>
@@ -273,7 +273,7 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Capture Kit</label>
+                                <label for="edit-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
                                 <div class="col-sm-7">
                                     <input class="typeahead form-control" id="edit-capture-kit" type="text" placeholder="Capture kit name" disabled>
                                 </div>
@@ -283,9 +283,9 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Library Name</label>
+                                <label for="edit-library" class="col-sm-3 control-label">Library Name</label>
                                 <div class="col-sm-7">
-                                    <input type="text" class="form-control" id="edit-library" placeholder="Library name" disabled>
+                                    <input type="text" class="form-control field-library" id="edit-library" placeholder="Library name" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -293,7 +293,7 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Reference Genome</label>
+                                <label for="edit-reference" class="col-sm-3 control-label">Reference Genome</label>
                                 <div class="col-sm-7">
                                     <input class="typeahead form-control" id="edit-reference" type="text" placeholder="Reference genome" disabled>
                                 </div>
@@ -306,7 +306,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default cancel-edit-sample" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary save-edit-sample">Save changes</button>
+                        <button type="button" class="btn btn-primary save-edit-sample save-edit-button">Save changes</button>
                     </div>
                 </div>
             </div>
@@ -348,7 +348,7 @@
                              <div class="form-group">
                                 <label class="col-sm-3 control-label">Readset</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control" id="edit-single-readset" placeholder="Readset name">
+                                    <input type="text" class="form-control field-readset" id="edit-single-readset" placeholder="Readset name">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -376,7 +376,7 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Library Name</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control" id="edit-single-library" placeholder="Library name">
+                                    <input type="text" class="form-control field-library" id="edit-single-library" placeholder="Library name">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -389,7 +389,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default cancel-edit-file" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary save-edit-file">Save changes</button>
+                        <button type="button" class="btn btn-primary save-edit-file save-edit-button">Save changes</button>
                     </div>
                 </div>
             </div>
