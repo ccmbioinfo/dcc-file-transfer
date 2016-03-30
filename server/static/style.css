@@ -218,17 +218,17 @@ input.error {
     text-align: left;
 }
 .tt-suggestion {
-  padding: 3px 20px;
-  font-size: 14px;
+    padding: 3px 20px;
+    font-size: 14px;
 }
 .tt-suggestion:hover {
-  cursor: pointer;
-  color: white;
-  background-color: #31b0d5;
+    cursor: pointer;
+    color: white;
+    background-color: #31b0d5;
 }
 .tt-suggestion.tt-cursor {
-  color: #fff;
-  background-color: #31b0d5;
+    color: #fff;
+    background-color: #31b0d5;
 }
 
 /* Auth token form */
