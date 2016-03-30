@@ -114,9 +114,11 @@ def resumable_upload():
     if not valid_auth_token(auth_token):
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
-    # Create a temp directory using the unique identifier for the file
+    # TODO: Check db to see if the file identifier has status cancelled in FILES table, ensure identifier is UNIQUE
+        # Create a temp directory using the unique identifier for the file
     temp_dir = get_tempdir(auth_token, identifier)
-    if not os.path.isdir(temp_dir):
+    if not os.path.isdir(temp_dir) \
+            and g.db.execute('select status from files where identifier=?', (identifier,)).fetchone()[0] != 'cancelled':
         try:
             os.makedirs(temp_dir, 0777)
         except OSError:
@@ -136,12 +138,13 @@ def resumable_upload():
     chunk_filename = get_chunk_filename(temp_dir, filename, chunk_number)
 
     input_file = request.files['file']
-    try:
-        input_file.save(chunk_filename)
-    except IOError:
-        # TODO: handle all error types here? HTTP Error code 500 will stop the upload for now
-        os.remove(chunk_filename)
-        return make_response(jsonify({'message': 'Error: Chunk could not be saved'}), 500)
+    if g.db.execute('select status from files where identifier=?', (identifier,)).fetchone()[0] != 'cancelled':
+        try:
+            input_file.save(chunk_filename)
+        except IOError:
+            # TODO: handle all error types here? HTTP Error code 500 will stop the upload for now
+            os.remove(chunk_filename)
+            return make_response(jsonify({'message': 'Error: Chunk could not be saved'}), 500)
 
     all_chunks = glob.glob("{}/{}.part*".format(temp_dir, filename))
 
@@ -149,6 +152,8 @@ def resumable_upload():
     if filename.lower().endswith(".bam") and chunk_number == total_chunks:
         if not bam_test(chunk_filename):
             remove_from_uploads(temp_dir)
+            g.db.execute('update files set upload_status="truncated" where identifier=?',(identifier,))
+            g.db.commit()
             return make_response(jsonify({'message': 'Error: Truncated BAM file'}), 415)
 
     # Merge only when all chunks are downloaded and the file has not yet been created/merged
@@ -156,6 +161,8 @@ def resumable_upload():
         if merge_chunks(all_chunks, filename):
             if filename.lower().endswith(".gz") and not gzip_test(os.path.join(temp_dir, filename)):
                 remove_from_uploads(temp_dir)
+                g.db.execute('update files set upload_status="truncated" where identifier=?',(identifier,))
+                g.db.commit()
                 return make_response(jsonify({'message': 'Error: Truncated GZIP file'}), 415)
             elif os.path.getsize(os.path.join(temp_dir, filename)) != total_size:
                  return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
@@ -172,3 +179,20 @@ def resumable_upload():
 
     return make_response(jsonify({'Download complete': 'Successfully received chunk'}), 200)
 
+
+@app.route("/cancel", methods=['POST'])
+def cancel_upload():
+    identifier = request.form.get('resumableIdentifier', type=str)
+    auth_token = request.form.get('authToken', type=str, default='')
+
+    if not all([identifier, auth_token]):
+        return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
+
+    if not valid_auth_token(auth_token):
+        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
+
+    remove_from_uploads(get_tempdir(auth_token, identifier))
+    g.db.execute('update files set upload_status="cancelled" where identifier=?',(identifier,))
+    g.db.commit()
+
+    return make_response(jsonify({'message': 'Cancel received'}), 200)

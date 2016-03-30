@@ -19,19 +19,20 @@
                 Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
             </div>
             <form class="form-horizontal auth-token-form col-sm-10">
-                <div class="form-group">
+                <div class="form-group has-feedback">
                     <label for="auth-token" class="control-label">Transfer code</label>
                     <div class="input-group">
                         <input id="auth-token" type="text" name="authToken" class="form-control"
                                placeholder="Please enter your transfer code">
-                            <span class="btn btn-primary input-group-addon login auth-success">
-                                <span class="glyphicon glyphicon-log-in transfer-symbol"></span> Login
-                            </span>
+                        <span class="transfer-error glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+                        <span class="btn btn-primary input-group-addon login auth-success">
+                            <span class="glyphicon glyphicon-log-in transfer-symbol"></span> Login
+                        </span>
                     </div>
                 </div>
             </form>
             <div class="logout col-sm-2">
-                    <button class="btn btn-primary pull-right logout-button">
+                    <button class="btn btn-default pull-right logout-button">
                             <span class="glyphicon glyphicon-log-out"></span> Logout
                     </button>
             </div>
@@ -78,9 +79,9 @@
                     </tr>
                     </thead>
                     <tbody class="sample-template">
-                    <tr class="active sample-header-template">
-                        <td><span class="sample-collapse glyphicon glyphicon-triangle-bottom"></span></td>
-                        <td class="sample-name sample-collapse"></td>
+                    <tr class="sample-row sample-header-template">
+                        <td class="sample-collapse"><span class="collapse-icon glyphicon glyphicon-folder-open"></span></td>
+                        <td class="sample-collapse"><a class="sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
                         <td class="sample-collapse" colspan="8"></td>
                         <td class="sample-option">
                              <span class="option-icon edit-sample glyphicon glyphicon-edit"
@@ -88,15 +89,16 @@
                                    data-target="#edit-sample-modal"
                                    title="Edit metadata for entire sample"></span>
                             <span class="option-icon resumable-add add-files glyphicon glyphicon-plus"
-                                  data-toggle="tooltip"
+                                  data-toggle="modal"
+                                  data-target="#add-sample-modal"
                                   title="Add file(s) to sample"></span>
                             <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
                                   title="Remove sample"></span>
                         </td>
                     </tr>
-                    <tr class="sample-file-template">
+                    <tr class="sample-file-row sample-file-template">
                         <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
-                        <td class="file-name" colspan="2"></td>
+                        <td colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
                         <td class="file-type"></td>
                         <td class="file-readset"></td>
                         <td class="file-platform"></td>
@@ -123,12 +125,12 @@
                             data-toggle="tooltip" title="Upload all files to the DCC">
                         <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
                     </button>
-                    <button type="button" class="btn btn-primary pull-right resume-upload"
+                    <!--button type="button" class="btn btn-primary pull-right resume-upload"
                             data-toggle="tooltip" title="Resume upload of all files">
-                        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Resume All</button>
-                    <button type="button" class="btn btn-primary pull-right pause-upload"
+                        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Resume All</button-->
+                    <!--button type="button" class="btn btn-primary pull-right pause-upload"
                             data-toggle="tooltip" title="Pause upload of all files">
-                        <span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause All</button>
+                        <span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause All</button-->
                     <button type="button" class="btn btn-default pull-right cancel-upload"
                             data-toggle="tooltip" title="Cancel upload of all files">Cancel</button>
                 </div>
@@ -154,7 +156,7 @@
                                 and/or underscores.
                             </p>
                             <div class="form-group has-error">
-                                <label for="sampleName" class="col-sm-3 control-label">Sample Name</label>
+                                <label for="sampleName" class="col-sm-3 control-label">Sample Name *</label>
                                 <div class="col-sm-9">
                                     <input type="text" class="form-control" id="sampleName" placeholder="Sample name">
                                 </div>

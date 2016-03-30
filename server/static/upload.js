@@ -27,7 +27,6 @@ $(function () {
                 sampleTemplate.parent().attr('name', sampleName);
                 $('.table-data').append(sampleTemplate.parent());
                 sampleTemplate.show();
-                r.assignBrowse(sampleTemplate.find('.resumable-add'));
             }
             // handle file addition
             createFileRow(file, sampleName);
@@ -128,10 +127,12 @@ $(function () {
                 $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
                 $('.auth-success').addClass('disabled');
                 $('.sample-table').show();
+                $('.transfer-error').hide();
                 $('.logout').toggle();
             })
             .fail(function (data) {
                 $('#auth-token').closest('.form-group').addClass('has-error');
+                $('.transfer-error').show();
                 return false;
             });
     }
@@ -293,9 +294,15 @@ $(function () {
         checkUploadReady();
     });
 
+    $('body').on('click', '.modal-add-sample-button', function (e) {
+        $('#sampleName').prop('disabled', false);
+    });
+
     // Add files to a specific sample
     $('.table-data').on('click', '.add-files', function (e) {
         sampleName = $(this).parents('tr').find('.sample-name').text();
+        $('#sampleName').val(sampleName).prop('disabled', true).closest('.form-group').removeClass('has-error');
+        $('.resumable-modal-drop').show();
     });
 
     // Enable editing of metadata options on entire sample
@@ -316,10 +323,16 @@ $(function () {
     });
 
     // Edit entire sample data
-    $('.table-data').on('click', '.edit-sample', function (e) {
-        sampleRow = $(this).closest('tr');
+    $('.table-data').on('click', '.edit-sample, .sample-name', function (e) {
+        sampleRow = $(this).closest('.sample-row');
         var currentName = sampleRow.find('.sample-name').text();
         $('#edit-sample-name').val(currentName);
+        // Show modal in data-target
+        var modalId = $(this).attr('data-target');
+        if (modalId) {
+            $(modalId).modal('show');
+        }
+        return false;
     });
     $('#edit-sample-name, #edit-readset, #edit-library').on('input', function (e) {
         if (/^[A-Z\d\-_]+$/i.test($('#edit-sample-name').val()) &&
@@ -382,7 +395,7 @@ $(function () {
     });
 
     // Edit file data
-    $('.table-data').on('click', '.edit-file', function (e) {
+    $('.table-data').on('click', '.edit-file, .file-name', function (e) {
         // Fill modal with the current file's data, and set options according to file type
         fileRow = $(this).closest('tr');
         var fileType = fileRow.find('.file-type').text();
@@ -476,34 +489,35 @@ $(function () {
 
     // Collapse samples
     $('.table-data').on('click', '.sample-collapse', function (e){
-        var triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
+        var folder_icon = $(this).closest('tr').find('.collapse-icon');
         var fileRows = $(this).closest('tr').nextUntil('.sample-header-template');
         fileRows.each(function (i, value) {
             if ($(value).hasClass('collapsed') === true) {
-                $(value).removeClass('collapsed').css('display','table-row');
+                $(value).removeClass('collapsed').css('display', 'table-row');
             } else {
-                $(value).addClass('collapsed').css('display','none');
+                $(value).addClass('collapsed').css('display', 'none');
             }
         });
         if ($(this).closest('tr').hasClass('files-collapsed') === true) {
             $(this).closest('tr').removeClass('files-collapsed');
-            $(triangle).removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
+            $(folder_icon).removeClass('glyphicon-folder-close').addClass('glyphicon-folder-open');
         } else {
             $(this).closest('tr').addClass('files-collapsed');
-            $(triangle).removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
+            $(folder_icon).removeClass('glyphicon-folder-open').addClass('glyphicon-folder-close');
         }
     });
 
     // Begin uploading files
     $('.upload-sample-button').on('click', function (e) {
         if ($(this).hasClass('disabled') === false) {
-            $(this).hide();
+            $(this).addClass('disabled');
             $('.modal-add-sample-button').removeClass('active').addClass('disabled');
             $('.cancel-upload, .pause-upload').show();
             //hide the options column and show the status column
             $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
             $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-            $('.sample-option').addClass('disabled');
+            $('.sample-option, .file-name, .sample-name').addClass('disabled');
+
             r.upload();
         }
     });
@@ -512,13 +526,20 @@ $(function () {
     $('body').on('click', '.cancel-upload', function (e){
         for (var i = 0; i < r.files.length; i++) {
             r.files[i].abort();
+            if (!r.files[i].isComplete()) {
+                $.post('/cancel', {
+                    'authToken': $('#auth-token').val(),
+                    'resumableIdentifier': r.files[i].uniqueIdentifier,
+                    'resumableFilename': r.files[i].fileName
+                });
+            }
         }
         $('.pause-upload, .resume-upload, .cancel-upload').hide();
-        $('.upload-sample-button').show();
-        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
+        $('.upload-sample-button').removeClass('disabled');
+        $('.modal-add-sample-button').removeClass('disabled');
         $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
         $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-        $('.sample-option').removeClass('disabled');
+        $('.sample-option, .file-name, .sample-name').removeClass('disabled');
     });
 
     // Pause uploading files

@@ -78,7 +78,11 @@ def valid_auth_token(auth_token):
 
 
 def remove_from_uploads(tempdir):
-    all_chunks = os.listdir(tempdir)
-    for chunk in all_chunks:
-        os.remove(os.path.join(tempdir, chunk))
-    os.rmdir(tempdir)
+    try:
+        all_chunks = os.listdir(tempdir)
+        for chunk in all_chunks:
+            os.remove(os.path.join(tempdir, chunk))
+        os.rmdir(tempdir)
+    except OSError:
+        pass
+

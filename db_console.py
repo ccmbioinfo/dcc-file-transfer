@@ -2,8 +2,17 @@
 
 import sqlite3
 import os
+import readline
 from server import views
 from config import DATABASE
+
+
+def rlinput(prompt, prefill=''):
+   readline.set_startup_hook(lambda: readline.insert_text(prefill))
+   try:
+      return raw_input(prompt)
+   finally:
+      readline.set_startup_hook()
 
 
 def setup():
@@ -19,7 +28,7 @@ def setup():
 
 def query(db):
     while True:
-        SQL = raw_input('SQL> ')
+        SQL = rlinput('SQL >>> ')
         if SQL.lower() == 'close':
             db.commit()
             db.close()
