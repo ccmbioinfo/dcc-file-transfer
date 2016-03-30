@@ -493,9 +493,8 @@ input.error {
 }
 
 /* Edit File Modal */
-.form-group > .file-name-title {
-    text-align: center;
-    font-weight: normal;
+.file-name-title {
+    margin: 0;
 }
 
 /* Uploader: Progress bar */

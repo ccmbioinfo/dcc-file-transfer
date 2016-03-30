@@ -1,4 +1,8 @@
 $(function () {
+    var reSampleName = /^[A-Z\d\-_]+$/i;
+    var reLibrary = /^[A-Z\d\-_]*$/i;
+    var reReadset = /^[A-Z\d\-_]*$/i;
+
     // Create a new resumable object
     var r = new Resumable({
         target: '/upload',
@@ -11,21 +15,26 @@ $(function () {
         query: getExtraParams,
         permanentErrors: [400, 403, 404, 415, 500, 501]
     });
+
     r.assignDrop($('.resumable-drop, .resumable-modal-drop'));
+
     r.assignBrowse($('.resumable-browse'));
+
     r.on('fileAdded', function (file) {
         // check if file is coming through the add sample modal
         // sampleName needs to be redefined in this case
-        if ($('#add-sample-modal').hasClass('in') && /^[A-Z\d\-_]+$/i.test($('#sampleName').val())) {
+        if ($('#add-sample-modal').hasClass('in') && reSampleName.test($('#sampleName').val())) {
             sampleName = $('#sampleName').val();
             // Check if sample header already exists
             if ($('tbody[name="'+$('#sampleName').val()+'"]').length === 0) {
                 // Add the sample header
                 var sampleTemplate = $('.sample-header-template').first().clone();
                 sampleTemplate.find('.sample-name').html(sampleName);
-                sampleTemplate.wrap('<tbody></tbody>');
-                sampleTemplate.parent().attr('name', sampleName);
-                $('.table-data').append(sampleTemplate.parent());
+                sampleTemplate
+                    .wrap('<tbody></tbody>')
+                    .parent()
+                    .attr('name', sampleName)
+                    .appendTo($('.table-data'));
                 sampleTemplate.show();
             }
             // handle file addition
@@ -35,6 +44,7 @@ $(function () {
             createFileRow(file, sampleName);
         }
     });
+
     r.on('fileProgress', function (file) {
         var progress = getFileProgressElt(file);
         var percent = Math.floor(file.progress() * 100);
@@ -45,13 +55,14 @@ $(function () {
         progress.find('.progress-bar').css('color', 'white');
         progress.find('.progress-bar').css('min-width', '2em')
     });
-    r.on('uploadStart', function () {});
+
     r.on('fileSuccess', function (file, message) {
         var progress = getFileProgressElt(file);
         progress.find('.progress-bar').first()
             .removeClass('progress-bar-striped active')
             .html('Uploaded');
     });
+
     r.on('fileError', function (file, message) {
         // Reflect that the file upload has resulted in error
         var progress = getFileProgressElt(file);
@@ -68,26 +79,29 @@ $(function () {
             })
             .html(errorMsg);
     });
+
     r.on('complete', function () {
         $('#upload-complete-modal').modal('show');
         //populate the DCC table with files and empty the upload table?
     });
 
-    $('.resumable-drop, .resumable-modal-drop').on('dragenter', function() {
-        $(this).addClass('resumable-dragover').find('span').css('pointer-events','none');
-        $(this).find('.resumable-browse').css('pointer-events','none');
-    });
-    $('.resumable-drop, .resumable-modal-drop').on('dragleave', function() {
-        $(this).removeClass('resumable-dragover').find('span').css('pointer-events','auto');
-        $(this).find('.resumable-browse').css('pointer-events','auto');
-    });
-    $('.resumable-drop, .resumable-modal-drop').on('dragend', function() {
-        $(this).removeClass('resumable-dragover');
-        $(this).find('.resumable-browse').css('pointer-events','auto');
-    });
-    $('.resumable-drop, .resumable-modal-drop').on('drop', function() {
-        $(this).removeClass('resumable-dragover');
-        $(this).find('.resumable-browse').css('pointer-events','auto');
+    $('.resumable-drop, .resumable-modal-drop').on({
+        'dragenter': function() {
+            $(this).addClass('resumable-dragover').find('span').css('pointer-events','none');
+            $(this).find('.resumable-browse').css('pointer-events','none');
+        },
+        'dragleave': function() {
+            $(this).removeClass('resumable-dragover').find('span').css('pointer-events','auto');
+            $(this).find('.resumable-browse').css('pointer-events','auto');
+        },
+        'dragend': function() {
+            $(this).removeClass('resumable-dragover');
+            $(this).find('.resumable-browse').css('pointer-events','auto');
+        },
+        'drop': function() {
+            $(this).removeClass('resumable-dragover');
+            $(this).find('.resumable-browse').css('pointer-events','auto');
+        }
     });
 
     function createIdentifier(file) {
@@ -97,7 +111,7 @@ $(function () {
         } else {
             sample = sampleName
         }
-        var cleanName = file.name.replace(/[^0-9a-zA-Z_-]/img, '');
+        var cleanName = file.name.replace(/[^0-9A-Z_-]/img, '');
         return $('#auth-token').val()+'_'+sample+'_'+cleanName+'_'+file.size
     }
 
@@ -106,7 +120,7 @@ $(function () {
     }
 
     function getExtraParams(file, chunk) {
-        var fileRow = $('#'+file.uniqueIdentifier);
+        var fileRow = getFileProgressElt(file);
         return {
             'authToken': $('#auth-token').val(),
             'sampleName': fileRow.closest('tbody').attr('name'),
@@ -138,26 +152,32 @@ $(function () {
     }
 
     function createFileRow(file, sampleName) {
+        var sampleTable = $('tbody[name="' + sampleName + '"]');
         var fileTemplate = $('.sample-file-template').first().clone();
-        fileTemplate.attr('id', file.uniqueIdentifier);
-        fileTemplate.find('.file-name').html(file.fileName);
-        fileTemplate.find('.progress-bar');
-        $('tbody[name="' + sampleName + '"]').append(fileTemplate);
-        if ($('tbody[name="' + sampleName + '"]').find('tr').hasClass('files-collapsed') === true) {
+        fileTemplate
+            .attr('id', file.uniqueIdentifier)
+            .find('.file-name')
+            .html(file.fileName);
+
+        sampleTable.append(fileTemplate);
+        if (sampleTable.find('tr').hasClass('files-collapsed')) {
             fileTemplate.addClass('collapsed');
         }
         // Check for file type to determine whether metadata options should be shown
         var fileType = 'Other';
-        var fileTypes = ['.bam','.sam','.fastq','.fq', '.vcf'];
-        for (var i = 0; i < fileTypes.length; i++) {
-            if (file.fileName.toLowerCase().indexOf(fileTypes[i]) > -1) {
-                if (i<2){
-                    fileType = 'BAM/SAM';
-                } else if (i === 4) {
-                    fileType = 'VCF';
-                } else {
-                    fileType = 'FASTQ';
-                }
+        var fileTypes = {'.bam': 'BAM/SAM',
+                         '.sam': 'BAM/SAM',
+                         '.sam.gz': 'BAM/SAM',
+                         '.fastq': 'FASTQ',
+                         '.fastq.gz': 'FASTQ',
+                         '.fq': 'FASTQ',
+                         '.fq.gz': 'FASTQ',
+                         '.vcf': 'VCF',
+                         '.vcf.gz': 'VCF'};
+        for (var ext in fileTypes) {
+            if (fileTypes.hasOwnProperty(ext) &&
+                file.fileName.toLowerCase().indexOf(ext) > -1) {
+                fileType = fileTypes[ext];
             }
         }
         fileTemplate.find('.file-type').text(fileType);
@@ -174,7 +194,7 @@ $(function () {
 
         // Wait until all files have been added before clearing the sample name in the modal
         // Plus one to include the original cloned sample-file-template
-        if ($('.sample-file-template').length === r.files.length+1) {
+        if ($('.sample-file-template').length === r.files.length + 1) {
             $('#sampleName').val('').closest('.form-group').addClass('has-error');
         }
         checkUploadReady();
@@ -183,11 +203,7 @@ $(function () {
     }
 
     function checkUploadReady() {
-        if (r.files.length > 0) {
-            $('.upload-sample-button').removeClass('disabled');
-        } else {
-            $('.upload-sample-button').addClass('disabled');
-        }
+        $('.upload-sample-button').toggleClass('disabled', r.files.length === 0);
     }
 
     var substringMatcher = function(strs) {
@@ -196,18 +212,19 @@ $(function () {
             matches = [];
             substrRegex = new RegExp(queryString, 'i');
             $.each(strs, function(i, str) {
-              if (substrRegex.test(str)) {
-                matches.push(str);
-              }
+                if (substrRegex.test(str)) {
+                    matches.push(str);
+                }
             });
-        cb(matches);
-      };
+            cb(matches);
+        };
     };
 
     var platforms = ['Illumina HiSeq', 'Illumina X10', 'SOLiDv4', 'PacBio', 'Ion Torrent', 'MinION'];
     var captureKits = ['Nextera Rapid Capture', 'Agilent SureSelect', 'NimbleGen SeqCap EZ', 'Illumina TruSeq',
         'Life Technologies TargetSeq', 'Life Technologies AmpliSeq', 'Agilent HaloPlex'];
     var referenceGenomes = ['GRCh38/hg38', 'GRCh37/hg19', 'NCBI36/hg18'];
+
 
     // Authentication displays upload table
     $('.auth-token-form').on('submit', function (e) {
@@ -218,20 +235,21 @@ $(function () {
         authorize();
     });
 
+
     // Submitting a sample name will open the drop area and enable name editing
     $('#sampleName, #add-library').on('input', function (e) {
-        if (/^[A-Z\d\-_]+$/i.test($('#sampleName').val()) &&
-            /^[A-Z\d\-_]*$/i.test($('#add-library').val())) {
+        if (reSampleName.test($('#sampleName').val()) &&
+            reLibrary.test($('#add-library').val())) {
             $('.resumable-modal-drop').show();
         } else {
             $('.resumable-modal-drop').hide();
         }
-        if (/^[A-Z\d\-_]+$/i.test($('#sampleName').val())) {
+        if (reSampleName.test($('#sampleName').val())) {
             $('#sampleName').closest('.form-group').removeClass('has-error');
         } else {
             $('#sampleName').closest('.form-group').addClass('has-error');
         }
-        if (/^[A-Z\d\-_]*$/i.test($('#add-library').val())) {
+        if (reLibrary.test($('#add-library').val())) {
             $('#add-library').closest('.form-group').removeClass('has-error');
         } else {
             $('#add-library').closest('.form-group').addClass('has-error');
@@ -309,10 +327,9 @@ $(function () {
     $('input:checkbox').change( function() {
         if ($(this).is(':checked')) {
             $(this).closest('.form-group').find('.form-control').attr('disabled', false);
-            $(this).closest('.form-group').find('.form-control')
         } else {
             if ($(this).closest('.form-group').find('.form-control').is('#edit-run-type')) {
-                $('#edit-run-type').val('N/A').attr('disabled',true);
+                $('#edit-run-type').val('N/A').attr('disabled', true);
             } else {
                 $(this).closest('.form-group').removeClass('has-error').find('.form-control').val('').attr('disabled',true);
             }
@@ -335,59 +352,47 @@ $(function () {
         return false;
     });
     $('#edit-sample-name, #edit-readset, #edit-library').on('input', function (e) {
-        if (/^[A-Z\d\-_]+$/i.test($('#edit-sample-name').val()) &&
-            /^[A-Z\d\-_]*$/i.test($('#edit-readset').val()) &&
-            /^[A-Z\d\-_]*$/i.test($('#edit-library').val())) {
-            $('.save-edit-sample').prop('disabled', false);
-        } else {
-            $('.save-edit-sample').prop('disabled', true);
-        }
-        if (/^[A-Z\d\-_]+$/i.test($('#edit-sample-name').val())) {
-            $('#edit-sample-name').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-sample-name').closest('.form-group').addClass('has-error');
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-readset').val())) {
-            $('#edit-readset').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-readset').closest('.form-group').addClass('has-error');
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-library').val())) {
-            $('#edit-library').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-library').closest('.form-group').addClass('has-error');
-        }
+        var saveEnabled = reSampleName.test($('#edit-sample-name').val()) &&
+            reReadset.test($('#edit-readset').val()) &&
+            reLibrary.test($('#edit-library').val());
+        $('.save-edit-sample').prop('disabled', !saveEnabled);
+
+        $('#edit-sample-name')
+            .closest('.form-group')
+            .toggleClass('has-error', !reSampleName.test($('#edit-sample-name').val()));
+
+        $('#edit-readset')
+            .closest('.form-group')
+            .toggleClass('has-error', !reReadset.test($('#edit-readset').val()))
+
+        $('#edit-library')
+            .closest('.form-group')
+            .toggleClass('has-error', !reLibrary.test($('#edit-library').val()));
     });
+
     $('body').on('click', '.save-edit-sample', function (e) {
         var newName = $('#edit-sample-name').val();
         sampleRow.closest('tbody').attr('name', newName).find('.sample-name').text(newName);
         var fileRows = sampleRow.nextUntil();
-        fileRows.each(function (i, row) {
-            var fileType = $(row).find('.file-type').text();
-            if ($('#edit-readset').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-readset').text($('#edit-readset').val());
-                }
+        fileRows.each(function (i) {
+            var fileType = $(this).find('.file-type').text();
+            var fieldNames = ['readset'];
             if (fileType !== 'Other') {
-                if ($('#edit-platform').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-platform').text($('#edit-platform').val());
-                }
-                if ($('#edit-run-type').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-run-type').text($('#edit-run-type').val());
-                }
-                if ($('#edit-capture-kit').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-capture-kit').text($('#edit-capture-kit').val());
-                }
-                if ($('#edit-library').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-library').text($('#edit-library').val());
-                }
+                fieldNames.push('platform', 'run-type', 'capture-kit', 'library');
             }
             if (fileType === 'BAM/SAM' || fileType === 'VCF') {
-                if ($('#edit-reference').closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
-                    $(row).find('.file-reference').text($('#edit-reference').val());
+                fieldNames.push('reference');
+            }
+
+            for (var i = 0; i < fieldNames.length; i++) {
+                var fieldName = fieldNames[i];
+                if ($('#edit-' + fieldName).closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
+                    $(this).find('.file-' + fieldName).text($('#edit-' + fieldName).val());
                 }
             }
         });
         $('#edit-sample-modal').modal('hide');
+        return false;
     });
     $('body').on('click', '.cancel-edit-sample', function (e) {
         // remove error on sample name so it won't linger when edit sample is clicked again
@@ -441,24 +446,19 @@ $(function () {
                 .attr('disabled', false);
        }
     });
+
     $('#edit-single-readset, #edit-single-library').on('input', function (e) {
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-single-readset').val()) &&
-            /^[A-Z\d\-_]*$/i.test($('#edit-single-library').val())) {
-            $('.save-edit-file').prop('disabled', false);
-        } else {
-            $('.save-edit-file').prop('disabled', true);
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-single-readset').val())) {
-            $('#edit-single-readset').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-single-readset').closest('.form-group').addClass('has-error');
-        }
-        if (/^[A-Z\d\-_]*$/i.test($('#edit-single-library').val())) {
-            $('#edit-single-library').closest('.form-group').removeClass('has-error');
-        } else {
-            $('#edit-single-library').closest('.form-group').addClass('has-error');
-        }
+        var saveEnabled = reReadset.test($('#edit-single-readset').val()) &&
+            reLibrary.test($('#edit-single-library').val());
+        $('.save-edit-file').prop('disabled', !saveEnabled);
+        $('#edit-single-readset')
+            .closest('.form-group')
+            .toggleClass('has-error', !reReadset.test($('#edit-single-readset').val()));
+        $('#edit-single-library')
+            .closest('.form-group')
+            .toggleClass('has-error', !reLibrary.test($('#edit-single-library').val()));
     });
+
     $('body').on('click', '.save-edit-file', function (e) {
         fileRow.find('.file-type').text($('#edit-single-file-type').val());
         fileRow.find('.file-readset').text($('#edit-single-readset').val());
@@ -472,6 +472,7 @@ $(function () {
         });
         $('#edit-file-modal').modal('hide');
     });
+
     $('body').on('click', '.cancel-edit-file', function (e) {
         // remove error on readset and library so it won't linger when edit file is clicked again
         $('#edit-single-readset, #edit-single-library').closest('.form-group').removeClass('has-error');
@@ -480,7 +481,7 @@ $(function () {
     // Collapse the table contents and show only the panel header
     $('.panel-heading').on('click', function (e) {
         $(this).closest('.panel').find('.panel-body, table, .panel-footer').toggleClass('collapsed');
-        if ($(this).next('.panel-body').hasClass('collapsed') === true) {
+        if ($(this).next('.panel-body').hasClass('collapsed')) {
             $(this).find('.glyphicon').removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
         } else {
             $(this).find('.glyphicon').removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
@@ -489,28 +490,29 @@ $(function () {
 
     // Collapse samples
     $('.table-data').on('click', '.sample-collapse', function (e){
-        var folder_icon = $(this).closest('tr').find('.collapse-icon');
         var fileRows = $(this).closest('tr').nextUntil('.sample-header-template');
         fileRows.each(function (i, value) {
-            if ($(value).hasClass('collapsed') === true) {
-                $(value).removeClass('collapsed').css('display', 'table-row');
+            if ($(value).hasClass('collapsed')) {
+                $(value).removeClass('collapsed').css('display','table-row');
             } else {
                 $(value).addClass('collapsed').css('display', 'none');
             }
         });
-        if ($(this).closest('tr').hasClass('files-collapsed') === true) {
-            $(this).closest('tr').removeClass('files-collapsed');
-            $(folder_icon).removeClass('glyphicon-folder-close').addClass('glyphicon-folder-open');
+        var triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
+        var sampleRow = $(this).closest('tr');
+        if (sampleRow.hasClass('files-collapsed')) {
+            sampleRow.removeClass('files-collapsed');
+            triangle.removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
         } else {
-            $(this).closest('tr').addClass('files-collapsed');
-            $(folder_icon).removeClass('glyphicon-folder-open').addClass('glyphicon-folder-close');
+            sampleRow.addClass('files-collapsed');
+            triangle.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
         }
     });
 
     // Begin uploading files
     $('.upload-sample-button').on('click', function (e) {
-        if ($(this).hasClass('disabled') === false) {
-            $(this).addClass('disabled');
+        if (!$(this).hasClass('disabled')) {
+            $(this).hide();
             $('.modal-add-sample-button').removeClass('active').addClass('disabled');
             $('.cancel-upload, .pause-upload').show();
             //hide the options column and show the status column
@@ -522,24 +524,22 @@ $(function () {
         }
     });
 
+    function resetSession() {
+        $('.pause-upload, .resume-upload, .cancel-upload').hide();
+        $('.upload-sample-button').show();
+        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
+        //hide the options column and show the status column
+        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
+        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
+        $('.sample-option').removeClass('disabled');
+    }
+
     // Cancel uploading files
     $('body').on('click', '.cancel-upload', function (e){
         for (var i = 0; i < r.files.length; i++) {
             r.files[i].abort();
-            if (!r.files[i].isComplete()) {
-                $.post('/cancel', {
-                    'authToken': $('#auth-token').val(),
-                    'resumableIdentifier': r.files[i].uniqueIdentifier,
-                    'resumableFilename': r.files[i].fileName
-                });
-            }
         }
-        $('.pause-upload, .resume-upload, .cancel-upload').hide();
-        $('.upload-sample-button').removeClass('disabled');
-        $('.modal-add-sample-button').removeClass('disabled');
-        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
-        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-        $('.sample-option, .file-name, .sample-name').removeClass('disabled');
+        resetSession();
     });
 
     // Pause uploading files
@@ -559,13 +559,9 @@ $(function () {
         for (var i = 0; i < r.files.length; i++) {
             r.removeFile(r.files[i]);
         }
+        resetSession();
         $('tbody:first').nextUntil().remove();
-        $('.pause-upload, .resume-upload, .cancel-upload').hide();
-        $('.upload-sample-button').show().addClass('disabled');
-        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
-        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
-        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-        $('.sample-option').removeClass('disabled');
+        $('.upload-sample-button').addClass('disabled');
         $('#upload-complete-modal').modal('hide');
     });
 
