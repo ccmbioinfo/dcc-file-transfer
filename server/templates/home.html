@@ -83,7 +83,7 @@
                         <td class="sample-name sample-collapse"></td>
                         <td class="sample-collapse" colspan="8"></td>
                         <td class="sample-option">
-                             <span class="option-icon edit-sample glyphicon glyphicon-edit"
+                             <span class="option-icon edit-sample glyphicon glyphicon-pencil"
                                    data-toggle="modal"
                                    data-target="#edit-sample-modal"
                                    title="Edit metadata for entire sample"></span>
@@ -108,7 +108,7 @@
                             <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                         </td>
                         <td class="option">
-                            <span class="option-icon edit-file glyphicon glyphicon-edit"
+                            <span class="option-icon edit-file glyphicon glyphicon-pencil"
                                   data-toggle="modal"
                                   data-target="#edit-file-modal"
                                   title="Edit file metadata"></span>
@@ -197,7 +197,7 @@
                                 <div class="col-sm-11 col-sm-offset-1">
                                     <div class="resumable-modal-drop">
                                         <span>Drop files here or</span>
-                                        <input type="button" class="resumable-browse btn btn-default" value="Browse your computer"></input>
+                                        <input type="button" class="resumable-browse btn btn-default" value="Browse your computer">
                                     </div>
                                 </div>
                             </div>
@@ -227,7 +227,7 @@
                                 and/or underscores. Sequencing metadata (except for readset) will not apply to file
                                 types detected as <em>Other</em>. Individual file types can be changed along with
                                 individual metadata by clicking the edit
-                                 <span class="glyphicon glyphicon-edit"></span> button at the end of the respective
+                                 <span class="glyphicon glyphicon-pencil"></span> button at the end of the respective
                                 file row.
                             </p>
                             <div class="form-group">
@@ -324,13 +324,13 @@
                             <p>
                                 Sequencing metadata options are only available for BAM/SAM, FASTQ, and VCF files. If you
                                 would like to make changes across files in the whole sample, click the edit
-                                 <span class="glyphicon glyphicon-edit"></span> button at the end of the respective
+                                 <span class="glyphicon glyphicon-pencil"></span> button at the end of the respective
                                 sample header row. Readset and library must be composed solely of letters, numbers,
                                 hyphens, and/or underscores.
                             </p>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">File Name</label>
-                                <label class="col-sm-9 control-label file-name-title">Filename to go here</label>
+                                <div class="col-sm-9"><p class="form-control-static file-name-title">Filename to go here</p></div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">File Type</label>
