@@ -156,9 +156,9 @@
                                 and/or underscores.
                             </p>
                             <div class="form-group has-error">
-                                <label for="sampleName" class="col-sm-3 control-label">Sample Name *</label>
+                                <label for="add-sample-name" class="col-sm-3 control-label">Sample Name *</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-sample-name" id="sampleName" placeholder="Sample name">
+                                    <input type="text" class="form-control field-sample-name" id="add-sample-name" placeholder="Sample name">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -239,9 +239,9 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="edit-readset" class="col-sm-3 control-label">Readset</label>
+                                <label for="edit-sample-readset" class="col-sm-3 control-label">Readset</label>
                                 <div class="col-sm-7">
-                                    <input type="text" class="form-control field-readset" id="edit-readset" placeholder="Readset name" disabled>
+                                    <input type="text" class="form-control field-readset" id="edit-sample-readset" placeholder="Readset name" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -249,9 +249,9 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="edit-platform" class="col-sm-3 control-label">Platform</label>
+                                <label for="edit-sample-platform" class="col-sm-3 control-label">Platform</label>
                                 <div class="col-sm-7">
-                                    <input class="typeahead form-control" id="edit-platform" type="text" placeholder="Sequencing platform" disabled>
+                                    <input class="typeahead form-control" id="edit-sample-platform" type="text" placeholder="Sequencing platform" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -259,9 +259,9 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="edit-run-type" class="col-sm-3 control-label">Run Type</label>
+                                <label for="edit-sample-run-type" class="col-sm-3 control-label">Run Type</label>
                                 <div class="col-sm-7">
-                                    <select class="form-control" id="edit-run-type" disabled>
+                                    <select class="form-control" id="edit-sample-run-type" disabled>
                                         <option>Single End</option>
                                         <option>Paired End</option>
                                         <option selected>N/A</option>
@@ -273,9 +273,9 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="edit-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
+                                <label for="edit-sample-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
                                 <div class="col-sm-7">
-                                    <input class="typeahead form-control" id="edit-capture-kit" type="text" placeholder="Capture kit name" disabled>
+                                    <input class="typeahead form-control" id="edit-sample-capture-kit" type="text" placeholder="Capture kit name" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -283,9 +283,9 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="edit-library" class="col-sm-3 control-label">Library Name</label>
+                                <label for="edit-sample-library" class="col-sm-3 control-label">Library Name</label>
                                 <div class="col-sm-7">
-                                    <input type="text" class="form-control field-library" id="edit-library" placeholder="Library name" disabled>
+                                    <input type="text" class="form-control field-library" id="edit-sample-library" placeholder="Library name" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -293,9 +293,9 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="edit-reference" class="col-sm-3 control-label">Reference Genome</label>
+                                <label for="edit-sample-reference" class="col-sm-3 control-label">Reference Genome</label>
                                 <div class="col-sm-7">
-                                    <input class="typeahead form-control" id="edit-reference" type="text" placeholder="Reference genome" disabled>
+                                    <input class="typeahead form-control" id="edit-sample-reference" type="text" placeholder="Reference genome" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -337,9 +337,10 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">File Type</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" id="edit-single-file-type">
-                                        <option>FASTQ/FQ</option>
+                                    <select class="form-control" id="edit-file-file-type">
                                         <option>BAM/SAM</option>
+                                        <option>BED</option>
+                                        <option>FASTQ/FQ</option>
                                         <option>VCF</option>
                                         <option>Other</option>
                                     </select>
@@ -348,19 +349,19 @@
                              <div class="form-group">
                                 <label class="col-sm-3 control-label">Readset</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-readset" id="edit-single-readset" placeholder="Readset name">
+                                    <input type="text" class="form-control field-readset" id="edit-file-readset" placeholder="Readset name">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Platform</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead form-control" id="edit-single-platform" type="text" placeholder="Sequencing platform">
+                                    <input class="typeahead form-control edit-field" id="edit-file-platform" type="text" placeholder="Sequencing platform">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Run Type</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" id="edit-single-run-type">
+                                    <select class="form-control edit-field" id="edit-file-run-type">
                                         <option>Single End</option>
                                         <option>Paired End</option>
                                         <option>N/A</option>
@@ -370,19 +371,19 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Capture Kit</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead form-control" id="edit-single-capture-kit" type="text" placeholder="Capture kit name">
+                                    <input class="typeahead form-control edit-field" id="edit-file-capture-kit" type="text" placeholder="Capture kit name">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Library Name</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-library" id="edit-single-library" placeholder="Library name">
+                                    <input type="text" class="form-control edit-field field-library" id="edit-file-library" placeholder="Library name">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Reference Genome</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead form-control" id="edit-single-reference" type="text" placeholder="Reference genome">
+                                    <input class="typeahead form-control edit-field" id="edit-file-reference" type="text" placeholder="Reference genome">
                                 </div>
                             </div>
                         </form>
