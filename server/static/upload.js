@@ -2,88 +2,24 @@ $(function () {
     var reSampleName = /^[A-Z\d\-_]+$/i;
     var reLibrary = /^[A-Z\d\-_]*$/i;
     var reReadset = reLibrary;
+    var platforms = ['Illumina HiSeq', 'Illumina X10', 'SOLiDv4', 'PacBio', 'Ion Torrent', 'MinION'];
+    var captureKits = ['Nextera Rapid Capture', 'Agilent SureSelect', 'NimbleGen SeqCap EZ', 'Illumina TruSeq',
+        'Life Technologies TargetSeq', 'Life Technologies AmpliSeq', 'Agilent HaloPlex'];
+    var referenceGenomes = ['GRCh38/hg38', 'GRCh37/hg19', 'NCBI36/hg18'];
 
-    //************************** RESUMABLE **************************
-
-    // Create a new resumable object
-    var r = new Resumable({
-        target: '/upload',
-        chunkSize: 1 * 1024 * 1024,
-        simultaneousUploads: 3,
-        testChunks: true,
-        testMethod: 'HEAD',
-        prioritizeFirstAndLastChunk: true,
-        generateUniqueIdentifier: createIdentifier,
-        query: getExtraParams,
-        permanentErrors: [400, 403, 404, 415, 500, 501]
-    });
-
-    r.assignDrop($('.resumable-droparea'));
-
-    r.assignBrowse($('.resumable-browse'));
-
-    r.on('fileAdded', function (file) {
-        var sampleName = $('#add-sample-name').val();
-        // Check if sample header already exists
-        if ($('tbody[name="'+ sampleName +'"]').length === 0) {
-            // Add the sample header
-            var sampleTemplate = $('.sample-header-template').first().clone();
-            sampleTemplate.find('.sample-name').html(sampleName);
-            sampleTemplate
-                .wrap('<tbody></tbody>')
-                .parent()
-                .attr('name', sampleName)
-                .appendTo($('.table-data'));
-            sampleTemplate.show();
-        }
-        createFileRow(file, sampleName);
-    });
-
-    r.on('fileProgress', function (file) {
-        var progress = getFileProgressElt(file);
-        var percent = Math.floor(file.progress() * 100);
-        progress.find('.progress-bar').html(percent + '%');
-        progress.find('.progress-bar').css({
-            width: percent + '%'
-        });
-        progress.find('.progress-bar').css('color', 'white');
-        progress.find('.progress-bar').css('min-width', '2em')
-    });
-
-    r.on('fileSuccess', function (file, message) {
-        var progress = getFileProgressElt(file);
-        progress.find('.progress-bar').first()
-            .removeClass('progress-bar-striped active')
-            .html('Uploaded');
-    });
-
-    r.on('fileError', function (file, message) {
-        // Reflect that the file upload has resulted in error
-        var progress = getFileProgressElt(file);
-        var errorMsg = 'Error';
-        try {
-            errorMsg = $.parseJSON(message).message;
-        } catch (e) {
-        }
-        progress.find('.progress-bar')
-            .removeClass('progress-bar-striped active')
-            .addClass('progress-bar-danger')
-            .css({
-                width: '100%'
-            })
-            .html(errorMsg);
-    });
-
-    r.on('complete', function () {
-        $('#upload-complete-modal').modal('show');
-    });
-
-    $('.resumable-droparea').on({
-        'dragenter': activateDropArea,
-        'dragleave': deactivateDropArea,
-        'dragend': deactivateDropArea,
-        'drop': deactivateDropArea
-    });
+    var substringMatcher = function(strs) {
+        return function findMatches(queryString, cb) {
+            var matches, substrRegex;
+            matches = [];
+            substrRegex = new RegExp(queryString, 'i');
+            $.each(strs, function(i, str) {
+                if (substrRegex.test(str)) {
+                    matches.push(str);
+                }
+            });
+            cb(matches);
+        };
+    };
 
     function toggleDropArea(toggle) {
         $(this).toggleClass('resumable-dragging', toggle);
@@ -147,6 +83,15 @@ $(function () {
         $('#add-platform, #add-capture-kit, #add-reference').typeahead('val', '');
     }
 
+    function toggleEditableFields (fileType) {
+        $('.edit-field').attr('disabled', fileType === 'Other');
+        $('#edit-file-reference').attr('disabled', fileType === 'FASTQ/FQ' || fileType === 'Other');
+        var single_run_type = $('#edit-file-run-type');
+        if (single_run_type.val() === null) {
+            single_run_type.val('N/A')
+        }
+    }
+
     function createFileRow(file, sampleName) {
         var sampleTable = $('tbody[name="' + sampleName + '"]');
         var fileTemplate = $('.sample-file-template').first().clone();
@@ -198,38 +143,14 @@ $(function () {
     }
 
     function checkUploadReady() {
-        $('.upload-sample-button').toggleClass('disabled', r.files.length === 0);
+        $('.start-upload, .resume-upload').toggleClass('disabled', r.files.length === 0);
     }
 
-    var substringMatcher = function(strs) {
-        return function findMatches(queryString, cb) {
-            var matches, substrRegex;
-            matches = [];
-            substrRegex = new RegExp(queryString, 'i');
-            $.each(strs, function(i, str) {
-                if (substrRegex.test(str)) {
-                    matches.push(str);
-                }
-            });
-            cb(matches);
-        };
-    };
+    function toggleFileRows(sampleRow) {
+        sampleRow.find('.sample-collapse-icon').toggle();
+        sampleRow.nextUntil('.sample-row').toggle('fast');
+    }
 
-    var platforms = ['Illumina HiSeq', 'Illumina X10', 'SOLiDv4', 'PacBio', 'Ion Torrent', 'MinION'];
-    var captureKits = ['Nextera Rapid Capture', 'Agilent SureSelect', 'NimbleGen SeqCap EZ', 'Illumina TruSeq',
-        'Life Technologies TargetSeq', 'Life Technologies AmpliSeq', 'Agilent HaloPlex'];
-    var referenceGenomes = ['GRCh38/hg38', 'GRCh37/hg19', 'NCBI36/hg18'];
-
-
-    // Authentication displays upload table
-    $('.auth-token-form').on('submit', function (e) {
-        authorize();
-        return false;
-    });
-    $('.login').on('click', function() {authorize()});
-
-
-    // Submitting a sample name will open the drop area and enable name editing
     function validateField(regex) {
         var isValid = regex.test($(this).val());
 
@@ -240,6 +161,101 @@ $(function () {
         $(this).closest('.modal').trigger('fieldValidation');
     }
 
+    //************************** RESUMABLE **************************
+
+    // Create a new resumable object
+    var r = new Resumable({
+        target: '/upload',
+        chunkSize: 1 * 1024 * 1024,
+        simultaneousUploads: 3,
+        testChunks: true,
+        testMethod: 'HEAD',
+        prioritizeFirstAndLastChunk: true,
+        generateUniqueIdentifier: createIdentifier,
+        query: getExtraParams,
+        permanentErrors: [400, 403, 404, 415, 500, 501]
+    });
+
+    r.assignDrop($('.resumable-droparea'));
+
+    r.assignBrowse($('.resumable-browse'));
+
+    r.on('fileAdded', function (file) {
+        var sampleName = $('#add-sample-name').val();
+        // Check if sample header already exists
+        if ($('tbody[name="'+ sampleName +'"]').length === 0) {
+            // Add the sample header
+            var sampleTemplate = $('.sample-header-template').first().clone();
+            sampleTemplate.find('.sample-name').html(sampleName);
+            sampleTemplate
+                .wrap('<tbody></tbody>')
+                .parent()
+                .attr('name', sampleName)
+                .appendTo($('.table-data'));
+            sampleTemplate.show();
+        }
+        createFileRow(file, sampleName);
+    });
+
+    r.on('fileProgress', function (file) {
+        var progress = getFileProgressElt(file);
+        var percent = Math.floor(file.progress() * 100);
+        progress.find('.progress-bar').html(percent + '%');
+        progress.find('.progress-bar').css({
+            width: percent + '%'
+        });
+        progress.find('.progress-bar').css('color', 'white');
+        progress.find('.progress-bar').css('min-width', '2em')
+    });
+
+    r.on('fileSuccess', function (file, message) {
+        var progress = getFileProgressElt(file);
+        progress.find('.progress-bar').first()
+            .removeClass('progress-bar-striped active')
+            .html('Uploaded');
+        // remove file from resumable
+        r.removeFile(file);
+    });
+
+    r.on('fileError', function (file, message) {
+        // Reflect that the file upload has resulted in error
+        var progress = getFileProgressElt(file);
+        var errorMsg = 'Error';
+        try {
+            errorMsg = $.parseJSON(message).message;
+        } catch (e) {
+        }
+        progress.find('.progress-bar')
+            .removeClass('progress-bar-striped active')
+            .addClass('progress-bar-danger')
+            .css({
+                width: '100%'
+            })
+            .html(errorMsg);
+        // remove file from resumable?
+    });
+
+    r.on('complete', function () {
+        $('#upload-complete-modal').modal('show');
+    });
+
+    $('.resumable-droparea').on({
+        'dragenter': activateDropArea,
+        'dragleave': deactivateDropArea,
+        'dragend': deactivateDropArea,
+        'drop': deactivateDropArea
+    });
+
+     //***************************************************************
+
+    // Authentication displays upload table
+    $('.auth-token-form').on('submit', function (e) {
+        authorize();
+        return false;
+    });
+    $('.login').on('click', function() {authorize()});
+
+    // Field validations
     $('.field-sample-name').on('input', function (e) {
         validateField.call(this, reSampleName);
     });
@@ -286,43 +302,50 @@ $(function () {
         source: substringMatcher(referenceGenomes)
     });
 
+    // Set focus on first field in modal
+    $('#add-sample-modal, #edit-sample-modal, #edit-file-modal').on('shown.bs.modal', function () {
+        $(this).find(".form-control:first").focus();
+    });
+
+    // Enable sample name field after adding files to an existing sample
+    $('#add-sample-modal').on('hide.bs.modal', function () {
+        $(this).find('#add-sample-name').prop('disabled', false);
+    });
+
     // Remove file from add sample table
     $('.table-data').on('click', '.remove-file', function (e) {
-        var uniqueId = $(this).closest('tr').attr('id');
+        var uniqueId = $(this).closest('.sample-file-row').attr('id');
         r.removeFile(r.getFromUniqueIdentifier(uniqueId));
         $('#'+uniqueId).remove();
     });
 
     // Remove entire sample from add sample table
     $('.table-data').on('click', '.remove-sample', function (e) {
-        var uniqueIds = [];
+        var fileRows = $(this).closest('.sample-row').nextUntil();
 
-        fileRows = $(this).closest('tr').nextUntil('.sample-header-template');
         fileRows.each(function (i, value) {
-            uniqueIds.push($(value).attr('id'));
-        });
-        for (i = 0; i < uniqueIds.length; i++) {
-            resumableFile = r.getFromUniqueIdentifier(uniqueIds[i]);
+            var identifier = $(value).attr('id');
+            var resumableFile = r.getFromUniqueIdentifier(identifier);
             r.removeFile(resumableFile);
-        }
+        });
         fileRows.remove();
         $(this).closest('tbody').remove();
         checkUploadReady();
     });
 
-    $('body').on('click', '.modal-add-sample-button', function (e) {
-        $('#add-sample-name').prop('disabled', false);
-    });
-
     // Add files to a specific sample
     $('.table-data').on('click', '.add-files', function (e) {
         var sampleName = $(this).closest('tbody').attr('name');
+        var sampleRow = $(this).closest('.sample-row');
+
+        if (!sampleRow.nextUntil('.sample-row').is(':visible')) {
+            toggleFileRows(sampleRow);
+        }
         $('#add-sample-name').val(sampleName).prop('disabled', true).closest('.form-group').removeClass('has-error');
         $('.resumable-droparea').show();
     });
 
-
-    // Edit entire sample data
+    // Edit sample data
     $('.table-data').on('click', '.edit-sample, .sample-name', function (e) {
         var sampleRow = $(this).closest('.sample-row');
         var currentName = sampleRow.find('.sample-name').text();
@@ -334,7 +357,6 @@ $(function () {
         }
         return false;
     });
-
     // Enable editing of metadata options on entire sample
     $('input:checkbox').change( function() {
         if ($(this).is(':checked')) {
@@ -349,7 +371,7 @@ $(function () {
             $('.save-edit-sample').prop('disabled', false);
         }
     });
-
+    // Edit sample save
     $('body').on('click', '.save-edit-sample', function (e) {
         var oldName = $('#edit-sample-modal').attr('data-sample-name');
         var sampleTbody = $('tbody[name="' + oldName + '"]');
@@ -363,7 +385,7 @@ $(function () {
             if (fileType !== 'Other') {
                 fieldNames.push('platform', 'run-type', 'capture-kit', 'library');
             }
-            if (fileType === 'BAM/SAM' || fileType === 'VCF' || fileType === 'BED') {
+            if (!(fileType === 'FASTQ/FQ' || fileType === 'Other')) {
                 fieldNames.push('reference');
             }
 
@@ -376,21 +398,13 @@ $(function () {
         });
         $('#edit-sample-modal').removeAttr('data-sample-name').modal('hide');
     });
+    // Edit sample cancel
     $('body').on('click', '.cancel-edit-sample', function (e) {
         // remove error on sample name so it won't linger when edit sample is clicked again
          $('#edit-sample-name').closest('.form-group').removeClass('has-error');
     });
 
     // Edit file data
-    function toggleEditableFields (fileType) {
-        $('.edit-field').attr('disabled', fileType === 'Other');
-        $('#edit-file-reference').attr('disabled', fileType === 'FASTQ/FQ' || fileType === 'Other');
-        var single_run_type = $('#edit-file-run-type');
-        if (single_run_type.val() === null) {
-            single_run_type.val('N/A')
-        }
-    }
-
     $('.table-data').on('click', '.edit-file, .file-name', function (e) {
         // Fill modal with the current file's data, and set options according to file type
         var fileRow = $(this).closest('tr');
@@ -423,11 +437,11 @@ $(function () {
 
         toggleEditableFields(fileType);
     });
-
+    // Edit file's available fields based on file type
     $('#edit-file-file-type').change( function() {
         toggleEditableFields($(this).val())
     });
-
+    // Edit file save
     $('body').on('click', '.save-edit-file', function (e) {
         var fileRow = $('#'+$('#edit-file-modal').attr('data-file'));
 
@@ -445,80 +459,51 @@ $(function () {
         $('#edit-file-modal').removeAttr('data-file').modal('hide');
         $('.edit-field').attr('disabled', false);
     });
-
+    // Edit file cancel
     $('body').on('click', '.cancel-edit-file', function (e) {
         // Reset modal to default cleared state
         $('.edit-field').attr('disabled', false);
     });
 
-
     // Collapse the table contents and show only the panel header
     $('.panel-heading').on('click', function (e) {
-        $(this).closest('.panel').find('.panel-body, table, .panel-footer').toggleClass('collapsed');
-        if ($(this).next('.panel-body').hasClass('collapsed')) {
-            $(this).find('.glyphicon').removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
-        } else {
-            $(this).find('.glyphicon').removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
-        }
+        $(this).closest('.panel').find('.panel-body, table, .panel-footer, .collapse-icon').toggle();
     });
 
     // Collapse samples
     $('.table-data').on('click', '.sample-collapse', function (e){
-        var fileRows = $(this).closest('tr').nextUntil('.sample-header-template');
-        fileRows.each(function (i, value) {
-            if ($(value).hasClass('collapsed')) {
-                $(value).removeClass('collapsed').css('display','table-row');
-            } else {
-                $(value).addClass('collapsed').css('display', 'none');
-            }
-        });
-        var triangle = $(this).closest('tr').find('.sample-collapse.glyphicon');
-        var sampleRow = $(this).closest('tr');
-        if (sampleRow.hasClass('files-collapsed')) {
-            sampleRow.removeClass('files-collapsed');
-            triangle.removeClass('glyphicon-triangle-right').addClass('glyphicon-triangle-bottom');
-        } else {
-            sampleRow.addClass('files-collapsed');
-            triangle.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-right');
-        }
+        toggleFileRows($(this).closest('.sample-row'))
     });
 
     // Begin uploading files
-    $('.upload-sample-button').on('click', function (e) {
+    $('.start-upload').on('click', function (e) {
         if (!$(this).hasClass('disabled')) {
-            $(this).hide();
             $('.modal-add-sample-button').removeClass('active').addClass('disabled');
-            $('.cancel-upload, .resume-upload').show();
-            //hide the options column and show the status column
-            $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
-            $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-            $('.sample-option, .file-name, .sample-name').addClass('disabled');
-
+            $('.option, .progress, .cancel-upload, .resume-upload, .start-upload').toggle();
+            $('.sample-option, .file-name, .sample-name, .resume-upload').addClass('disabled');
             r.upload();
         }
     });
 
-    function resetSession() {
-        $('.pause-upload, .cancel-upload').hide();
-        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
-        //hide the options column and show the status column
-        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
-        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
-        $('.sample-option').removeClass('disabled');
-    }
-
     // Cancel uploading files
     $('body').on('click', '.cancel-upload', function (e){
-        for (var i = 0; i < r.files.length; i++) {
-            r.files[i].abort();
-            $.post('/cancel', {
+        $('.sample-file-row[id]').each(function (i, value) {
+            var resumableFile = r.getFromUniqueIdentifier($(value).attr('id'));
+            if (!resumableFile){
+                //clear completed file from table
+                value.remove();
+            } else {
+                resumableFile.abort()
+                $.post('/cancel', {
                 'authToken': $('#auth-token').val(),
-                'resumableIdentifier': r.files[i].uniqueIdentifier
+                'resumableIdentifier': resumableFile.uniqueIdentifier
             })
+            }
+        });
 
-        }
-        resetSession();
-        $('.resume-upload').removeClass('disabled');
+        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
+        $('.option, .progress, .cancel-upload').toggle();
+        $('.sample-option, .resume-upload').removeClass('disabled');
     });
 
     // Resume uploading files
@@ -528,10 +513,7 @@ $(function () {
         }
         $(this).addClass('disabled');
         $('.modal-add-sample-button').removeClass('active').addClass('disabled');
-        $('.cancel-upload, .resume-upload').show();
-        //hide the options column and show the status column
-        $('.sample-table td:nth-child(11), .sample-table th:nth-child(11)').toggle();
-        $('.sample-table td:nth-child(10), .sample-table th:nth-child(10)').toggle();
+        $('.option, .progress, .cancel-upload').toggle();
         $('.sample-option, .file-name, .sample-name').addClass('disabled');
     });
 
@@ -540,11 +522,12 @@ $(function () {
         for (var i = 0; i < r.files.length; i++) {
             r.removeFile(r.files[i]);
         }
-        resetSession();
-
+        $('.modal-add-sample-button').removeClass('disabled').addClass('active');
+        //hide the options column and show the status column
+        $('.option, .progress, .cancel-upload, .resume-upload, .start-upload').toggle();
+        $('.sample-option').removeClass('disabled');
         $('tbody:first').nextUntil().remove();
-        $('.resume-upload').hide().addClass('disabled');
-        $('.upload-sample-button').show().addClass('disabled');
+        $('.resume-upload, .start-upload').addClass('disabled');
         $('#upload-complete-modal').modal('hide');
     });
 

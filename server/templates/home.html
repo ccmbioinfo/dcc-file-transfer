@@ -42,10 +42,11 @@
         <div class="row col-sm-10 col-sm-offset-1 sample-table">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <span class="glyphicon glyphicon-triangle-right pull-left" aria-hidden="true"></span>Select
-                    Samples for Upload
+                    <span class="collapse-icon glyphicon glyphicon-triangle-bottom pull-left" aria-hidden="true"></span>
+                    <span class="collapse-icon glyphicon glyphicon-triangle-right pull-left" style="display: none;" aria-hidden="true"></span>
+                    Select Samples for Upload
                 </div>
-                <div class="panel-body collapsed">
+                <div class="panel-body">
                     <p>
                         To start uploading your files hit the <em>Add Sample</em> button. You will be required to
                         provide a sample name and specify all applicable metadata for the sample you wish to upload.
@@ -62,25 +63,28 @@
                         </button>
                     </div>
                 </div>
-                <table class="table table-condensed table-data collapsed">
+                <table class="table table-condensed table-data">
                     <thead>
                     <tr class="active">
                         <th></th>
-                        <th colspan="2">Files</th>
-                        <th>File Type</th>
-                        <th>Readset</th>
-                        <th>Platform</th>
-                        <th>Run Type</th>
-                        <th>Capture Kit</th>
-                        <th>Library</th>
-                        <th>Reference</th>
-                        <th class="upload-status">Status</th>
-                        <th class="options">Options</th>
+                        <th class="files header" colspan="2">Files</th>
+                        <th class="type header">File Type</th>
+                        <th class="readset header">Readset</th>
+                        <th class="platform header">Platform</th>
+                        <th class="run-type header">Run Type</th>
+                        <th class="capture-kit header">Capture Kit</th>
+                        <th class="library header">Library</th>
+                        <th class="reference header">Reference</th>
+                        <th class="progress header">Status</th>
+                        <th class="option header">Options</th>
                     </tr>
                     </thead>
                     <tbody class="sample-template">
                     <tr class="sample-row sample-header-template">
-                        <td class="sample-collapse"><span class="collapse-icon glyphicon glyphicon-folder-open"></span></td>
+                        <td class="sample-collapse">
+                            <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
+                            <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
+                        </td>
                         <td class="sample-collapse"><a class="sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
                         <td class="sample-collapse" colspan="8"></td>
                         <td class="sample-option">
@@ -98,18 +102,18 @@
                     </tr>
                     <tr class="sample-file-row sample-file-template">
                         <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
-                        <td colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
-                        <td class="file-type"></td>
-                        <td class="file-readset"></td>
-                        <td class="file-platform"></td>
-                        <td class="file-run-type"></td>
-                        <td class="file-capture-kit"></td>
-                        <td class="file-library"></td>
-                        <td class="file-reference"></td>
-                        <td class="progress">
+                        <td class="cell" colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
+                        <td class="file-type cell"></td>
+                        <td class="file-readset cell"></td>
+                        <td class="file-platform cell"></td>
+                        <td class="file-run-type cell"></td>
+                        <td class="file-capture-kit cell"></td>
+                        <td class="file-library cell"></td>
+                        <td class="file-reference cell"></td>
+                        <td class="file-progress progress cell">
                             <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                         </td>
-                        <td class="option">
+                        <td class="file-option option cell">
                             <span class="option-icon edit-file glyphicon glyphicon-pencil"
                                   data-toggle="modal"
                                   data-target="#edit-file-modal"
@@ -120,8 +124,8 @@
                     </tr>
                     </tbody>
                 </table>
-                <div class="panel-footer collapsed">
-                    <button type="button" class="btn btn-primary col-xs-2 pull-right upload-sample-button disabled"
+                <div class="panel-footer">
+                    <button type="button" class="btn btn-primary col-xs-2 pull-right start-upload disabled"
                             data-toggle="tooltip" title="Upload all files to the DCC">
                         <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
                     </button>
@@ -419,15 +423,15 @@
         <div class="row col-sm-10 col-sm-offset-2 dcc-table">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <span class="glyphicon glyphicon-triangle-right pull-left" aria-hidden="true"></span>DCC
+                    <span class="glyphicon glyphicon-triangle-down pull-left" aria-hidden="true"></span>DCC
                 </div>
-                <div class="panel-body collapsed">
+                <div class="panel-body">
                     <p>
                         Instructions on how to request files that are currently sitting on the DCC. Files won't be available
                         for direct download immediately.
                     </p>
                 </div>
-                <table class="table table-condensed collapsed" id="dcc-table-data">
+                <table class="table table-condensed" id="dcc-table-data">
                     <thead>
                     <tr class="active">
                         <th>Sample Name</th>
