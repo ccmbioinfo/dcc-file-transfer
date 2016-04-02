@@ -19,14 +19,18 @@
                 Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
             </div>
             <form class="form-horizontal auth-token-form col-sm-10">
-                <div class="form-group has-feedback">
+                <div class="form-group">
                     <label for="auth-token" class="control-label">Transfer code</label>
                     <div class="input-group">
-                        <input id="auth-token" type="text" name="authToken" class="form-control"
-                               placeholder="Please enter your transfer code">
-                        <span class="transfer-error glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
-                        <span class="btn btn-primary input-group-addon login auth-success">
-                            <span class="glyphicon glyphicon-log-in transfer-symbol"></span> Login
+                        <div class="validated-input">
+                            <input id="auth-token" type="text" name="authToken" class="form-control"
+                                   placeholder="Please enter your transfer code">
+                            <span class="transfer-code-invalid glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary login auth-success">
+                                <span class="glyphicon glyphicon-log-in transfer-symbol"></span> Login
+                            </button>
                         </span>
                     </div>
                 </div>
@@ -79,8 +83,8 @@
                         <th class="option header">Options</th>
                     </tr>
                     </thead>
-                    <tbody class="sample-template">
-                    <tr class="sample-row sample-header-template">
+                    <tbody class="sample-template sample-section">
+                    <tr class="sample-header-row sample-header-template">
                         <td class="sample-collapse">
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
@@ -168,13 +172,13 @@
                             <div class="form-group">
                                 <label for="add-platform" class="col-sm-3 control-label">Platform</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead" id="add-platform" type="text" placeholder="Sequencing platform">
+                                    <input class="typeahead field-platform" id="add-platform" type="text" placeholder="Sequencing platform">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="add-run-type" class="col-sm-3 control-label">Run Type</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" id="add-run-type">
+                                    <select class="form-control field-run-type" id="add-run-type">
                                         <option>Single End</option>
                                         <option>Paired End</option>
                                         <option selected>N/A</option>
@@ -184,7 +188,7 @@
                             <div class="form-group">
                                 <label for="add-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead" id="add-capture-kit" type="text" placeholder="Capture kit name">
+                                    <input class="typeahead field-capture-kit" id="add-capture-kit" type="text" placeholder="Capture kit name">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -196,7 +200,7 @@
                             <div class="form-group">
                                 <label for="add-reference" class="col-sm-3 control-label">Reference Genome</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead" id="add-reference" type="text" placeholder="Reference genome">
+                                    <input class="typeahead field-reference" id="add-reference" type="text" placeholder="Reference genome">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -255,7 +259,7 @@
                             <div class="form-group">
                                 <label for="edit-sample-platform" class="col-sm-3 control-label">Platform</label>
                                 <div class="col-sm-7">
-                                    <input class="typeahead form-control" id="edit-sample-platform" type="text" placeholder="Sequencing platform" disabled>
+                                    <input class="typeahead form-control field-platform" id="edit-sample-platform" type="text" placeholder="Sequencing platform" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -265,7 +269,7 @@
                             <div class="form-group">
                                 <label for="edit-sample-run-type" class="col-sm-3 control-label">Run Type</label>
                                 <div class="col-sm-7">
-                                    <select class="form-control" id="edit-sample-run-type" disabled>
+                                    <select class="form-control field-run-type" id="edit-sample-run-type" disabled>
                                         <option>Single End</option>
                                         <option>Paired End</option>
                                         <option selected>N/A</option>
@@ -279,7 +283,7 @@
                             <div class="form-group">
                                 <label for="edit-sample-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
                                 <div class="col-sm-7">
-                                    <input class="typeahead form-control" id="edit-sample-capture-kit" type="text" placeholder="Capture kit name" disabled>
+                                    <input class="typeahead form-control field-capture-kit" id="edit-sample-capture-kit" type="text" placeholder="Capture kit name" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -299,7 +303,7 @@
                             <div class="form-group">
                                 <label for="edit-sample-reference" class="col-sm-3 control-label">Reference Genome</label>
                                 <div class="col-sm-7">
-                                    <input class="typeahead form-control" id="edit-sample-reference" type="text" placeholder="Reference genome" disabled>
+                                    <input class="typeahead form-control field-reference" id="edit-sample-reference" type="text" placeholder="Reference genome" disabled>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
                                      <input type="checkbox" value="">
@@ -336,15 +340,15 @@
                             </p>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">File Name</label>
-                                <div class="col-sm-9"><p class="form-control-static file-name-title">Filename to go here</p></div>
+                                <div class="col-sm-9"><p class="form-control-static file-name-title">filename.txt</p></div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">File Type</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" id="edit-file-file-type">
+                                    <select class="form-control field-type" id="edit-file-type">
                                         <option>BAM/SAM</option>
                                         <option>BED</option>
-                                        <option>FASTQ/FQ</option>
+                                        <option>FASTQ</option>
                                         <option>VCF</option>
                                         <option>Other</option>
                                     </select>
@@ -359,13 +363,13 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Platform</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead form-control edit-field" id="edit-file-platform" type="text" placeholder="Sequencing platform">
+                                    <input class="typeahead form-control field-platform" id="edit-file-platform" type="text" placeholder="Sequencing platform">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Run Type</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control edit-field" id="edit-file-run-type">
+                                    <select class="form-control field-run-type" id="edit-file-run-type">
                                         <option>Single End</option>
                                         <option>Paired End</option>
                                         <option>N/A</option>
@@ -375,19 +379,19 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Capture Kit</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead form-control edit-field" id="edit-file-capture-kit" type="text" placeholder="Capture kit name">
+                                    <input class="typeahead form-control field-capture-kit" id="edit-file-capture-kit" type="text" placeholder="Capture kit name">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Library Name</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control edit-field field-library" id="edit-file-library" placeholder="Library name">
+                                    <input type="text" class="form-control field-library" id="edit-file-library" placeholder="Library name">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Reference Genome</label>
                                 <div class="col-sm-9">
-                                    <input class="typeahead form-control edit-field" id="edit-file-reference" type="text" placeholder="Reference genome">
+                                    <input class="typeahead form-control field-reference" id="edit-file-reference" type="text" placeholder="Reference genome">
                                 </div>
                             </div>
                         </form>

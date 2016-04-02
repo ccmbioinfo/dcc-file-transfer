@@ -8,7 +8,7 @@ from flask import jsonify, make_response, request, g, render_template
 from server import app
 from .database import connect_db
 from .utils import valid_auth_token, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks, \
-    remove_from_uploads, check_cancelled_status, update_files_table
+    remove_from_uploads, check_status, update_files_table
 
 INVALID_AUTH_TOKEN_MSG = 'Error: Invalid transfer code'
 
@@ -130,7 +130,7 @@ def resumable_upload():
     chunk_filename = get_chunk_filename(temp_dir, form_dict['filename'], form_dict['chunk_number'])
 
     # Check that the upload_status was not changed to cancel before saving the chunk
-    if not check_cancelled_status(form_dict['identifier']):
+    if check_status(form_dict['identifier']) != 'cancelled':
         if not os.path.isdir(temp_dir):
             try:
                 # Create a temp directory using the unique identifier for the file
@@ -195,8 +195,9 @@ def cancel_upload():
     if not valid_auth_token(auth_token):
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
-    remove_from_uploads(get_tempdir(auth_token, identifier))
-    g.db.execute('update files set upload_status="cancelled" where identifier=?', (identifier,))
-    g.db.commit()
+    if check_status(identifier) != 'complete':
+        remove_from_uploads(get_tempdir(auth_token, identifier))
+        g.db.execute('update files set upload_status="cancelled" where identifier=?', (identifier,))
+        g.db.commit()
 
     return make_response(jsonify({'message': 'Cancel received'}), 200)

@@ -21,11 +21,11 @@ def bam_test(data):
         return f.read() == bam_eof
 
 
-def check_cancelled_status(identifier):
+def check_status(identifier):
     # Check if identifier is in the db
     if g.db.execute('select exists(select 1 from files where identifier=? LIMIT 1)', (identifier,)).fetchone()[0]:
         return g.db.execute('select upload_status from files where identifier=?',
-                            (identifier,)).fetchone()[0] == 'cancelled'
+                            (identifier,)).fetchone()[0]
     return False
 
 

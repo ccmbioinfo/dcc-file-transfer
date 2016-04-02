@@ -6,6 +6,35 @@ $(function () {
     var captureKits = ['Nextera Rapid Capture', 'Agilent SureSelect', 'NimbleGen SeqCap EZ', 'Illumina TruSeq',
         'Life Technologies TargetSeq', 'Life Technologies AmpliSeq', 'Agilent HaloPlex'];
     var referenceGenomes = ['GRCh38/hg38', 'GRCh37/hg19', 'NCBI36/hg18'];
+    var fieldProperties = {
+        'type': {'type': 'freetext', 'default': ''},
+        'readset': {'type': 'freetext', 'default': ''},
+        'run-type': {'type': 'freetext', 'default': 'N/A'},
+        'library': {'type': 'freetext', 'default': ''},
+        'platform': {'type': 'typeahead', 'default': ''},
+        'capture-kit': {'type': 'typeahead', 'default': ''},
+        'reference': {'type': 'typeahead', 'default': ''}
+    };
+    var fieldNames = $.map(fieldProperties, function (value, key) { return key });
+    var fileExtensions = {
+        '.bam': 'BAM/SAM',
+        '.sam': 'BAM/SAM',
+        '.sam.gz': 'BAM/SAM',
+        '.fastq': 'FASTQ',
+        '.fastq.gz': 'FASTQ',
+        '.fq': 'FASTQ',
+        '.fq.gz': 'FASTQ',
+        '.bed': 'BED',
+        '.vcf': 'VCF',
+        '.vcf.gz': 'VCF'
+    };
+    var fileTypeProperties = {
+        'BAM/SAM': {'fields': ['type', 'readset', 'platform', 'run-type', 'capture-kit', 'library', 'reference']},
+        'FASTQ': {'fields': ['type', 'readset', 'platform', 'run-type', 'capture-kit', 'library']},
+        'BED': {'fields': ['type', 'readset', 'platform', 'run-type', 'capture-kit', 'library', 'reference']},
+        'VCF': {'fields': ['type', 'readset', 'platform', 'run-type', 'capture-kit', 'library', 'reference']},
+        'Other': {'fields': ['type', 'readset']}
+    };
 
     var substringMatcher = function(strs) {
         return function findMatches(queryString, cb) {
@@ -48,7 +77,7 @@ $(function () {
         var fileRow = getFileProgressElt(file);
         return {
             'authToken': $('#auth-token').val(),
-            'sampleName': fileRow.closest('tbody').attr('name'),
+            'sampleName': fileRow.closest('.sample-section').attr('name'),
             'fileType': fileRow.find('.file-type').text(),
             'readset': fileRow.find('.file-readset').text(),
             'platform': fileRow.find('.file-platform').text(),
@@ -66,12 +95,12 @@ $(function () {
                 $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
                 $('.auth-success').addClass('disabled');
                 $('.sample-table').show();
-                $('.transfer-error').hide();
+                $('.transfer-code-invalid').hide();
                 $('.logout').toggle();
             })
             .fail(function (data) {
                 $('#auth-token').closest('.form-group').addClass('has-error');
-                $('.transfer-error').show();
+                $('.transfer-code-invalid').show();
                 return false;
             });
     }
@@ -84,16 +113,16 @@ $(function () {
     }
 
     function toggleEditableFields (fileType) {
-        $('.edit-field').attr('disabled', fileType === 'Other');
-        $('#edit-file-reference').attr('disabled', fileType === 'FASTQ/FQ' || fileType === 'Other');
-        var single_run_type = $('#edit-file-run-type');
-        if (single_run_type.val() === null) {
-            single_run_type.val('N/A')
+        var editableFieldNames = fileTypeProperties[fileType]['fields'];
+        for (var i = 0; i < fieldNames.length; i++) {
+            var fieldName = fieldNames[i];
+            var isEditable = editableFieldNames.indexOf(fieldName) >= 0;
+            $('#edit-file-' + fieldName).attr('disabled', !isEditable);
         }
     }
 
     function createFileRow(file, sampleName) {
-        var sampleTable = $('tbody[name="' + sampleName + '"]');
+        var sampleTable = $('.sample-section[name="' + sampleName + '"]');
         var fileTemplate = $('.sample-file-template').first().clone();
         fileTemplate
             .attr('id', file.uniqueIdentifier)
@@ -101,25 +130,12 @@ $(function () {
             .html(file.fileName);
 
         sampleTable.append(fileTemplate);
-        if (sampleTable.find('tr').hasClass('files-collapsed')) {
-            fileTemplate.addClass('collapsed');
-        }
         // Check for file type to determine whether metadata options should be shown
         var fileType = 'Other';
-        var fileTypes = {'.bam': 'BAM/SAM',
-                         '.sam': 'BAM/SAM',
-                         '.sam.gz': 'BAM/SAM',
-                         '.fastq': 'FASTQ/FQ',
-                         '.fastq.gz': 'FASTQ/FQ',
-                         '.fq': 'FASTQ/FQ',
-                         '.fq.gz': 'FASTQ/FQ',
-                         '.bed': 'BED',
-                         '.vcf': 'VCF',
-                         '.vcf.gz': 'VCF'};
-        for (var ext in fileTypes) {
-            if (fileTypes.hasOwnProperty(ext) &&
+        for (var ext in fileExtensions) {
+            if (fileExtensions.hasOwnProperty(ext) &&
                 file.fileName.toLowerCase().indexOf(ext) > -1) {
-                fileType = fileTypes[ext];
+                fileType = fileExtensions[ext];
             }
         }
         fileTemplate.find('.file-type').text(fileType);
@@ -128,15 +144,17 @@ $(function () {
             fileTemplate.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
             fileTemplate.find('.file-capture-kit').text($('#add-capture-kit').val());
             fileTemplate.find('.file-library').text($('#add-library').val());
-            if (fileType !== 'FASTQ/FQ') {
+            if (fileType !== 'FASTQ') {
                 fileTemplate.find('.file-reference').text($('#add-reference').val());
             }
         }
-        fileTemplate.show();
+        fileTemplate.removeClass('sample-file-template');
 
         // Wait until all files have been added before clearing the modal
         // Plus one to include the original cloned sample-file-template
-        if ($('.sample-file-template').length === r.files.length + 1) {resetSampleModal()};
+        if ($('.sample-file-template').length === r.files.length + 1) {
+            resetSampleModal();
+        }
         checkUploadReady();
         $('#add-sample-modal').modal('hide');
         $('.resumable-droparea').hide();
@@ -148,7 +166,7 @@ $(function () {
 
     function toggleFileRows(sampleRow) {
         sampleRow.find('.sample-collapse-icon').toggle();
-        sampleRow.nextUntil('.sample-row').toggle('fast');
+        sampleRow.nextUntil('.sample-header-row').toggle('fast');
     }
 
     function validateField(regex) {
@@ -183,16 +201,26 @@ $(function () {
     r.on('fileAdded', function (file) {
         var sampleName = $('#add-sample-name').val();
         // Check if sample header already exists
-        if ($('tbody[name="'+ sampleName +'"]').length === 0) {
-            // Add the sample header
-            var sampleTemplate = $('.sample-header-template').first().clone();
-            sampleTemplate.find('.sample-name').html(sampleName);
+        if ($('.sample-section[name="'+ sampleName +'"]').length === 0) {
+            // Create a new sample section
+            var sampleTemplate = $('.sample-template').first().clone();
+
+            // Remove the file template row
+            sampleTemplate.find('.sample-file-template').remove();
+
             sampleTemplate
-                .wrap('<tbody></tbody>')
-                .parent()
+                .find('.sample-name')
+                .html(sampleName);
+
+            sampleTemplate
                 .attr('name', sampleName)
                 .appendTo($('.table-data'));
-            sampleTemplate.show();
+
+            // Show
+            sampleTemplate
+                .removeClass('sample-template')
+                .find('.sample-header-row')
+                .removeClass('sample-header-template');
         }
         createFileRow(file, sampleName);
     });
@@ -321,7 +349,7 @@ $(function () {
 
     // Remove entire sample from add sample table
     $('.table-data').on('click', '.remove-sample', function (e) {
-        var fileRows = $(this).closest('.sample-row').nextUntil();
+        var fileRows = $(this).closest('.sample-header-row').nextUntil();
 
         fileRows.each(function (i, value) {
             var identifier = $(value).attr('id');
@@ -336,9 +364,9 @@ $(function () {
     // Add files to a specific sample
     $('.table-data').on('click', '.add-files', function (e) {
         var sampleName = $(this).closest('tbody').attr('name');
-        var sampleRow = $(this).closest('.sample-row');
+        var sampleRow = $(this).closest('.sample-header-row');
 
-        if (!sampleRow.nextUntil('.sample-row').is(':visible')) {
+        if (!sampleRow.nextUntil('.sample-header-row').is(':visible')) {
             toggleFileRows(sampleRow);
         }
         $('#add-sample-name').val(sampleName).prop('disabled', true).closest('.form-group').removeClass('has-error');
@@ -347,7 +375,7 @@ $(function () {
 
     // Edit sample data
     $('.table-data').on('click', '.edit-sample, .sample-name', function (e) {
-        var sampleRow = $(this).closest('.sample-row');
+        var sampleRow = $(this).closest('.sample-header-row');
         var currentName = sampleRow.find('.sample-name').text();
         $('#edit-sample-name').val(currentName);
         // Show modal in data-target
@@ -376,19 +404,12 @@ $(function () {
         var oldName = $('#edit-sample-modal').attr('data-sample-name');
         var sampleTbody = $('tbody[name="' + oldName + '"]');
         var newName = $('#edit-sample-name').val();
-        var fileRows = sampleTbody.find('.sample-row').nextUntil();
+        var fileRows = sampleTbody.find('.sample-header-row').nextUntil();
 
         sampleTbody.attr('name', newName).find('.sample-name').text(newName);
         fileRows.each(function (index) {
             var fileType = $(this).find('.file-type').text();
-            var fieldNames = ['readset'];
-            if (fileType !== 'Other') {
-                fieldNames.push('platform', 'run-type', 'capture-kit', 'library');
-            }
-            if (!(fileType === 'FASTQ/FQ' || fileType === 'Other')) {
-                fieldNames.push('reference');
-            }
-
+            var fieldNames = fileTypeProperties[fileType]['fields'];
             for (var i = 0; i < fieldNames.length; i++) {
                 var fieldName = fieldNames[i];
                 if ($('#edit-sample-' + fieldName).closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
@@ -409,60 +430,60 @@ $(function () {
         // Fill modal with the current file's data, and set options according to file type
         var fileRow = $(this).closest('tr');
         var fileType = fileRow.find('.file-type').text();
-
-        $('#edit-file-modal').attr('data-file', fileRow.attr('id'));
+        var modal = $('#edit-file-modal');
+        modal.attr('data-file-id', fileRow.attr('id'));
         $('.file-name-title').text(fileRow.find('.file-name').text());
-        $('#edit-file-file-type').val(fileType);
 
-        var fields = {
-            'readset': 'freetext',
-            'run-type': 'freetext',
-            'library': 'freetext',
-            'platform': 'typeahead',
-            'capture-kit': 'typeahead',
-            'reference': 'typeahead'
-        };
-        for (var fieldName in fields) {
-            if (fields.hasOwnProperty(fieldName)) {
-                var editField = $('#edit-file-' + fieldName);
-                var tableValue = fileRow.find('.file-' + fieldName).text();
-                var fieldType = fields[fieldName];
-                if (fieldType === 'freetext') {
-                    editField.val(tableValue);
-                } else if (fieldType === 'typeahead') {
-                    editField.typeahead('val', tableValue);
-                }
-            }
-        }
+        copyFromTableToModal(fileRow, modal);
 
         toggleEditableFields(fileType);
     });
+
     // Edit file's available fields based on file type
-    $('#edit-file-file-type').change( function() {
+    $('#edit-file-type').change( function() {
         toggleEditableFields($(this).val())
     });
-    // Edit file save
-    $('body').on('click', '.save-edit-file', function (e) {
-        var fileRow = $('#'+$('#edit-file-modal').attr('data-file'));
 
-        fileRow.find('.file-type').text($('#edit-file-file-type').val());
-        fileRow.find('.file-readset').text($('#edit-file-readset').val());
-        var fileOptions = ['platform','run-type','capture-kit','library','reference'];
-        for (var i = 0; i < fileOptions.length; i++) {
-            var option = fileOptions[i];
-            if ($('#edit-file-'+option).is('[disabled=disabled]')) {
-                fileRow.find('.file-'+option).text('');
-            } else {
-                fileRow.find('.file-'+option).text($('#edit-file-'+option).val());
+    function copyFromTableToModal(tableRow, modal) {
+        for (var fieldName in fieldProperties) {
+            if (fieldProperties.hasOwnProperty(fieldName)) {
+                var destField = $('#edit-file-' + fieldName);
+                var fieldType = fieldProperties[fieldName]['type'];
+                var defaultValue = fieldProperties[fieldName]['default'];
+                var sourceValue = fileRow.find('.file-' + fieldName).text() || defaultValue;
+                if (fieldType === 'freetext') {
+                    destField.val(sourceValue);
+                } else if (fieldType === 'typeahead') {
+                    destField.typeahead('val', sourceValue);
+                }
             }
         }
-        $('#edit-file-modal').removeAttr('data-file').modal('hide');
-        $('.edit-field').attr('disabled', false);
-    });
-    // Edit file cancel
-    $('body').on('click', '.cancel-edit-file', function (e) {
-        // Reset modal to default cleared state
-        $('.edit-field').attr('disabled', false);
+    }
+
+    function copyFromModalToTable(modal, tableRow) {
+        for (var fieldName in fieldProperties) {
+            if (fieldProperties.hasOwnProperty(fieldName)) {
+                var fieldType = fieldProperties[fieldName]['type'];
+                var value = '';
+                var field = $('#edit-file-' + fieldName);
+                if (!field.prop('disabled')) {
+                    if (fieldType === 'freetext') {
+                        value = field.val();
+                    } else if (fieldType === 'typeahead') {
+                        value = field.typeahead('val');
+                    }
+                }
+                tableRow.find('.file-' + fieldName).text(value);
+            }
+        }
+    }
+
+    // Edit file save
+    $('body').on('click', '.save-edit-file', function (e) {
+        var modal = $(this).closest('.modal');
+        var tableRow = $('#' + modal.attr('data-file-id'));
+        copyFromModalToTable(modal, tableRow);
+        modal.removeAttr('data-file-id').modal('hide');
     });
 
     // Collapse the table contents and show only the panel header
@@ -472,7 +493,7 @@ $(function () {
 
     // Collapse samples
     $('.table-data').on('click', '.sample-collapse', function (e){
-        toggleFileRows($(this).closest('.sample-row'))
+        toggleFileRows($(this).closest('.sample-header-row'))
     });
 
     // Begin uploading files
@@ -493,7 +514,7 @@ $(function () {
                 //clear completed file from table
                 value.remove();
             } else {
-                resumableFile.abort()
+                resumableFile.abort();
                 $.post('/cancel', {
                 'authToken': $('#auth-token').val(),
                 'resumableIdentifier': resumableFile.uniqueIdentifier

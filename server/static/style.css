@@ -93,12 +93,15 @@ body {
 
 .dcc-table,
 .sample-table,
-.sample-file-template,
-.sample-header-template,
 .cancel-upload,
 .pause-upload,
 .resume-upload {
     display: none;
+}
+
+.sample-file-template,
+.sample-header-template {
+    display: none !important;
 }
 
 /* Transfer code input */
@@ -114,9 +117,13 @@ body {
     border-color: #204d74;
 }
 
-.transfer-error {
+.transfer-code-invalid {
     display: none;
-    padding-right: 95px;
+    z-index: 4;
+}
+
+.validated-input {
+    position: relative;
 }
 
 /* Table properties */
@@ -150,16 +157,15 @@ th.header {
     text-align: left;
 }
 
-th.header.files,
-th.header.option {
+th.header.files, th.header.option, th.header.progress {
     text-align: center;
 }
 
-tr.sample-header-template {
+.sample-header-row {
     background-color: #f5f5f5;
 }
 
-tr.sample-header-template:hover {
+.sample-header-row:hover {
     background-color: #dadada;
 }
 
@@ -175,8 +181,7 @@ tr.sample-header-template:hover {
 }
 
 .table > tbody > tr > .option,
-.table > tbody > tr > .sample-option,
-.table > thead > tr > th.progress {
+.table > tbody > tr > .sample-option {
     text-align: right;
     padding-right: 20px;
 }
@@ -193,7 +198,7 @@ tr.sample-header-template:hover {
     color: #aaaaaa;
 }
 
-.panel > .table > tbody > .sample-header-template > td.folder-icon {
+.panel > .table > tbody > .sample-header-row > td.folder-icon {
     text-align: right;
     width: 28px;
 }
@@ -428,7 +433,7 @@ input.error {
     border-radius: 0px 4px 4px 0px;
 }
 
-.upload-sample-button,
+.start-upload,
 .resume-upload,
 .pause-upload {
     width: 120px;
@@ -446,7 +451,7 @@ input.error {
     height: 28px;
 }
 
-.upload-sample-button.disabled,
+.start-upload.disabled,
 .add-sample-button.disabled {
     pointer-events: none;
 }
@@ -521,6 +526,7 @@ input.error {
 .progress {
     background-color: white;
     box-shadow: none;
+    display: none;
 }
 
 .progress-bar {
