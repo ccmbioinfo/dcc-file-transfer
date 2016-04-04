@@ -157,7 +157,6 @@ $(function () {
         }
         checkUploadReady();
         $('#add-sample-modal').modal('hide');
-        //$('.resumable-droparea').hide();
     }
 
     function checkUploadReady() {
@@ -229,27 +228,27 @@ $(function () {
         var samples = $('.sample-section:first').nextUntil();
 
         samples.each(function (i, value) {
-            if (clearSampleOfFiles($(value).attr('name'))) {
+            if (clearSampleOfFiles($(value).attr('name')) === 0) {
                 value.remove()
             }
         });
     }
 
     function clearSampleOfFiles(sampleName) {
-        var sampleTbody =  $('.sample-section[name="' + sampleName + '"]');
-        var sampleRow = sampleTbody.find('.sample-header-row');
+        var sampleSection =  $('.sample-section[name="' + sampleName + '"]');
+        var sampleRow = sampleSection.find('.sample-header-row');
         var fileRows = sampleRow.nextUntil();
-        var identifiers = $.map(r.files, function (resumableFile) { return resumableFile.uniqueIdentifier });
 
         fileRows.each(function (i, value) {
             var id = $(value).attr('id');
-            if ($.inArray(id, identifiers) === -1) {
+            if (!r.getFromUniqueIdentifier(id)) {
                 value.remove();
             } else {
+                // rebuild resumableFile Object to initial state
                 r.getFromUniqueIdentifier(id).bootstrap();
             }
         });
-        return sampleRow.nextUntil().length === 0;
+        return sampleRow.nextUntil().length;
     }
 
     function clearErrorTable() {
@@ -257,16 +256,23 @@ $(function () {
     }
 
     function addFileToErrorTable (resumableFile, errorMsg) {
-        var fileErrorRow = $('.file-error-template').clone();
-        var fileName = resumableFile.fileName;
         var id = resumableFile.uniqueIdentifier;
-        var sampleName = $('#'+id).closest('.sample-section').attr('name');
+        var fileErrorFields = {
+            'sample': $('#' + id).closest('.sample-section').attr('name'),
+            'file': resumableFile.fileName,
+            'msg': errorMsg
+        };
 
         if ($('error_'+id).length === 0) {
-            fileErrorRow.attr('id', 'error_' + id);
-            fileErrorRow.find('.error-sample').text(sampleName);
-            fileErrorRow.find('.error-file').text(fileName);
-            fileErrorRow.find('.error-code').text(errorMsg);
+            var fileErrorRow = $('.file-error-template').clone();
+            fileErrorRow.attr('id', 'error-' + id);
+
+            for (var fieldName in fileErrorFields) {
+                if (fileErrorFields.hasOwnProperty(fieldName)) {
+                    fileErrorRow.find('.error-' + fieldName).text(fileErrorFields[fieldName])
+                }
+            }
+
             fileErrorRow.removeClass('file-error-template').addClass('file-error');
             $('.error-section').append(fileErrorRow);
         }
