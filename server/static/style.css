@@ -1,126 +1,594 @@
 /* Downloaded from: https://github.com/23/resumable.js/blob/master/samples/Node.js/public/style.css */
 
 /* Reset */
-body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{margin:0;padding:0;}
-table{border-collapse:collapse;border-spacing:0;}
-fieldset,img{border:0;}
-address,caption,cite,code,dfn,th,var{font-style:normal;font-weight:normal;}
-ol,ul {list-style:none;}
-caption,th {text-align:left;}
-h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}
-q:before,q:after{content:'';}
-abbr,acronym {border:0;}
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td {
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+fieldset, img {
+    border: 0;
+}
+
+address, caption, cite, code, dfn, th, var {
+    font-style: normal;
+    font-weight: normal;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+caption, th {
+    text-align: left;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-size: 100%;
+    font-weight: normal;
+}
+
+q:before, q:after {
+    content: '';
+}
+
+abbr, acronym {
+    border: 0;
+}
 
 /* Baseline */
-body, p, h1, h2, h3, h4, h5, h6 {font:normal 12px/1.3em Helvetica, Arial, sans-serif; color:#333; }
-h1 {font-size:22px; font-weight:bold;}
-h2 {font-size:19px; font-weight:bold;}
-h3 {font-size:16px; font-weight:bold;}
-h4 {font-size:14px; font-weight:bold;}
-h5 {font-size:12px; font-weight:bold;}
-p {margin:10px 0;}
+body, p, h1, h2, h3, h4, h5, h6 {
+    font: normal 12px/1.3em Helvetica, Arial, sans-serif;
+    color: #333;
+}
 
-body {text-align:center; margin:40px;}
-#frame {margin:0 auto; width:800px; text-align:left;}
+h1 {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 19px;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+h4 {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+h5 {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+p {
+    margin: 10px 0;
+}
+
+th, tr, td, p {
+    text-align: left;
+}
+
+body {
+    text-align: center;
+    margin: 40px;
+}
+
+#frame {
+    margin: 0 auto;
+    width: 800px;
+    text-align: left;
+}
+
+.dcc-table,
+.sample-table,
+.cancel-upload,
+.pause-upload,
+.resume-upload {
+    display: none;
+}
+
+.sample-file-template,
+.sample-header-template {
+    display: none !important;
+}
+
+/* Transfer code input */
+.input-group-addon.btn {
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+
+.input-group-addon.btn:hover {
+    color: #fff;
+    background-color: #286090;
+    border-color: #204d74;
+}
+
+.transfer-code-invalid {
+    display: none;
+    z-index: 4;
+}
+
+.validated-input {
+    position: relative;
+}
+
+/* Table properties */
+.panel > .table > thead > tr.active > th,
+.panel > .panel-heading,
+.panel-footer {
+    background-color: #eee;
+    border-color: #ddd;
+}
+
+.panel-heading:hover {
+    cursor: pointer;
+    background-color: #dadada;
+}
+
+.panel, .auth-token-form {
+    margin-top: 30px;
+}
+
+.panel-heading {
+    font-size: 16px;
+}
+
+.panel-footer {
+    height: 64px;
+    padding: 15px;
+}
+
+th.header {
+    font-size: 12px;
+    text-align: left;
+}
+
+th.header.files, th.header.option, th.header.progress {
+    text-align: center;
+}
+
+.sample-header-row {
+    background-color: #f5f5f5;
+}
+
+.sample-header-row:hover {
+    background-color: #dadada;
+}
+
+.table > tbody > tr > .cell {
+    vertical-align: middle;
+    padding: 5px;
+}
+
+.table > tbody > tr > td:nth-child(2) {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.table > tbody > tr > .option,
+.table > tbody > tr > .sample-option {
+    text-align: right;
+    padding-right: 20px;
+}
+
+.sample-collapse {
+    text-align: center;
+}
+
+.disabled {
+    pointer-events: none;
+}
+
+.sample-option.disabled {
+    color: #aaaaaa;
+}
+
+.panel > .table > tbody > .sample-header-row > td.folder-icon {
+    text-align: right;
+    width: 28px;
+}
+
+.sample-name {
+    font-size: 12px;
+    font-weight: bold;
+    color: black;
+}
+
+.file-name,
+.file-name:hover,
+.sample-name:hover {
+    color: black;
+    cursor: pointer;
+}
+
+.file-name.disabled,
+.sample-name.disabled {
+    pointer-events: none;
+    cursor: default;
+}
+
+.sample-name-header {
+    text-align: left;
+}
+
+.sample-header,
+.file-icon,
+.panel > .table > thead > tr > .upload-status,
+.panel > .table > thead > tr > .options,
+.progress-bar {
+    text-align: center;
+}
+
+td.sample-collapse,
+td.sample-collapse:focus,
+.sample-collapse,
+.option-icon,
+a.menu-item,
+.edit-checkbox {
+    cursor: pointer;
+}
+
+.option {
+    font-size: 10px;
+}
+
+.file-icon {
+    font-size: 12px;
+}
+
+.form-group .control-label {
+    margin-bottom: 5px;
+}
+
+.sample-table td.file-progress.progress {
+    padding-right: 10px;
+    width: 100px;
+    display: none;
+}
+
+.add-files,
+.edit-sample-metadata,
+.edit-table-sample-name,
+.remove-sample,
+.sample-collapse,
+.remove-file,
+.edit-file {
+    padding-left: 5px;
+}
+
+.edit-disabled,
+.edit-disabled:focus {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    outline: none;
+    cursor: default;
+}
+
+input.error {
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
+    outline: thin auto red;
+}
+
+.btn.dropdown-toggle {
+    width: 100%;
+    background-color: whitesmoke;
+    font-size: 12px;
+    padding: 0;
+}
+
+.btn.no-selection {
+    background-color: white;
+}
+
+.btn.selection-made {
+    background-color: white;
+    border: dotted;
+    border-color: whitesmoke;
+    border-width: 1px;
+}
+
+.btn .caret {
+    float: right;
+    margin-top: 6px;
+    margin-right: 6px;
+}
+
+.readset-input,
+.library-input {
+    font-size: 12px;
+    height: 20px;
+}
+
+.twitter-typeahead {
+    width: 100%;
+}
+
+.typeahead,
+.tt-query,
+.tt-hint {
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+}
+
+.typeahead:focus {
+    border-color: #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+}
+
+.tt-hint {
+    color: #999;
+}
+
+.tt-hint[readonly] {
+    background-color: white !important;
+}
+
+.tt-hint[readonly][disabled] {
+    background-color: #eee !important;
+}
+
+.tt-input {
+    background-color: transparent !important;
+}
+
+.tt-input[disabled] {
+    background-color: #eee !important;
+}
+
+.tt-menu {
+    width: 100%;
+    margin: 2px 0;
+    padding: 8px 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: left;
+}
+
+.tt-suggestion {
+    padding: 3px 20px;
+    font-size: 14px;
+}
+
+.tt-suggestion:hover {
+    cursor: pointer;
+    color: white;
+    background-color: #31b0d5;
+}
+
+.tt-suggestion.tt-cursor {
+    color: #fff;
+    background-color: #31b0d5;
+}
 
 /* Auth token form */
-.auth-token-form {
-  margin-top: 40px;
-  font-size: 16px;
+.auth-token-form, .sample-name-form {
+    margin-top: 40px;
+    font-size: 15px;
+    text-align: left;
 }
-.auth-token-form input {
-  text-align: center;
+
+.auth-success, .auth-success:hover {
+    color: white;
+}
+
+.auth-success.login.label-warning,
+.auth-success.login.label-danger {
+    pointer-events: none;
+}
+
+#auth-token, #sample-name {
+    text-align: left;
+    font-size: 15px;
+}
+
+.logout {
+    margin-top: 68px;
+    padding: 0;
+    display: none;
+}
+
+.logout-button {
+    color: black;
+    background-color: #eee;
+    border-color: #ddd;
+}
+
+.logout-button:hover {
+    color: black;
+    background-color: #dadada;
+    border-color: #a2a2a2;
+}
+
+/* Add Sample */
+.add-sample {
+    margin-top: 20px;
+}
+
+.panel .input-group .btn {
+    border-radius: 0px 4px 4px 0px;
+}
+
+.start-upload,
+.resume-upload,
+.pause-upload {
+    width: 120px;
+}
+
+.cancel-upload {
+    margin-right: 10px;
+}
+
+.sample-name-form {
+    margin-top: 20px;
+}
+
+#sample-table-text {
+    height: 28px;
+}
+
+.start-upload.disabled {
+    pointer-events: none;
 }
 
 /* Uploader: Drag & Drop */
-.resumable-error {display:none; font-size:14px; font-style:italic;}
-.resumable-drop {
-  padding: 60px 0;
-  font-size:16px;
-  text-align:center;
-  font-weight:bold;
-  background-color:#eee;
-  border:2px dashed #aaa;
-  border-radius:10px;
-  margin-top: 40px;
-  margin-bottom: 60px;
-  z-index:9999;
-  display:none;
+.resumable-error {
+    display: none;
+    font-size: 14px;
+    font-style: italic;
+    margin-top: 40px;
 }
-.resumable-dragover {
-  color: white;
-  background-color:#333;
-  border:2px solid #999;
+
+.resumable-droparea {
+    padding: 60px 0;
+    margin-top: 20px;
+    font-size: 16px;
+    text-align: center;
+    font-weight: bold;
+    background-color: #eee;
+    border: 2px dashed #aaa;
+    border-radius: 10px;
+    z-index: 9999;
+    display: none;
 }
+
+.resumable-dragging {
+    color: white;
+    background-color: rgba(51, 51, 51, 0.61);
+    border: 2px solid #999;
+}
+
+.resumable-dragging * {
+    pointer-events: none;
+}
+
 .resumable-browse u {
-  cursor: pointer;
+    cursor: pointer;
+}
+
+/* Edit Sample Modal*/
+.edit-checkbox {
+    margin-top: 8px;
+}
+
+/* Edit File Modal */
+.file-name-title {
+    margin: 0;
 }
 
 /* Uploader: Progress bar */
-#resumable-progress-template {
-  display: none;
-}
-.resumable-progress {
-  margin: 10px 0;
-  width: 100%;
-  height: 30px;
-}
-.progress-filename {
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 30px;
-  margin: 0;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.progress,
-.progress-bar {
-  margin: 0;
-  height: 30px;
-  line-height: 30px;
-}
-.progress-bar {
-  white-space: nowrap;
-  -webkit-transition: width .2s ease;
-  -o-transition: width .2s ease;
-  transition: width .2s ease;
-}
-.progress-controls {
-  float: right;
-  padding-left: 15px;
-}
-.progress-retry-link,
-.progress-cancel-link {
-  height: 30px;
-  margin: 0;
-  padding: 0 10px;
-  font-size: 12px;
-  line-height: 30px;
-}
-.all-transfer-controls .progress-resume-link,
-.all-transfer-controls .progress-pause-link {
-  display:none;
-  font-size: 14px;
+#resumable-progress-template,
+.file-error-template {
+    display: none;
 }
 
+.resumable-progress {
+    margin: 10px 0;
+    width: 100%;
+    height: 30px;
+}
+
+.progress-filename {
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 30px;
+    margin: 0;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.progress {
+    background-color: white;
+    box-shadow: none;
+    display: none;
+}
+
+.progress-bar {
+    margin-right: 5px;
+    margin-left: 5px;
+    height: 20px;
+    border-radius: 4px;
+    white-space: nowrap;
+    -webkit-transition: width .2s ease;
+    -o-transition: width .2s ease;
+    transition: width .2s ease;
+    color: black;
+}
+
+.progress-controls {
+    float: right;
+    padding-left: 15px;
+}
+
+.progress-retry-link,
+.progress-cancel-link {
+    height: 30px;
+    margin: 0;
+    padding: 0 10px;
+    font-size: 12px;
+    line-height: 30px;
+}
+
+.all-transfer-controls .progress-resume-link,
+.all-transfer-controls .progress-pause-link {
+    display: none;
+    font-size: 14px;
+}
 
 /* Uploader: List of items being uploaded */
 .current-uploads {
-  display: none;
+    display: none;
 }
 
 /* Uploader: Hover & Active status */
-.uploader-item:hover, .is-active .uploader-item {border-color:#4a873c; cursor:pointer; }
-.uploader-item:hover .uploader-item-title, .is-active .uploader-item .uploader-item-title {background-color:rgba(74,135,60,0.8);}
+.uploader-item:hover, .is-active .uploader-item {
+    border-color: #4a873c;
+    cursor: pointer;
+}
+
+.uploader-item:hover .uploader-item-title, .is-active .uploader-item .uploader-item-title {
+    background-color: rgba(74, 135, 60, 0.8);
+}
 
 /* Uploader: Error status */
-.is-error .uploader-item:hover, .is-active.is-error .uploader-item {border-color:#900;}
-.is-error .uploader-item:hover .uploader-item-title, .is-active.is-error .uploader-item .uploader-item-title {background-color:rgba(153,0,0,0.6);}
-.is-error .uploader-item-creating-thumbnail {display:none;}
+.is-error .uploader-item:hover, .is-active.is-error .uploader-item {
+    border-color: #900;
+}
+
+.is-error .uploader-item:hover .uploader-item-title, .is-active.is-error .uploader-item .uploader-item-title {
+    background-color: rgba(153, 0, 0, 0.6);
+}
+
+.is-error .uploader-item-creating-thumbnail {
+    display: none;
+}
 
 /* Footer */
 .footer {
-  margin-top: 60px;
+    margin-top: 60px;
 }
