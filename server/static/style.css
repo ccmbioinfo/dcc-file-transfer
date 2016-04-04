@@ -426,7 +426,6 @@ input.error {
 /* Add Sample */
 .add-sample {
     margin-top: 20px;
-    text-align: left;
 }
 
 .panel .input-group .btn {
@@ -451,8 +450,7 @@ input.error {
     height: 28px;
 }
 
-.start-upload.disabled,
-.add-sample-button.disabled {
+.start-upload.disabled {
     pointer-events: none;
 }
 
@@ -502,7 +500,8 @@ input.error {
 }
 
 /* Uploader: Progress bar */
-#resumable-progress-template {
+#resumable-progress-template,
+.file-error-template {
     display: none;
 }
 

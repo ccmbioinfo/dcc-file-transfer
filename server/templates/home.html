@@ -136,9 +136,6 @@
                     <button type="button" class="btn btn-primary pull-right resume-upload disabled"
                             data-toggle="tooltip" title="Resume upload of all files">
                         <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All</button>
-                    <!--button type="button" class="btn btn-primary pull-right pause-upload"
-                            data-toggle="tooltip" title="Pause upload of all files">
-                        <span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause All</button-->
                     <button type="button" class="btn btn-default pull-right cancel-upload"
                             data-toggle="tooltip" title="Cancel upload of all files">Cancel</button>
                 </div>
@@ -412,7 +409,25 @@
                         <h4 class="modal-title">Upload Complete</h4>
                     </div>
                     <div class="modal-body">
-                         <p>Upload completed, you may now logout or continue to uploading another sample.</p>
+                        <p>Upload completed, any errors are listed below. You may now logout or continue to uploading
+                            another sample.
+                        </p>
+                        <table class="table table-condensed error-table">
+                            <thead>
+                            <tr>
+                                <th>Sample Name</th>
+                                <th>File Name</th>
+                                <th>Error Description</th>
+                            </tr>
+                            </thead>
+                            <tbody class="error-section">
+                            <tr class="file-error-template">
+                                <td class="error-sample">sample name placeholder</td>
+                                <td class="error-file">file name placeholder</td>
+                                <td class="error-code">error code placeholder</td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default logout-button" data-dismiss="modal">
