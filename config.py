@@ -1,8 +1,8 @@
 import os
 
 DEBUG = True
-HOST = '0.0.0.0'
-PORT = 8000
+#HOST = '0.0.0.0'
+PORT = 5000 #8000
 
 DATABASE = os.path.join(os.getcwd(), 'DCC.db')
 SCHEMA = os.path.join(os.getcwd(), 'schema.sql')
