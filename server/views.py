@@ -120,16 +120,17 @@ def resumable_upload():
     if not valid_auth_token(form_dict['auth_token']):
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
-    if form_dict['chunk_number'] == 1:
+    # Check for first or last chunk (these are presumably sent first and will indicate a new transfer)
+    if form_dict['chunk_number'] == 1 or form_dict['chunk_number'] == form_dict['total_chunks']:
         # Update the db to indicate the ongoing transfer
-        update_files_table(form_dict)
+        update_files_table(form_dict, 'ongoing')
 
     input_file = request.files['file']
     temp_dir = get_tempdir(form_dict['auth_token'], form_dict['identifier'])
     chunk_filename = get_chunk_filename(temp_dir, form_dict['filename'], form_dict['chunk_number'])
 
     # Check that the upload_status was not changed to cancel before saving the chunk
-    if check_status(form_dict['identifier']) != 'cancelled':
+    if check_status(form_dict['identifier']) == 'ongoing':
         if not os.path.isdir(temp_dir):
             try:
                 # Create a temp directory using the unique identifier for the file
@@ -145,42 +146,47 @@ def resumable_upload():
             os.remove(chunk_filename)
             return make_response(jsonify({'message': 'Error: Chunk could not be saved'}), 500)
 
-    all_chunks = glob.glob("{}/{}.part*".format(temp_dir, form_dict['filename']))
+        all_chunks = glob.glob("{}/{}.part*".format(temp_dir, form_dict['filename']))
 
-    # TODO: check sent file_type for BAM/SAM instead of looking at filename
-    if form_dict['filename'].lower().endswith(".bam") and form_dict['chunk_number'] == form_dict['total_chunks']:
-        if not bam_test(chunk_filename):
-            remove_from_uploads(temp_dir)
-            g.db.execute('update files set upload_status="truncated" where identifier=?',(form_dict['identifier'],))
-            g.db.commit()
-            return make_response(jsonify({'message': 'Error: Truncated BAM file'}), 415)
-
-    # Merge only when all chunks are downloaded and the file has not yet been created/merged
-    if len(all_chunks) == int(form_dict['total_chunks']) and \
-            not os.path.isfile(os.path.join(temp_dir, form_dict['filename'])):
-        if merge_chunks(all_chunks, form_dict['filename']):
-            if form_dict['filename'].lower().endswith(".gz") and \
-                    not gzip_test(os.path.join(temp_dir, form_dict['filename'])):
+        # TODO: check sent file_type for BAM/SAM instead of looking at filename
+        if form_dict['filename'].lower().endswith(".bam") and form_dict['chunk_number'] == form_dict['total_chunks']:
+            if not bam_test(chunk_filename):
                 remove_from_uploads(temp_dir)
-                g.db.execute('update files set upload_status="truncated" where identifier=?',
-                             (form_dict['identifier'],))
+                g.db.execute('update files set upload_status="truncated" where identifier=?',(form_dict['identifier'],))
                 g.db.commit()
-                return make_response(jsonify({'message': 'Error: Truncated GZIP file'}), 415)
-            elif os.path.getsize(os.path.join(temp_dir, form_dict['filename'])) != form_dict['total_size']:
-                 return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
+                return make_response(jsonify({'message': 'Error: Truncated BAM file'}), 415)
 
-            # Update db on file completion
-            # TODO: associate file with user/owner and include file metadata
-            current_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
-            g.db.execute('update files set date_upload_end=? where identifier=?',
-                         (current_date, form_dict['identifier']))
-            g.db.execute('update files set upload_status="complete" where identifier=?', (form_dict['identifier'],))
-            g.db.commit()
-            return make_response(jsonify({'Download complete': 'Successfully received file'}), 200)
-        else:
-            return make_response(jsonify({'message': 'Error: File could not be saved'}), 500)
+        # Merge only when all chunks are downloaded and the file has not yet been created/merged
+        if len(all_chunks) == int(form_dict['total_chunks']) and \
+                not os.path.isfile(os.path.join(temp_dir, form_dict['filename'])):
+            if merge_chunks(all_chunks, form_dict['filename']):
+                if form_dict['filename'].lower().endswith(".gz") and \
+                        not gzip_test(os.path.join(temp_dir, form_dict['filename'])):
+                    remove_from_uploads(temp_dir)
+                    g.db.execute('update files set upload_status="truncated" where identifier=?',
+                                 (form_dict['identifier'],))
+                    g.db.commit()
+                    return make_response(jsonify({'message': 'Error: Truncated GZIP file'}), 415)
+                elif os.path.getsize(os.path.join(temp_dir, form_dict['filename'])) != form_dict['total_size']:
+                     return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
 
-    return make_response(jsonify({'Download complete': 'Successfully received chunk'}), 200)
+                # Update db on file completion
+                # TODO: associate file with user/owner and include file metadata
+                current_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
+                g.db.execute('update files set date_upload_end=? where identifier=?',
+                             (current_date, form_dict['identifier']))
+                g.db.execute('update files set upload_status="complete" where identifier=?', (form_dict['identifier'],))
+                g.db.commit()
+                return make_response(jsonify({'Download complete': 'Successfully received file'}), 200)
+            else:
+                return make_response(jsonify({'message': 'Error: File could not be saved'}), 500)
+
+        return make_response(jsonify({'Download complete': 'Successfully received chunk'}), 200)
+
+    else:
+        # Transfer was cancelled, ensure there are no chunks that were saved
+        remove_from_uploads(get_tempdir(form_dict['auth_token'], form_dict['identifier']))
+        return make_response(jsonify({'message': 'Chunk refused, transfer not ongoing'}), 202)
 
 
 @app.route("/cancel", methods=['POST'])
@@ -195,8 +201,8 @@ def cancel_upload():
         return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
 
     if check_status(identifier) != 'complete':
-        remove_from_uploads(get_tempdir(auth_token, identifier))
         g.db.execute('update files set upload_status="cancelled" where identifier=?', (identifier,))
         g.db.commit()
+        remove_from_uploads(get_tempdir(auth_token, identifier))
 
     return make_response(jsonify({'message': 'Cancel received'}), 200)

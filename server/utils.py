@@ -75,7 +75,7 @@ def merge_chunks(in_paths, out_filename):
         return False
 
 
-def update_files_table(form_dict):
+def update_files_table(form_dict, status):
     # Values that need to be inserted/updated in the db
     update_keys = ['auth_token', 'identifier', 'sample_name', 'filename', 'total_size', 'file_type',
                    'readset', 'platform', 'run_type', 'capture_kit', 'library', 'reference']
@@ -83,7 +83,7 @@ def update_files_table(form_dict):
         'site_access_code': g.db.execute('select site_access_code from access where auth_token=?',
                                         (form_dict['auth_token'],)).fetchone()[0],
         'date_upload_start': datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        'upload_status': 'ongoing'
+        'upload_status': status
     }
 
     for key in update_keys:
@@ -99,8 +99,6 @@ def update_files_table(form_dict):
         values.append(update_dict['identifier'])
     else:
         SQL = 'INSERT INTO files ({}) VALUES ({})'.format(', '.join(keys), ','.join('?' * len(keys)))
-    app.logger.debug(SQL)
-    app.logger.debug(values)
 
     g.db.execute(SQL, values)
     g.db.commit()

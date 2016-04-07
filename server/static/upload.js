@@ -89,7 +89,7 @@ $(function () {
     }
 
     function authorize() {
-        $.post('/authorize', {'authToken': $('#auth-token').val()})
+        $.post(window.location.pathname + 'authorize', {'authToken': $('#auth-token').val()})
             .done(function (data) {
                 $('.transfer-symbol').removeClass('glyphicon-log-in').addClass('glyphicon-ok-sign');
                 $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
@@ -282,7 +282,7 @@ $(function () {
 
     // Create a new resumable object
     var r = new Resumable({
-        target: '/upload',
+        target: window.location.pathname + 'upload',
         chunkSize: 1 * 1024 * 1024,
         simultaneousUploads: 3,
         testChunks: true,
@@ -580,7 +580,7 @@ $(function () {
                 clearTableOfCompleted();
             } else {
                 resumableFile.abort();
-                $.post('/cancel', {
+                $.post(window.location.pathname + 'cancel', {
                 'authToken': $('#auth-token').val(),
                 'resumableIdentifier': resumableFile.uniqueIdentifier
             })
@@ -612,6 +612,6 @@ $(function () {
 
     // Log out (refresh the page)
     $('body').on('click', '.logout-button', function (e){
-        location.reload();
+        document.location.reload();
     });
 });
