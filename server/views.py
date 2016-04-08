@@ -16,10 +16,7 @@ INVALID_AUTH_TOKEN_MSG = 'Error: Invalid transfer code'
 @app.before_request
 def before_request():
     # connect to the database before processing a request
-    # foreign key constraints need to be turned on with each connection
     g.db = connect_db()
-    g.db.execute("PRAGMA foreign_keys=ON")
-    g.db.commit()
 
 
 @app.teardown_request

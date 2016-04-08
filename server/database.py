@@ -7,7 +7,14 @@ from server import app
 
 def connect_db():
     # connection to the database path
-    return sqlite3.connect(app.config['DATABASE'])
+    conn = sqlite3.connect(app.config['DATABASE'],
+                           detect_types=sqlite3.PARSE_DECLTYPES)
+    # necessary to get working on production server
+    conn.text_factory = str
+    # foreign key constraints need to be turned on with each connection
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.commit()
+    return conn
 
 
 def init():
