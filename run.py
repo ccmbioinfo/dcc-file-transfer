@@ -5,7 +5,7 @@ import logging
 from server import app
 
 DEBUG = app.config['DEBUG']
-logging.basicConfig(filename='/var/log/dcc.log', format='%(asctime)s - %(message)s', datefmt='%Y-%d-%m %H:%M:%S',
+logging.basicConfig(filename=app.config['LOGFILE'], format='%(asctime)s - %(message)s', datefmt='%Y-%d-%m %H:%M:%S',
                     level='DEBUG' if DEBUG else 'INFO')
 
 if __name__ == '__main__':
