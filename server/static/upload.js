@@ -382,7 +382,6 @@ $(function () {
         authorize();
         return false;
     });
-    $('.login').on('click', function() {authorize()});
 
     // Field validations
     $('.field-sample-name').on('input', function (e) {
