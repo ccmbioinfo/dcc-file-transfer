@@ -34,14 +34,16 @@ def home():
 
 @app.route("/get-auth-token", methods=['GET'])
 def get_auth_token():
+    # get access code from header (convert to str to fix weird encoding issue on production)
+    access_code = str(request.headers['x-access-code'])
     # check if request has a recognized access code in header
-    if 'x-access-code' in request.headers and request.headers['x-access-code'] in app.config['ACCESS_CODES']:
+    if 'x-access-code' in request.headers and access_code in app.config['ACCESS_CODES']:
         auth_token = base64.urlsafe_b64encode(os.urandom(12))
         current_date = datetime.datetime.today()
         expiry_date = current_date + datetime.timedelta(days=1)  # Code expires in 24 hours
         g.db.execute('insert into access (site_access_code,auth_token,date_created,date_expired) '
                      'values (?,?,?,?)',
-                     (request.headers['x-access-code'],
+                     (access_code,
                      auth_token,
                      current_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
                      expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
