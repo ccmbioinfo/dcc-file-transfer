@@ -1,16 +1,12 @@
-import glob
 import os
-import base64
-import datetime
 
 from flask import jsonify, make_response, request, g, render_template
 
 from server import app
 from .database import connect_db
-from .utils import valid_auth_token, bam_test, get_tempdir, get_chunk_filename, gzip_test, merge_chunks, \
-    remove_from_uploads, check_status, update_files_table
-
-INVALID_AUTH_TOKEN_MSG = 'Error: Invalid transfer code'
+from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, get_tempdir, get_chunk_filename, \
+    generate_file, remove_from_uploads, get_file_data, get_files_by_status, insert_file_metadata, update_file_metadata,\
+    update_file_status
 
 
 @app.before_request
@@ -32,72 +28,41 @@ def home():
     return render_template('home.html')
 
 
-@app.route("/get-auth-token", methods=['GET'])
-def get_auth_token():
-    # get access code from header (convert to str to fix weird encoding issue on production)
-    access_code = str(request.headers['x-access-code'])
-    # check if request has a recognized access code in header
-    if 'x-access-code' in request.headers and access_code in app.config['ACCESS_CODES']:
-        auth_token = base64.urlsafe_b64encode(os.urandom(12))
-        current_date = datetime.datetime.today()
-        expiry_date = current_date + datetime.timedelta(days=1)  # Code expires in 24 hours
-        g.db.execute('insert into access (site_access_code,auth_token,date_created,date_expired) '
-                     'values (?,?,?,?)',
-                     (access_code,
-                     auth_token,
-                     current_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                     expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
-        g.db.commit()
-        return make_response(
-            jsonify({'Access_code': auth_token, 'Expiry_date': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")}), 200)
-    else:
-        return make_response(jsonify({'Error': 'unauthorized'}), 401)
+@app.route("/transfers", methods=['POST'])
+def create_auth_token():
+    if 'x-access-code' in request.headers and request.headers['x-access-code'] in app.config['ACCESS_CODES']:
+        auth_token, expiry_date = generate_auth_token(request.headers['x-access-code'])
+        return make_response(jsonify({'Transfer Code': auth_token,
+                                      'Expires on': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")}), 200)
+
+    return make_response(jsonify({'message': 'Error: Unauthorized'}), 401)
 
 
-@app.route("/authorize", methods=['POST'])
-def authorize():
-    auth_token = request.form.get('authToken', type=str)
-    if valid_auth_token(auth_token):
-        return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
-    else:
-        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
+@app.route("/transfers/<auth_token>", methods=['GET'])
+def authorize(auth_token):
+    return get_auth_response(get_auth_status(auth_token))
 
 
-@app.route("/upload", methods=['HEAD'])
-def resumable_info():
-    identifier = request.args.get('resumableIdentifier', type=str)
-    filename = request.args.get('resumableFilename', type=str)
-    chunk_number = request.args.get('resumableChunkNumber', type=int)
-    auth_token = request.args.get('authToken', type=str, default='')
+@app.route("/transfers/<auth_token>/samples/", methods=['GET'])
+def get_samples(auth_token):
+    # The status argument can be used to retrieve files that are complete, corrupt, or ongoing
+    status = request.args.get('status', type=str)
+    if get_auth_status(auth_token) != 'valid':
+        return get_auth_response(auth_token)
 
-    if not all([identifier, filename, chunk_number]):
-        return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
-
-    if not valid_auth_token(auth_token):
-        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
-
-    temp_dir = get_tempdir(auth_token, identifier)
-    chunk_filename = get_chunk_filename(temp_dir, filename, chunk_number)
-
-    if os.path.isfile(chunk_filename):
-        # Chunk transfer completed successfully on HTTP code 200 only
-        return make_response(jsonify({'message': 'Chunk already transferred'}), 200)
-    else:
-        # Chunk transfer not complete, send chunk requires HTTP code 204 (or anything other than 200, 400s, 500, 501)
-        return make_response(jsonify({'message': 'Chunk not yet transferred'}), 204)
+    return make_response(jsonify(get_files_by_status(auth_token, status)), 200)
 
 
-@app.route("/upload", methods=['POST'])
-def resumable_upload():
-    form_dict = {
-        'chunk_number': request.form.get('resumableChunkNumber', type=int),
-        'total_chunks': request.form.get('resumableTotalChunks', type=int),
-        'chunk_size': request.form.get('resumableChunkSize', type=int),
-        'total_size': request.form.get('resumableTotalSize', type=int),
-        'identifier': request.form.get('resumableIdentifier', type=str),
-        'filename': request.form.get('resumableFilename', type=str),
-        'auth_token': request.form.get('authToken', type=str, default=''),
-        'sample_name': request.form.get('sampleName', type=str, default=''),
+@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>", methods=['PUT'])
+def update_upload_status(auth_token, sample_name, identifier):
+    data = {
+        'status': request.form.get('status', type=str),
+        'identifier': str(identifier),
+        'sample_name': str(sample_name),
+        'auth_token': str(auth_token),
+        'total_chunks': request.form.get('flowTotalChunks', type=int),
+        'total_size': request.form.get('flowTotalSize', type=int),
+        'filename': request.form.get('flowFilename', type=str),
         'file_type': request.form.get('fileType', type=str, default=''),
         'readset': request.form.get('readset', type=str, default=''),
         'library': request.form.get('library', type=str, default=''),
@@ -107,102 +72,97 @@ def resumable_upload():
         'reference': request.form.get('reference', type=str, default=''),
     }
 
-    # Check for missing or invalid parameters
-    if not all([form_dict['identifier'],
-                form_dict['filename'],
-                form_dict['chunk_number'],
-                form_dict['chunk_size'],
-                form_dict['total_chunks'],
-                form_dict['total_size']]):
-        return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
+    if data['status'] == 'start':
+        if get_file_data(identifier, 'upload_status') == 'complete':
+            # Update any changes in metadata
+            update_file_metadata(data)
+            return make_response(jsonify({'message': 'Error: File already uploaded'}), 400)
 
-    # Check for valid auth-token
-    if not valid_auth_token(form_dict['auth_token']):
-        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
+        insert_file_metadata(data)
+        return make_response(jsonify({'message': 'Success: Upload set to ongoing in db'}), 200)
 
-    # Check for first or last chunk (these are presumably sent first and will indicate a new transfer)
-    if form_dict['chunk_number'] == 1 or form_dict['chunk_number'] == form_dict['total_chunks']:
-        # Update the db to indicate the ongoing transfer
-        update_files_table(form_dict, 'ongoing')
+    elif data['status'] == 'complete':
+        return generate_file(data)
 
-    input_file = request.files['file']
-    temp_dir = get_tempdir(form_dict['auth_token'], form_dict['identifier'])
-    chunk_filename = get_chunk_filename(temp_dir, form_dict['filename'], form_dict['chunk_number'])
-
-    # Check that the upload_status was not changed to cancel before saving the chunk
-    if check_status(form_dict['identifier']) == 'ongoing':
-        if not os.path.isdir(temp_dir):
-            try:
-                # Create a temp directory using the unique identifier for the file
-                os.makedirs(temp_dir, 0777)
-            except OSError:
-                # TODO: handle situation where temporary directory cannot be created on the server
-                pass
-
-        try:
-            input_file.save(chunk_filename)
-        except IOError:
-            # TODO: handle all error types here? HTTP Error code 500 will stop the upload for now
-            os.remove(chunk_filename)
-            return make_response(jsonify({'message': 'Error: Chunk could not be saved'}), 500)
-
-        all_chunks = glob.glob("{}/{}.part*".format(temp_dir, form_dict['filename']))
-
-        # TODO: check sent file_type for BAM/SAM instead of looking at filename
-        if form_dict['filename'].lower().endswith(".bam") and form_dict['chunk_number'] == form_dict['total_chunks']:
-            if not bam_test(chunk_filename):
-                remove_from_uploads(temp_dir)
-                g.db.execute('update files set upload_status="truncated" where identifier=?',(form_dict['identifier'],))
-                g.db.commit()
-                return make_response(jsonify({'message': 'Error: Truncated BAM file'}), 415)
-
-        # Merge only when all chunks are downloaded and the file has not yet been created/merged
-        if len(all_chunks) == int(form_dict['total_chunks']) and \
-                not os.path.isfile(os.path.join(temp_dir, form_dict['filename'])):
-            if merge_chunks(all_chunks, form_dict['filename']):
-                if form_dict['filename'].lower().endswith(".gz") and \
-                        not gzip_test(os.path.join(temp_dir, form_dict['filename'])):
-                    remove_from_uploads(temp_dir)
-                    g.db.execute('update files set upload_status="truncated" where identifier=?',
-                                 (form_dict['identifier'],))
-                    g.db.commit()
-                    return make_response(jsonify({'message': 'Error: Truncated GZIP file'}), 415)
-                elif os.path.getsize(os.path.join(temp_dir, form_dict['filename'])) != form_dict['total_size']:
-                     return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
-
-                # Update db on file completion
-                # TODO: associate file with user/owner and include file metadata
-                current_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
-                g.db.execute('update files set date_upload_end=? where identifier=?',
-                             (current_date, form_dict['identifier']))
-                g.db.execute('update files set upload_status="complete" where identifier=?', (form_dict['identifier'],))
-                g.db.commit()
-                return make_response(jsonify({'Download complete': 'Successfully received file'}), 200)
-            else:
-                return make_response(jsonify({'message': 'Error: File could not be saved'}), 500)
-
-        return make_response(jsonify({'Download complete': 'Successfully received chunk'}), 200)
-
-    else:
-        # Transfer was cancelled, ensure there are no chunks that were saved
-        remove_from_uploads(get_tempdir(form_dict['auth_token'], form_dict['identifier']))
-        return make_response(jsonify({'message': 'Chunk refused, transfer not ongoing'}), 202)
+    return make_response(jsonify({'message': 'Error: Unexpected status'}), 400)
 
 
-@app.route("/cancel", methods=['POST'])
-def cancel_upload():
-    identifier = request.form.get('resumableIdentifier', type=str)
-    auth_token = request.form.get('authToken', type=str, default='')
+@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>", methods=['DELETE'])
+def cancel_upload(auth_token, sample_name, identifier):
+    if get_auth_status(auth_token) != 'valid':
+        return get_auth_response(auth_token)
 
-    if not all([identifier, auth_token]):
-        return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
+    if not get_file_data(identifier, 'upload_status'):
+        return make_response(jsonify({'message': 'Error: Identifier does not exist'}), 404)
 
-    if not valid_auth_token(auth_token):
-        return make_response(jsonify({'message': INVALID_AUTH_TOKEN_MSG}), 403)
-
-    if check_status(identifier) != 'complete':
-        g.db.execute('update files set upload_status="cancelled" where identifier=?', (identifier,))
-        g.db.commit()
+    if get_file_data(identifier, 'upload_status') != 'complete':
+        update_file_status(identifier, 'cancelled')
         remove_from_uploads(get_tempdir(auth_token, identifier))
+        return make_response(jsonify({'message': 'Success: Cancel received'}), 200)
 
-    return make_response(jsonify({'message': 'Cancel received'}), 200)
+    return make_response(jsonify({'message': 'Error: Upload already complete'}), 400)
+
+
+@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['HEAD'])
+def chunk_info(auth_token, sample_name, identifier, chunk_number):
+    try:
+        chunk_number = int(chunk_number)
+    except ValueError:
+        return make_response(jsonify({'message': 'Error: invalid chunk number'}), 400)
+
+    if get_auth_status(auth_token) != 'valid':
+        return get_auth_response(auth_token)
+
+    temp_dir = get_tempdir(auth_token, identifier)
+    chunk_filename = get_chunk_filename(temp_dir, chunk_number)
+    if os.path.isfile(chunk_filename):
+        # Chunk transfer completed successfully on HTTP code 200 only
+        return make_response(jsonify({'message': 'Chunk already transferred'}), 200)
+    else:
+        # Chunk transfer not complete, send chunk requires HTTP code 204 (or anything other than 200, 400s, 500, 501)
+        return make_response(jsonify({'message': 'Chunk not yet transferred'}), 204)
+
+
+@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['PUT'])
+def chunk_upload(auth_token, sample_name, identifier, chunk_number):
+    if get_auth_status(auth_token) != 'valid':
+        return get_auth_response(auth_token)
+
+    filename = request.form.get('flowFilename', type=str)
+    total_chunks = request.form.get('flowTotalChunks', type=int)
+
+    try:
+        chunk_number = int(chunk_number)
+    except ValueError:
+        return make_response(jsonify({'message': 'Error: invalid chunk number'}), 400)
+
+    if not all([filename, total_chunks]):
+        return make_response(jsonify({'message': 'Error: missing parameter'}), 400)
+
+    if get_file_data(identifier, 'upload_status') != 'ongoing':
+        return make_response(jsonify({'message': 'Error: Chunk refused, file status not set to ongoing'}), 202)
+
+    input_chunk = request.files['file']
+    temp_dir = get_tempdir(auth_token, identifier)
+    chunk_filename = get_chunk_filename(temp_dir, chunk_number)
+
+    if not os.path.isdir(temp_dir):
+        try:
+            os.makedirs(temp_dir, 0777)
+        except OSError:
+            return make_response(jsonify({'message': 'Error: File directory could not be created'}), 500)
+
+    try:
+        input_chunk.save(chunk_filename)
+    except IOError:
+        os.remove(chunk_filename)
+        return make_response(jsonify({'message': 'Error: Chunk could not be saved'}), 500)
+
+    # BAM test for integrity done here since only the prioritized last chunk is needed to determine corruption
+    if chunk_number == total_chunks and get_file_data(identifier, 'file_type') == 'BAM/SAM':
+        if not bam_test(chunk_filename):
+            remove_from_uploads(temp_dir)
+            update_file_status(identifier, 'corrupt')
+            return make_response(jsonify({'message': 'Error: Truncated BAM file'}), 415)
+
+    return make_response(jsonify({'message': 'Success: Upload of chunk complete'}), 200)

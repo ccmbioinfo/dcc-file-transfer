@@ -10,5 +10,4 @@ logging.basicConfig(filename=app.config['LOGFILE'], format='%(asctime)s - %(mess
                     level='DEBUG' if DEBUG else 'INFO')
 
 if __name__ == '__main__':
-    #app.run(debug=DEBUG, host=app.config['HOST'], port=app.config['PORT'], threaded=True)
-    app.run(debug=DEBUG, port=app.config['PORT'], threaded=True)
+    app.run(debug=DEBUG, host=app.config['HOST'], port=app.config['PORT'], threaded=True)
