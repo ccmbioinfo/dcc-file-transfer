@@ -118,9 +118,8 @@ def chunk_info(auth_token, sample_name, identifier, chunk_number):
     if os.path.isfile(chunk_filename):
         # Chunk transfer completed successfully on HTTP code 200 only
         return make_response(jsonify({'message': 'Chunk already transferred'}), 200)
-    else:
-        # Chunk transfer not complete, send chunk requires HTTP code 204 (or anything other than 200, 400s, 500, 501)
-        return make_response(jsonify({'message': 'Chunk not yet transferred'}), 204)
+    # Chunk transfer not complete, send chunk requires HTTP code 204 (or anything other than 200, 400s, 500, 501)
+    return make_response(jsonify({'message': 'Chunk not yet transferred'}), 204)
 
 
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['PUT'])
