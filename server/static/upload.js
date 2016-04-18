@@ -392,7 +392,7 @@ $(function () {
         var fileRow = getFileRow(file, $('.sample-table'));
         var errorMsg = 'Error';
             try {
-                errorMsg = errorReceived.responseJSON.message;
+                errorMsg = $.parseJSON(errorReceived)['message'];
             } catch (e) {
             }
         fileRow.find('.progress-bar')
@@ -474,13 +474,13 @@ $(function () {
            showUploadSuccess(file);
         }).fail(function (response) {
             file.error = true;
-            showUploadError(file, response);
+            showUploadError(file, response.responseText);
         });
     });
 
     flow.on('fileError', function (file, message) {
         // Reflect that the file upload has resulted in error
-       showUploadError(file, response);
+       showUploadError(file, message);
     });
 
     // Custom signal that gets fired after a file is completely merged or failed
