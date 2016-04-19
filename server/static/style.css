@@ -429,6 +429,7 @@ p.error-description {
     color: #a94442;
     font-size: 10px;
 }
+.readset-field-error,
 .library-field-error {
     display: none;
 }

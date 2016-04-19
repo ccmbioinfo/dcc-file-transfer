@@ -134,6 +134,23 @@ $(function () {
         }
     }
 
+    function resetEditFileModal() {
+        for (var fieldName in fieldProperties) {
+            if (fieldProperties.hasOwnProperty(fieldName)) {
+                var destField = $('#edit-file-' + fieldName);
+                var fieldType = fieldProperties[fieldName]['type'];
+                var defaultValue = fieldProperties[fieldName]['default'];
+                if (fieldType === 'freetext') {
+                    destField.val(defaultValue);
+                } else if (fieldType === 'typeahead') {
+                    destField.typeahead('val', defaultValue);
+                }
+            }
+        }
+        validateField.call($('#edit-file-readset'), reReadset);
+        validateField.call($('#edit-file-library'), reLibrary);
+    }
+
     function resetSampleModal() {
        // Set the library and and run-type fields to blank and N/A respectively
         $('#add-library').val('');
@@ -141,8 +158,9 @@ $(function () {
         // Set all typeahead fields to blank
         $('#add-platform, #add-capture-kit, #add-reference').typeahead('val', '');
         // Set the sample/patient id field to blank and add the error class
-        $('#add-sample-name').val('')
+        $('#add-sample-name').val('');
         validateField.call($('#add-sample-name'), reSampleName);
+        validateField.call($('#add-library'), reLibrary);
     }
 
     function toggleEditableFields (fileType) {
@@ -566,7 +584,12 @@ $(function () {
 
     // Enable sample name field after adding files to an existing sample
     $('#add-sample-modal').on('hide.bs.modal', function () {
+        resetSampleModal();
         $(this).find('#add-sample-name').prop('disabled', false);
+    });
+
+    $('#edit-file-modal').on('hide.bs.modal', function () {
+        resetEditFileModal();
     });
 
     // Remove file from add sample table
@@ -599,7 +622,8 @@ $(function () {
             toggleFileRows(sampleRow);
         }
         $('#add-sample-modal').modal('show');
-        $('#add-sample-name').val(sampleName).prop('disabled', true).closest('.form-group').removeClass('has-error');
+        $('#add-sample-name').val(sampleName).prop('disabled', true);
+        validateField.call($('#add-sample-name'), reSampleName);
         $('.resumable-droparea').show();
         //prevents bubbling of click event to .sample-collapse parent
         return false;
