@@ -6,7 +6,7 @@ import os
 from server import app
 
 DEBUG = app.config['DEBUG']
-logging.basicConfig(filename=app.config['LOGFILE'], format='%(asctime)s - %(message)s', datefmt='%Y-%d-%m %H:%M:%S',
+logging.basicConfig(filename=app.config['LOGFILE'], format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
                     level='DEBUG' if DEBUG else 'INFO')
 
 if __name__ == '__main__':
