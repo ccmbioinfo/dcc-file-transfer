@@ -155,7 +155,7 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
 
     if not os.path.isdir(temp_dir):
         try:
-            os.makedirs(temp_dir, 0777)
+            os.makedirs(temp_dir, 511)  # rwxrwxrwx (octal: 777)
         except OSError:
             return return_message('Error: File directory could not be created', 500)
 
