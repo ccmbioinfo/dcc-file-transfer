@@ -135,13 +135,14 @@ $(function () {
     }
 
     function resetSampleModal() {
-        // Set the sample/patient id field to blank and add the error class
-        $('#add-sample-name').val('').closest('.form-group').addClass('has-error');
-        // Set the library and and run-type fields to blank and N/A respectively
+       // Set the library and and run-type fields to blank and N/A respectively
         $('#add-library').val('');
         $('#add-run-type').val('N/A');
         // Set all typeahead fields to blank
         $('#add-platform, #add-capture-kit, #add-reference').typeahead('val', '');
+        // Set the sample/patient id field to blank and add the error class
+        $('#add-sample-name').val('')
+        validateField.call($('#add-sample-name'), reSampleName);
     }
 
     function toggleEditableFields (fileType) {
