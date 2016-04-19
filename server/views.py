@@ -30,8 +30,8 @@ def home():
 
 @app.route("/transfers", methods=['POST'])
 def create_auth_token():
-    if 'x-access-code' in request.headers and request.headers['x-access-code'] in app.config['ACCESS_CODES']:
-        auth_token, expiry_date = generate_auth_token(request.headers['x-access-code'])
+    if 'X-Server-Token' in request.headers and request.headers['X-Server-Token'] in app.config['SERVER_TOKENS']:
+        auth_token, expiry_date = generate_auth_token(request.headers['X-Server-Token'])
         return make_response(jsonify({'Transfer Code': auth_token,
                                       'Expires on': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")}), 200)
 

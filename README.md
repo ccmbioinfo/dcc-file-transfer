@@ -18,13 +18,13 @@ $ python run.py
 ```
 
 ### Generate a Transfer Code
-Modify config.py by adding an accepted access code to the `ACCESS_CODES` list
+Modify config.py by adding an authorized server token to the `SERVER_TOKENS` list
 ```
-`ACCESS_CODES = ['your-access-code']`
+`SERVER_TOKENS = ['your-server-token']`
 ```
 In the console run the following curl command using your access code to obtain an auth-token valid for 24 hours
 ```
-$ curl -i -X GET -H "X-access-code: your-access-code" http://localhost:5000/get-auth-token
+$ curl -i -X GET -H "X-Server-Token: your-server-token" http://localhost:5000/get-auth-token
 ```
 
 ### Upload a file:
