@@ -66,7 +66,7 @@ def merge_chunks(in_paths, out_filename):
             for chunk_path in in_paths:
                 with open(chunk_path, 'rb') as INPUT:
                     OUTPUT.write(INPUT.read())
-        app.logger.debug('Merged %s files -> %s', len(in_paths), out_filepath)
+        app.logger.info('Merged %s files -> %s', len(in_paths), out_filepath)
         # Indicate that file merged successfully
         return True
     except IOError:
