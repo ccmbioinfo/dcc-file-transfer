@@ -10,4 +10,4 @@ SECRET_KEY = 'development key'
 ACCESS_CODES = []
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 LOGFILE = os.path.join(os.getcwd(), 'dcc.log')
-APPLICATION_ROOT = ''
+APPLICATION_ROOT = None
