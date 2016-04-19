@@ -28,7 +28,7 @@ def home():
     return render_template('home.html')
 
 
-@app.route("/transfers", methods=['POST'])
+@app.route("/transfers/", methods=['POST'])
 def create_auth_token():
     if 'X-Server-Token' in request.headers and request.headers['X-Server-Token'] in app.config['SERVER_TOKENS']:
         auth_token, expiry_date = generate_auth_token(request.headers['X-Server-Token'])
