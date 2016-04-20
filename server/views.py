@@ -38,8 +38,10 @@ def home():
 
 @app.route("/transfers/", methods=['POST'])
 def create_auth_token():
-    if 'X-Server-Token' in request.headers and request.headers['X-Server-Token'] in app.config['SERVER_TOKENS']:
-        auth_token, expiry_date = generate_auth_token(request.headers['X-Server-Token'])
+    # get server token from header (convert to str to fix weird encoding issue on production)
+    server_token = request.headers.get('X-Server-Token', type=str)
+    if server_token and server_token in app.config['SERVER_TOKENS']:
+        auth_token, expiry_date = generate_auth_token(server_token)
         return return_data({'transferCode': auth_token,
                             'expiresAt': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")})
 
