@@ -442,7 +442,7 @@ $(function () {
         chunkSize: 1 * 1024 * 1024,
         simultaneousUploads: 3,
         testChunks: true,
-        testMethod: 'GET',
+        testMethod: 'HEAD',
         uploadMethod: 'PUT',
         prioritizeFirstAndLastChunk: true,
         generateUniqueIdentifier: createIdentifier,

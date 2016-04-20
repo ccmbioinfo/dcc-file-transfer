@@ -112,7 +112,7 @@ def cancel_upload(auth_token, sample_name, identifier):
     return return_message('Error: Upload already complete', 400)
 
 
-@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['GET'])
+@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['HEAD'])
 def chunk_info(auth_token, sample_name, identifier, chunk_number):
     try:
         chunk_number = int(chunk_number)

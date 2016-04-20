@@ -1467,7 +1467,7 @@
 
       var target = evalOpts(this.flowObj.opts.target, this.fileObj, this, isTest);
       var data = null;
-      if (method === 'GET' || paramsMethod === 'octet') {
+      if (isTest || paramsMethod === 'octet') {
         // Add data from the query options
         var params = [];
         each(query, function (v, k) {
