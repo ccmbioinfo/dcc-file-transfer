@@ -48,6 +48,7 @@ def create_auth_token():
 
 @app.route("/transfers/<auth_token>", methods=['GET'])
 def authorize(auth_token):
+    auth_token = request.args.get('authToken', type=str)
     return get_auth_response(get_auth_status(auth_token))
 
 
@@ -111,7 +112,7 @@ def cancel_upload(auth_token, sample_name, identifier):
     return return_message('Error: Upload already complete', 400)
 
 
-@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['HEAD'])
+@app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['GET'])
 def chunk_info(auth_token, sample_name, identifier, chunk_number):
     try:
         chunk_number = int(chunk_number)

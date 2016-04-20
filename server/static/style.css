@@ -439,7 +439,7 @@ p.error-description {
 }
 
 .start-upload,
-.pause-upload {
+.modal-add-sample-button {
     width: 120px;
 }
 

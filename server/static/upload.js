@@ -69,6 +69,11 @@ $(function () {
         return $('#auth-token').val() + '_' + sampleName + '_' + cleanFilename + '_' + file.size
     }
 
+    function updateIdentifier(file, sampleName) {
+        var cleanFilename = file.name.replace(/[^0-9A-Z_-]/img, '');
+        file.uniqueIdentifier = $('#auth-token').val() + '_' + sampleName + '_' + cleanFilename + '_' + file.size
+    }
+
     function getFileRow(file, table) {
         return table.find('#'+file.uniqueIdentifier);
     }
@@ -89,14 +94,18 @@ $(function () {
     }
 
     function authorize(authToken) {
-        $.get(window.location.pathname + 'transfers/' + authToken)
-            .done(function (data) {
+        $.ajax({
+                method: 'GET',
+                url: window.location.pathname + 'transfers/' + authToken,
+                data: {'authToken': authToken}
+            }).done(function (data) {
                 $('.transfer-symbol').removeClass('glyphicon-log-in').addClass('glyphicon-ok-sign');
                 $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
                 $('.auth-success').addClass('disabled');
                 $('.sample-table, .dcc-table').show();
                 $('.transfer-code-invalid').hide();
                 $('.logout').show();
+                getSampleDataFromServer('complete', $('.dcc-table'));
             })
             .fail(function (data) {
                 $('#auth-token').closest('.form-group').addClass('has-error');
@@ -433,7 +442,7 @@ $(function () {
         chunkSize: 1 * 1024 * 1024,
         simultaneousUploads: 3,
         testChunks: true,
-        testMethod: 'HEAD',
+        testMethod: 'GET',
         uploadMethod: 'PUT',
         prioritizeFirstAndLastChunk: true,
         generateUniqueIdentifier: createIdentifier,
@@ -526,7 +535,7 @@ $(function () {
     $('.auth-token-form').on('submit', function (e) {
         authorize($('#auth-token').val());
         // Update the DCC table with completed uploads
-        getSampleDataFromServer('complete', $('.dcc-table'));
+
         return false;
     });
 
@@ -675,8 +684,11 @@ $(function () {
                 var fieldName = fieldNames[i];
                 if ($('#edit-sample-' + fieldName).closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
                     $(this).find('.file-' + fieldName).text($('#edit-sample-' + fieldName).val());
+                }
             }
-}
+            var file = flow.getFromUniqueIdentifier($(this).attr('id'));
+            updateIdentifier(file, newName);
+            $(this).attr('id', file.uniqueIdentifier);
         });
         $('#edit-sample-modal').removeAttr('data-sample-name').modal('hide');
     });
