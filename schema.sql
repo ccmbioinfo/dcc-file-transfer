@@ -27,7 +27,7 @@ create table files (
   file_id integer primary key autoincrement,
   site_access_code varchar not null,
   auth_token varchar not null,
-  identifier varchar not null,
+  identifier varchar not null unique,
   sample_name varchar not null,
   filename varchar not null,
   total_size varchar not null,

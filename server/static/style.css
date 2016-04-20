@@ -94,8 +94,7 @@ body {
 .dcc-table,
 .sample-table,
 .cancel-upload,
-.pause-upload,
-.resume-upload {
+.pause-upload {
     display: none;
 }
 
@@ -209,9 +208,7 @@ th.header.files, th.header.option, th.header.progress {
     color: black;
 }
 
-.file-name,
-.file-name:hover,
-.sample-name:hover {
+.file-name, .file-name:hover, .sample-name:hover {
     color: black;
     cursor: pointer;
 }
@@ -428,13 +425,21 @@ input.error {
     margin-top: 20px;
 }
 
+p.error-description {
+    color: #a94442;
+    font-size: 10px;
+}
+.readset-field-error,
+.library-field-error {
+    display: none;
+}
+
 .panel .input-group .btn {
     border-radius: 0px 4px 4px 0px;
 }
 
 .start-upload,
-.resume-upload,
-.pause-upload {
+.modal-add-sample-button {
     width: 120px;
 }
 

@@ -64,17 +64,22 @@ $(function () {
 
     function createIdentifier(file) {
         // Unique identifier includes the transfer code, sample name, file name, and file size
-        var sample = $('#add-sample-name').val();
+        var sampleName = $('#add-sample-name').val();
         var cleanFilename = file.name.replace(/[^0-9A-Z_-]/img, '');
-        return $('#auth-token').val()+'_'+sample+'_'+cleanFilename+'_'+file.size
+        return $('#auth-token').val() + '_' + sampleName + '_' + cleanFilename + '_' + file.size
     }
 
-    function getFileProgressElt(file) {
-        return $('#'+file.uniqueIdentifier);
+    function updateIdentifier(file, sampleName) {
+        var cleanFilename = file.name.replace(/[^0-9A-Z_-]/img, '');
+        file.uniqueIdentifier = $('#auth-token').val() + '_' + sampleName + '_' + cleanFilename + '_' + file.size
     }
 
-    function getExtraParams(file, chunk) {
-        var fileRow = getFileProgressElt(file);
+    function getFileRow(file, table) {
+        return table.find('#'+file.uniqueIdentifier);
+    }
+
+    function getExtraParams(flowFile, flowChunk) {
+        var fileRow = getFileRow(flowFile, $('.sample-table'));
         return {
             'authToken': $('#auth-token').val(),
             'sampleName': fileRow.closest('.sample-section').attr('name'),
@@ -85,18 +90,22 @@ $(function () {
             'captureKit': fileRow.find('.file-capture-kit').text(),
             'library': fileRow.find('.file-library').text(),
             'reference': fileRow.find('.file-reference').text()
-        }
+        };
     }
 
-    function authorize() {
-        $.post('/authorize', {'authToken': $('#auth-token').val()})
-            .done(function (data) {
+    function authorize(authToken) {
+        $.ajax({
+                method: 'GET',
+                url: window.location.pathname + 'transfers/' + authToken,
+                data: {'authToken': authToken}
+            }).done(function (data) {
                 $('.transfer-symbol').removeClass('glyphicon-log-in').addClass('glyphicon-ok-sign');
                 $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
                 $('.auth-success').addClass('disabled');
-                $('.sample-table').show();
+                $('.sample-table, .dcc-table').show();
                 $('.transfer-code-invalid').hide();
                 $('.logout').show();
+                getSampleDataFromServer('complete', $('.dcc-table'));
             })
             .fail(function (data) {
                 $('#auth-token').closest('.form-group').addClass('has-error');
@@ -105,62 +114,140 @@ $(function () {
             });
     }
 
+    function getSampleDataFromServer (status, table) {
+        $.ajax({
+                method: 'GET',
+                url: window.location.pathname + 'transfers/' + $('#auth-token').val() + '/samples/',
+                data: {'status': status}
+            })
+            .done(function (data) {
+                for (var file in data) {
+                    createSampleHeader(data[file]['sample-name'], table);
+                    createFileRow(data[file]['filename'], data[file]['identifier'], data[file]['sample-name'], table);
+                    updateFileMetadata(data[file], table);
+                }
+            })
+            .fail(function (data) {
+                console.log(data)
+            });
+    }
+
+    function updateFileMetadata(metadata, table) {
+        var fileRow = table.find('#'+metadata.identifier);
+        for (var fieldName in fieldProperties) {
+            if (fieldProperties.hasOwnProperty(fieldName)) {
+                var fieldType = fieldProperties[fieldName]['type'];
+                var value = metadata[fieldName];
+                fileRow.find('.file-' + fieldName).text(value);
+            }
+        }
+    }
+
+    function resetEditFileModal() {
+        for (var fieldName in fieldProperties) {
+            if (fieldProperties.hasOwnProperty(fieldName)) {
+                var destField = $('#edit-file-' + fieldName);
+                var fieldType = fieldProperties[fieldName]['type'];
+                var defaultValue = fieldProperties[fieldName]['default'];
+                if (fieldType === 'freetext') {
+                    destField.val(defaultValue);
+                } else if (fieldType === 'typeahead') {
+                    destField.typeahead('val', defaultValue);
+                }
+            }
+        }
+        validateField.call($('#edit-file-readset'), reReadset);
+        validateField.call($('#edit-file-library'), reLibrary);
+    }
+
     function resetSampleModal() {
-        $('#add-sample-name').val('').closest('.form-group').addClass('has-error');
+       // Set the library and and run-type fields to blank and N/A respectively
         $('#add-library').val('');
         $('#add-run-type').val('N/A');
+        // Set all typeahead fields to blank
         $('#add-platform, #add-capture-kit, #add-reference').typeahead('val', '');
+        // Set the sample/patient id field to blank and add the error class
+        $('#add-sample-name').val('');
+        validateField.call($('#add-sample-name'), reSampleName);
+        validateField.call($('#add-library'), reLibrary);
     }
 
     function toggleEditableFields (fileType) {
         var editableFieldNames = fileTypeProperties[fileType]['fields'];
         for (var i = 0; i < fieldNames.length; i++) {
             var fieldName = fieldNames[i];
+            // Check if the field name is editable by looking for its index in editableFieldNames
             var isEditable = editableFieldNames.indexOf(fieldName) >= 0;
             $('#edit-file-' + fieldName).attr('disabled', !isEditable);
         }
     }
 
-    function createFileRow(file, sampleName) {
-        var sampleTable = $('.sample-section[name="' + sampleName + '"]');
-        var fileTemplate = $('.sample-file-template').first().clone();
-        fileTemplate
-            .attr('id', file.uniqueIdentifier)
-            .find('.file-name')
-            .html(file.fileName);
+    function collapsePanel(panel) {
+        panel.find('.panel-body, table, .panel-footer, .collapse-icon').toggle();
+    }
 
+    function createSampleHeader (sampleName, table) {
+        // Check if sample header already exists
+        if (table.find('.sample-section[name="'+ sampleName +'"]').length === 0) {
+            // Create a new sample section
+            var sampleTemplate = table.find('.sample-template').first().clone();
+            // Remove the file template row
+            sampleTemplate
+                .find('.sample-file-template')
+                .remove();
+            // Add the sample name
+            sampleTemplate
+                .find('.sample-name')
+                .html(sampleName);
+            // Append the sample to to the table
+            sampleTemplate
+                .attr('name', sampleName)
+                .appendTo(table.find('.table-data'));
+            // Remove the template classes
+            sampleTemplate
+                .removeClass('sample-template')
+                .find('.sample-header-row')
+                .removeClass('sample-header-template');
+        }
+    }
+
+    function createFileRow(fileName, uniqueIdentifier, sampleName, table) {
+        var sampleTable = table.find('.sample-section[name="' + sampleName + '"]');
+        var fileTemplate = table.find('.sample-file-template').first().clone();
+        fileTemplate
+            .attr('id', uniqueIdentifier)
+            .find('.file-name')
+            .html(fileName);
+        // Add the template to the sampleTable
         sampleTable.append(fileTemplate);
+        // Remove the template class
+        fileTemplate.removeClass('sample-file-template');
+    }
+
+    function addFileMetadata (file) {
         // Check for file type to determine whether metadata options should be shown
+        var fileRow = getFileRow(file, $('.sample-table'));
         var fileType = 'Other';
         for (var ext in fileExtensions) {
             if (fileExtensions.hasOwnProperty(ext) &&
-                file.fileName.toLowerCase().indexOf(ext) > -1) {
+                file.name.toLowerCase().indexOf(ext) > -1) {
                 fileType = fileExtensions[ext];
             }
         }
-        fileTemplate.find('.file-type').text(fileType);
+        fileRow.find('.file-type').text(fileType);
         if (fileType !== 'Other') {
-            fileTemplate.find('.file-platform').text($('#add-platform').val());
-            fileTemplate.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
-            fileTemplate.find('.file-capture-kit').text($('#add-capture-kit').val());
-            fileTemplate.find('.file-library').text($('#add-library').val());
+            fileRow.find('.file-platform').text($('#add-platform').val());
+            fileRow.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
+            fileRow.find('.file-capture-kit').text($('#add-capture-kit').val());
+            fileRow.find('.file-library').text($('#add-library').val());
             if (fileType !== 'FASTQ') {
-                fileTemplate.find('.file-reference').text($('#add-reference').val());
+                fileRow.find('.file-reference').text($('#add-reference').val());
             }
         }
-        fileTemplate.removeClass('sample-file-template');
-
-        // Wait until all files have been added before clearing the modal
-        // Plus one to include the original cloned sample-file-template
-        if ($('.sample-file-template').length === r.files.length + 1) {
-            resetSampleModal();
-        }
-        checkUploadReady();
-        $('#add-sample-modal').modal('hide');
     }
 
-    function checkUploadReady() {
-        $('.start-upload, .resume-upload').toggleClass('disabled', r.files.length === 0);
+    function toggleUploadIfReady() {
+        $('.start-upload').toggleClass('disabled', flow.files.length === 0);
     }
 
     function toggleFileRows(sampleRow) {
@@ -170,11 +257,12 @@ $(function () {
 
     function validateField(regex) {
         var isValid = regex.test($(this).val());
-
+        // Toggle error classes based on regex test
         $(this)
             .closest('.form-group')
-            .toggleClass('has-error', !isValid);
-
+            .toggleClass('has-error', !isValid)
+            .find('.error-description').toggle(!isValid);
+        // Trigger field validation event to check if modal has all valid fields to proceed
         $(this).closest('.modal').trigger('fieldValidation');
     }
 
@@ -213,20 +301,26 @@ $(function () {
     }
 
     function showUploadStateOptions() {
-        $('.cancel-upload, .progress, .resume-upload').show();
-        $('.option, .start-upload').hide();
-        $('.add-sample, .file-name, .resume-upload, .sample-name, .sample-option').addClass('disabled');
+        $('.cancel-upload, .progress').show();
+        $('.option').hide();
+        $('.add-sample, .file-name, .sample-name, .sample-option, .start-upload').addClass('disabled');
     }
 
     function hideUploadStateOptions() {
         $('.option').show();
         $('.cancel-upload, .progress').hide();
-        $('.add-sample, .resume-upload, .sample-option').removeClass('disabled');
+        $('.add-sample, .file-name, .sample-name, .sample-option, .start-upload').removeClass('disabled');
     }
 
-    function clearTableOfCompleted () {
-        var samples = $('.sample-section:first').nextUntil();
+    function clearTable(table) {
+        var samples = table.find('.sample-section:first').nextUntil();
+        samples.each(function (i, value) {
+                value.remove();
+        });
+    }
 
+    function clearTableOfCompleted (table) {
+        var samples = table.find('.sample-section:first').nextUntil();
         samples.each(function (i, value) {
             if (clearSampleOfFiles($(value).attr('name')) === 0) {
                 value.remove()
@@ -241,11 +335,11 @@ $(function () {
 
         fileRows.each(function (i, value) {
             var id = $(value).attr('id');
-            if (!r.getFromUniqueIdentifier(id)) {
+            if (!flow.getFromUniqueIdentifier(id)) {
                 value.remove();
             } else {
-                // rebuild resumableFile Object to initial state
-                r.getFromUniqueIdentifier(id).bootstrap();
+                // rebuild flowFile Object to initial state
+                flow.getFromUniqueIdentifier(id).bootstrap();
             }
         });
         return sampleRow.nextUntil().length;
@@ -255,117 +349,177 @@ $(function () {
         $('.error-section').find('.file-error').remove();
     }
 
-    function addFileToErrorTable (resumableFile, errorMsg) {
-        var id = resumableFile.uniqueIdentifier;
+    function addFileToErrorTable (flowFile, errorMsg) {
+        var id = flowFile.uniqueIdentifier;
         var fileErrorFields = {
             'sample': $('#' + id).closest('.sample-section').attr('name'),
-            'file': resumableFile.fileName,
+            'file': flowFile.name,
             'msg': errorMsg
         };
-
         if ($('error_'+id).length === 0) {
             var fileErrorRow = $('.file-error-template').clone();
             fileErrorRow.attr('id', 'error-' + id);
-
             for (var fieldName in fileErrorFields) {
                 if (fileErrorFields.hasOwnProperty(fieldName)) {
                     fileErrorRow.find('.error-' + fieldName).text(fileErrorFields[fieldName])
                 }
             }
-
             fileErrorRow.removeClass('file-error-template').addClass('file-error');
             $('.error-section').append(fileErrorRow);
         }
     }
 
-    //************************** RESUMABLE **************************
+    function createTargetURL(flowFile, flowChunk, isTest) {
+        var params = getExtraParams(flowFile, flowChunk);
+        var urlParts = ['transfers', params.authToken, 'samples', params.sampleName, 'files',
+            flowFile.uniqueIdentifier, 'chunks', flowChunk.offset + 1];
+        return window.location.pathname + urlParts.join('/');
+    }
 
-    // Create a new resumable object
-    var r = new Resumable({
-        target: '/upload',
-        chunkSize: 1 * 1024 * 1024,
-        simultaneousUploads: 3,
-        testChunks: true,
-        testMethod: 'HEAD',
-        prioritizeFirstAndLastChunk: true,
-        generateUniqueIdentifier: createIdentifier,
-        query: getExtraParams,
-        permanentErrors: [400, 403, 404, 415, 500, 501]
-    });
-
-    r.assignDrop($('.resumable-droparea'));
-
-    r.assignBrowse($('.resumable-browse'));
-
-    r.on('fileAdded', function (file) {
-        var sampleName = $('#add-sample-name').val();
-        // Check if sample header already exists
-        if ($('.sample-section[name="'+ sampleName +'"]').length === 0) {
-            // Create a new sample section
-            var sampleTemplate = $('.sample-template').first().clone();
-
-            // Remove the file template row
-            sampleTemplate.find('.sample-file-template').remove();
-
-            sampleTemplate
-                .find('.sample-name')
-                .html(sampleName);
-
-            sampleTemplate
-                .attr('name', sampleName)
-                .appendTo($('.table-data'));
-
-            // Show
-            sampleTemplate
-                .removeClass('sample-template')
-                .find('.sample-header-row')
-                .removeClass('sample-header-template');
+    function isUploadComplete() {
+        for (var i = 0; i < flow.files.length; i++) {
+            if (!flow.files[i].error) {
+                return false;
+            }
         }
-        createFileRow(file, sampleName);
-    });
+        return true;
+    }
 
-    r.on('fileProgress', function (file) {
-        var progress = getFileProgressElt(file);
-        var percent = Math.floor(file.progress() * 100);
-        progress.find('.progress-bar').html(percent + '%');
-        progress.find('.progress-bar').css({
-            width: percent + '%'
+    function showUploadCompleteModal() {
+        $('#upload-complete-modal').modal('show');
+        $('.error-table').toggle($('.file-error').length > 0);
+    }
+
+    function refreshUploadReadyState() {
+        hideUploadStateOptions();
+        clearTableOfCompleted($('.sample-table'));
+        // Refresh the DCC table with newly completed files
+        clearTable($('.dcc-table'));
+        getSampleDataFromServer('complete', $('.dcc-table'));
+        // Clear the error table of previous errors
+        clearErrorTable();
+        toggleUploadIfReady();
+    }
+
+    function showUploadSuccess (file) {
+        var fileRow = getFileRow(file, $('.sample-table'));
+        fileRow.find('.progress-bar').css({
+             width: '100%',
+             color: 'white',
+             'min-width': '2em'
         });
-        progress.find('.progress-bar').css('color', 'white');
-        progress.find('.progress-bar').css('min-width', '2em')
-    });
-
-    r.on('fileSuccess', function (file, message) {
-        var progress = getFileProgressElt(file);
-        progress.find('.progress-bar').first()
+        fileRow.find('.progress-bar')
+            .first()
             .removeClass('progress-bar-striped active')
             .html('Uploaded');
-        // remove file from resumable
-        r.removeFile(file);
-    });
+        flow.removeFile(file);
+        flow.fire('fileComplete', file);
+    }
 
-    r.on('fileError', function (file, message) {
-        // Reflect that the file upload has resulted in error
-        var progress = getFileProgressElt(file);
+    function showUploadError (file, errorReceived) {
+        var fileRow = getFileRow(file, $('.sample-table'));
         var errorMsg = 'Error';
-        try {
-            errorMsg = $.parseJSON(message).message;
-        } catch (e) {
-        }
-        progress.find('.progress-bar')
+            try {
+                errorMsg = $.parseJSON(errorReceived)['message'];
+            } catch (e) {
+            }
+        fileRow.find('.progress-bar')
             .removeClass('progress-bar-striped active')
             .addClass('progress-bar-danger')
             .css({
                 width: '100%'
             })
             .html(errorMsg);
-
         addFileToErrorTable(file, errorMsg);
+        flow.fire('fileComplete', file);
+    }
+
+    //************************** FLOW OBJECT **************************
+
+    // Create a new flow object
+    var flow = new Flow({
+        target: createTargetURL,
+        chunkSize: 1 * 1024 * 1024,
+        simultaneousUploads: 3,
+        testChunks: true,
+        testMethod: 'HEAD',
+        uploadMethod: 'PUT',
+        prioritizeFirstAndLastChunk: true,
+        generateUniqueIdentifier: createIdentifier,
+        query: getExtraParams,
+        permanentErrors: [400, 403, 404, 415, 500, 501]
     });
 
-    r.on('complete', function () {
-        $('#upload-complete-modal').modal('show');
-        $('.error-table').toggle($('.file-error').length > 0);
+    flow.assignBrowse($('.resumable-browse'));
+
+    flow.assignDrop($('.resumable-droparea'));
+
+    flow.on('fileAdded', function (flowFile) {
+        var sampleName = $('#add-sample-name').val();
+        var sampleTable = $('.sample-table');
+        createSampleHeader(sampleName, sampleTable);
+        createFileRow(flowFile.name, flowFile.uniqueIdentifier, sampleName, sampleTable);
+        addFileMetadata(flowFile);
+    });
+
+    flow.on('filesSubmitted', function (file) {
+        resetSampleModal();
+        $('#add-sample-modal').modal('hide');
+        toggleUploadIfReady();
+    });
+
+    flow.on('fileProgress', function (file) {
+        var fileRow = getFileRow(file, $('.sample-table'));
+        var percent = Math.floor(file.progress() * 100);
+
+        fileRow.find('.progress-bar')
+            .html(percent + '%')
+            .addClass('progress-bar-striped active')
+            .removeClass('progress-bar-danger');
+        fileRow.find('.progress-bar').css({
+            width: percent + '%'
+        });
+        fileRow.find('.progress-bar').css('color', 'white');
+        fileRow.find('.progress-bar').css('min-width', '2em')
+    });
+
+    flow.on('fileSuccess', function (file, message) {
+        var fileRow = getFileRow(file, $('.sample-table'));
+        var authToken = $('#auth-token').val();
+        var uniqueIdentifier = file.uniqueIdentifier;
+        var sampleName = $('#'+uniqueIdentifier).closest('.sample-section').attr('name');
+        var urlParts = ['transfers', authToken, 'samples', sampleName, 'files', uniqueIdentifier];
+        $.ajax({
+            url: window.location.pathname + urlParts.join('/'),
+            type: 'PUT',
+            data: {
+                'status': 'complete',
+                'flowFilename': file.name,
+                'flowTotalSize': file.size,
+                'flowTotalChunks': file.chunks.length
+            }
+        }).done(function () {
+           showUploadSuccess(file);
+        }).fail(function (response) {
+            file.error = true;
+            showUploadError(file, response.responseText);
+        });
+    });
+
+    flow.on('fileError', function (file, message) {
+        // Reflect that the file upload has resulted in error
+       showUploadError(file, message);
+    });
+
+    // Custom signal that gets fired after a file is completely merged or failed
+    flow.on('fileComplete', function(file) {
+        // Check if all files are complete, and display modal if so
+        if (isUploadComplete()) {
+            showUploadCompleteModal();
+        }
+    });
+
+    flow.on('complete', function () {
     });
 
     $('.resumable-droparea').on({
@@ -379,7 +533,9 @@ $(function () {
 
     // Authentication displays upload table
     $('.auth-token-form').on('submit', function (e) {
-        authorize();
+        authorize($('#auth-token').val());
+        // Update the DCC table with completed uploads
+
         return false;
     });
 
@@ -437,13 +593,18 @@ $(function () {
 
     // Enable sample name field after adding files to an existing sample
     $('#add-sample-modal').on('hide.bs.modal', function () {
+        resetSampleModal();
         $(this).find('#add-sample-name').prop('disabled', false);
+    });
+
+    $('#edit-file-modal').on('hide.bs.modal', function () {
+        resetEditFileModal();
     });
 
     // Remove file from add sample table
     $('.table-data').on('click', '.remove-file', function (e) {
         var uniqueId = $(this).closest('.sample-file-row').attr('id');
-        r.removeFile(r.getFromUniqueIdentifier(uniqueId));
+        flow.removeFile(flow.getFromUniqueIdentifier(uniqueId));
         $('#'+uniqueId).remove();
     });
 
@@ -453,12 +614,12 @@ $(function () {
 
         fileRows.each(function (i, value) {
             var identifier = $(value).attr('id');
-            var resumableFile = r.getFromUniqueIdentifier(identifier);
-            r.removeFile(resumableFile);
+            var flowFile = flow.getFromUniqueIdentifier(identifier);
+            flow.removeFile(flowFile);
         });
         fileRows.remove();
         $(this).closest('tbody').remove();
-        checkUploadReady();
+        toggleUploadIfReady();
     });
 
     // Add files to a specific sample
@@ -469,8 +630,12 @@ $(function () {
         if (!sampleRow.nextUntil('.sample-header-row').is(':visible')) {
             toggleFileRows(sampleRow);
         }
-        $('#add-sample-name').val(sampleName).prop('disabled', true).closest('.form-group').removeClass('has-error');
+        $('#add-sample-modal').modal('show');
+        $('#add-sample-name').val(sampleName).prop('disabled', true);
+        validateField.call($('#add-sample-name'), reSampleName);
         $('.resumable-droparea').show();
+        //prevents bubbling of click event to .sample-collapse parent
+        return false;
     });
 
     // Open edit sample modal
@@ -478,6 +643,7 @@ $(function () {
         var sampleRow = $(this).closest('.sample-header-row');
         var currentName = sampleRow.find('.sample-name').text();
         $('#edit-sample-name').val(currentName);
+        validateField.call($('#edit-sample-name'), reSampleName);
         // Show modal in data-target
         var modalId = $(this).attr('data-target');
         if (modalId) {
@@ -488,11 +654,13 @@ $(function () {
 
     // Enable editing of metadata options on entire sample
     $('input:checkbox').change( function() {
+        var formGroup = $(this).closest('.form-group');
         if ($(this).is(':checked')) {
-            $(this).closest('.form-group').find('.form-control').attr('disabled', false);
+            formGroup.find('.form-control').attr('disabled', false);
         } else {
-            $(this).closest('.form-group').removeClass('has-error').find('.form-control').val('').attr('disabled',true);
-            if ($(this).closest('.form-group').find('.form-control').is('#edit-sample-run-type')) {
+            formGroup.removeClass('has-error').find('.form-control').val('').attr('disabled',true);
+            formGroup.find('.error-description').hide();
+            if (formGroup.find('.form-control').is('#edit-sample-run-type')) {
                 $('#edit-sample-run-type').val('N/A')
             }
         }
@@ -504,7 +672,7 @@ $(function () {
     // Edit sample save
     $('body').on('click', '.save-edit-sample', function (e) {
         var oldName = $('#edit-sample-modal').attr('data-sample-name');
-        var sampleTbody = $('tbody[name="' + oldName + '"]');
+        var sampleTbody = $('.sample-table').find('tbody[name="' + oldName + '"]');
         var newName = $('#edit-sample-name').val();
         var fileRows = sampleTbody.find('.sample-header-row').nextUntil();
 
@@ -516,8 +684,11 @@ $(function () {
                 var fieldName = fieldNames[i];
                 if ($('#edit-sample-' + fieldName).closest('.form-group').find('input[type="checkbox"]').is(':checked')) {
                     $(this).find('.file-' + fieldName).text($('#edit-sample-' + fieldName).val());
+                }
             }
-}
+            var file = flow.getFromUniqueIdentifier($(this).attr('id'));
+            updateIdentifier(file, newName);
+            $(this).attr('id', file.uniqueIdentifier);
         });
         $('#edit-sample-modal').removeAttr('data-sample-name').modal('hide');
     });
@@ -536,7 +707,6 @@ $(function () {
         var modal = $('#edit-file-modal');
         modal.attr('data-file-id', fileRow.attr('id'));
         $('.file-name-title').text(fileRow.find('.file-name').text());
-
         copyFromTableToModal(fileRow, modal);
         toggleEditableFields(fileType);
     });
@@ -556,7 +726,7 @@ $(function () {
 
     // Collapse the table contents and show only the panel header
     $('.panel-heading').on('click', function (e) {
-        $(this).closest('.panel').find('.panel-body, table, .panel-footer, .collapse-icon').toggle();
+       collapsePanel($(this).closest('.panel'))
     });
 
     // Collapse samples
@@ -567,51 +737,68 @@ $(function () {
     // Begin uploading files
     $('.start-upload').on('click', function (e) {
         if (!$(this).hasClass('disabled')) {
+            clearErrorTable();
             showUploadStateOptions();
-            r.upload();
+            // flow.upload() was used originally, but to allow resuming, this was changed to flow.file.retry()
+            $.each(flow.files, function (i, file) {
+                var authToken = $('#auth-token').val();
+                var uniqueIdentifier = file.uniqueIdentifier;
+                var sampleName = $('#'+uniqueIdentifier).closest('.sample-section').attr('name');
+                var urlParts = ['transfers', authToken, 'samples', sampleName, 'files', uniqueIdentifier];
+                var fileData = {
+                    'status': 'start',
+                    'flowFilename': file.name,
+                    'flowTotalSize': file.size,
+                    'flowTotalChunks': file.chunks.length
+                };
+                var data = getExtraParams(file);
+                for (var attrname in fileData) { data[attrname] = fileData[attrname]; }
+                (function (file) {
+                    $.ajax({
+                        url: window.location.pathname + urlParts.join('/'),
+                        type: 'PUT',
+                        data: data
+                    }).done(function () {
+                        file.bootstrap();
+                        file.resume();
+                    }).fail(function (error) {
+                        if (error.status === 400) {
+                            var fileRow = getFileRow(file, $('.sample-table'));
+                            // Show upload success since status 400 indicates file already uploaded
+                            showUploadSuccess(file);
+                        }
+                    });
+                })(file);
+            })
         }
     });
 
     // Cancel uploading files
     $('body').on('click', '.cancel-upload', function (e){
         $('.sample-file-row[id]').each(function (i, value) {
-            var resumableFile = r.getFromUniqueIdentifier($(value).attr('id'));
-            if (!resumableFile){
-                clearTableOfCompleted();
-            } else {
-                resumableFile.abort();
-                $.post('/cancel', {
-                'authToken': $('#auth-token').val(),
-                'resumableIdentifier': resumableFile.uniqueIdentifier
-            })
+            var flowFile = flow.getFromUniqueIdentifier($(value).attr('id'));
+            if (flowFile !== false){
+                flowFile.pause();
+                var authToken = $('#auth-token').val();
+                var sampleName = $(value).closest('.sample-section').attr('name');
+                var urlParts = ['transfers', authToken, 'samples', sampleName, 'files', flowFile.uniqueIdentifier];
+                $.ajax({
+                    url: window.location.pathname + urlParts.join('/'),
+                    type: 'DELETE'
+                })
             }
         });
-        hideUploadStateOptions();
-        clearErrorTable();
-    });
-
-    // Resume uploading files
-    $('body').on('click', '.resume-upload', function (e){
-        for (var i = 0; i < r.files.length; i++) {
-            r.files[i].retry();
-        }
-        showUploadStateOptions();
+        refreshUploadReadyState();
     });
 
     // Continue session after completed upload
     $('body').on('click', '.continue-session', function (e){
-        hideUploadStateOptions();
-        clearTableOfCompleted();
-        // clear error table
-        clearErrorTable();
-        $('.resume-upload, .start-upload').toggle();
-        $('.start-upload').addClass('disabled');
+        refreshUploadReadyState();
         $('#upload-complete-modal').modal('hide');
-        checkUploadReady();
     });
 
     // Log out (refresh the page)
     $('body').on('click', '.logout-button', function (e){
-        location.reload();
+        document.location.reload();
     });
 });
