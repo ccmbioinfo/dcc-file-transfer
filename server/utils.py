@@ -106,7 +106,7 @@ def merge_chunks(chunk_paths, filename):
                 with open(path, 'rb') as INPUT:
                     OUTPUT.write(INPUT.read())
 
-        app.logger.info('Merged chunks -> %s', out_filepath)
+        app.logger.info('Merged chunks -> %s', output_file)
         # Indicate that file merged successfully
         return True
     except IOError:
@@ -114,7 +114,8 @@ def merge_chunks(chunk_paths, filename):
             os.remove(output_file)
         except OSError:
             pass
-        return False
+
+    return False
 
 
 def generate_file(data):
@@ -122,12 +123,12 @@ def generate_file(data):
     all_chunks = get_file_chunks(temp_dir)
 
     # Check for all chunks and that the file doesn't already exists
-    if len(all_chunks) != int(data['total_chunks']) or os.path.isfile(os.path.join(temp_dir, data['filename'])):
-        return make_response(jsonify({'message': 'Error: File already on server'}), 400)
-
-    # Attempt to merge all chunks
-    if not merge_chunks(all_chunks, data['filename']):
-        return make_response(jsonify({'message': 'Error: File could not be merged'}), 500)
+    if not os.path.isfile(os.path.join(temp_dir, data['filename'])):
+        # Attempt to merge all chunks
+        success = merge_chunks(all_chunks, data['filename'])
+        if not success:
+            update_file_status(data['identifier'], 'unmerged')
+            return make_response(jsonify({'message': 'Error: File could not be merged'}), 500)
 
     # Check for GZIP and perform integrity test
     if is_gzip_file(data['filename']) and not gzip_test(os.path.join(temp_dir, data['filename'])):

@@ -83,8 +83,6 @@ def update_upload_status(auth_token, sample_name, identifier):
 
     if data['status'] == 'start':
         if get_file_data(identifier, 'upload_status') == 'complete':
-            # Update any changes in metadata
-            update_file_metadata(data)
             return return_message('Error: File already uploaded', 400)
 
         insert_file_metadata(data)
