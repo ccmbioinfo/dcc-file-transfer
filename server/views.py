@@ -38,10 +38,19 @@ def home():
 
 @app.route("/transfers/", methods=['POST'])
 def create_auth_token():
-    if 'X-Server-Token' in request.headers and request.headers['X-Server-Token'] in app.config['SERVER_TOKENS']:
-        auth_token, expiry_date = generate_auth_token(request.headers['X-Server-Token'])
-        return return_data({'transferCode': auth_token,
-                            'expiresAt': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")})
+    # get server token from header (convert to str to fix weird encoding issue on production)
+    server_token = request.headers.get('X-Server-Token', type=str)
+    user = request.headers.get('X-User', type=str)
+    duration = request.headers.get('X-Duration', type=int)
+
+    if not all([server_token, user]):
+        return return_message('Error: missing parameter', 400)
+
+    if server_token and server_token in app.config['SERVER_TOKENS']:
+        auth_token, expiry_date = generate_auth_token(server_token, duration)
+        return return_data({'User': user,
+                            'Transfer Code': auth_token,
+                            'Expires On': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")})
 
     return return_message('Error: Unauthorized', 401)
 

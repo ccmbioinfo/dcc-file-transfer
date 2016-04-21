@@ -14,16 +14,21 @@ from server import app
 CHUNK_PREFIX = 'chunk.'
 
 
-def generate_auth_token(access_code):
+def generate_auth_token(server_id, duration_days=None):
     auth_token = base64.urlsafe_b64encode(os.urandom(12))
     current_date = dt.datetime.today()
-    expiry_date = current_date + dt.timedelta(days=1)  # Code expires in 24 hours
-    g.db.execute('insert into access (site_access_code,auth_token,date_created,date_expired) '
+    if not duration_days: duration_days = 1
+    expiry_date = current_date + dt.timedelta(duration_days)  # Code expires in 24 hours by default
+    insert_into_access(server_id, auth_token, current_date, expiry_date)
+    return auth_token, expiry_date
+
+
+def insert_into_access(server_id, auth_token, date_created, expiry_date, userObj=None):
+    g.db.execute('insert into access (site_access_code, auth_token, date_created, date_expired) '
                  'values (?,?,?,?)',
-                 (access_code, auth_token, current_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                 (server_id, auth_token, date_created.strftime("%Y-%m-%dT%H:%M:%SZ"),
                   expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
     g.db.commit()
-    return auth_token, expiry_date
 
 
 def get_auth_status(auth_token):
