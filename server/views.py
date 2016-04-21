@@ -41,13 +41,15 @@ def create_auth_token():
     # get server token from header (convert to str to fix weird encoding issue on production)
     server_token = request.headers.get('X-Server-Token', type=str)
     user = request.headers.get('X-User', type=str)
+    name = request.headers.get('X-Name', type=str)
+    email = request.headers.get('X-Email', type=str)
     duration = request.headers.get('X-Duration', type=int)
 
     if not all([server_token, user]):
         return return_message('Error: missing parameter', 400)
 
     if server_token and server_token in app.config['SERVER_TOKENS']:
-        auth_token, expiry_date = generate_auth_token(server_token, duration)
+        auth_token, expiry_date = generate_auth_token(server_token, user, name, email, duration)
         return return_data({'User': user,
                             'Transfer Code': auth_token,
                             'Expires On': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")})

@@ -63,7 +63,12 @@ create table fileruns (
 drop table if exists access;
 create table access (
   access_id integer primary key autoincrement,
-  site_access_code varchar not null,
+  server_id varchar not null,
+  server_name varchar,
+  server_address varchar,
+  user_id varchar not null,
+  user_name varchar,
+  user_email varchar,
   auth_token varchar not null,
   date_created varchar not null,
   date_expired varchar not null

@@ -7,9 +7,9 @@ PORT = 8000
 DATABASE = os.path.join(os.getcwd(), 'DCC.db')
 SCHEMA = os.path.join(os.getcwd(), 'schema.sql')
 SECRET_KEY = 'development key'
-SERVER_TOKENS = {'server-id':
-                     {'organization': 'name',
-                      'address': 'http://example.com'
+SERVER_TOKENS = {'server-token':
+                     {'name': 'server name',
+                      'address': 'http://******.com'
                       }
                  }
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
