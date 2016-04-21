@@ -35,22 +35,25 @@ def insert_into_access(server_id, user, name, email, auth_token, date_created, e
 def get_auth_status(auth_token):
     current_time = dt.datetime.today()
     expiry_date = g.db.execute('SELECT date_expired FROM access WHERE auth_token=?',(auth_token,)).fetchone()
-    if expiry_date:
-        expiry_date = dt.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
-        if current_time <= expiry_date:
-            return 'valid'
-        else:
-            return 'expired'
-    return 'not found'
+    if not expiry_date:
+        return 'not found'
+
+    expiry_date = dt.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
+    if current_time > expiry_date:
+        return 'expired'
+
+    return 'valid'
 
 
-def get_auth_response (auth_status):
-    if auth_status == 'expired':
+def get_auth_response(auth_status):
+    if auth_status == 'valid':
+        return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
+    elif auth_status == 'expired':
         return make_response(jsonify({'message': 'Error: Transfer code has expired'}), 410)
     elif auth_status == 'not found':
         return make_response(jsonify({'message': 'Error: Transfer code does not exist'}), 404)
-
-    return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
+    else:
+        return make_response(jsonify({'message': 'Error: Unexpected authentication status'}), 500)
 
 
 def allowed_file(filename):

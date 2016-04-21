@@ -5,7 +5,7 @@ from flask import jsonify, make_response, request, g, render_template
 from server import app
 from .database import connect_db
 from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, get_tempdir, get_chunk_filename, \
-    generate_file, remove_from_uploads, get_file_data, get_files_by_status, insert_file_metadata, update_file_metadata,\
+    generate_file, remove_from_uploads, get_file_data, get_files_by_status, insert_file_metadata, \
     update_file_status
 
 
@@ -51,35 +51,40 @@ def create_auth_token():
     if server_token and server_token in app.config['SERVER_TOKENS']:
         auth_token, expiry_date = generate_auth_token(server_token, user, name, email, duration)
         return return_data({'User': user,
-                            'Transfer Code': auth_token,
-                            'Expires On': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")})
+                            'transferCode': auth_token,
+                            'expiresAt': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")})
 
     return return_message('Error: Unauthorized', 401)
 
 
 @app.route("/transfers/<auth_token>", methods=['GET'])
 def authorize(auth_token):
-    auth_token = request.args.get('authToken', type=str)
+    auth_token = str(auth_token)
     return get_auth_response(get_auth_status(auth_token))
 
 
 @app.route("/transfers/<auth_token>/samples/", methods=['GET'])
 def get_samples(auth_token):
+    auth_token = str(auth_token)
     # The status argument can be used to retrieve files that are complete, corrupt, or ongoing
     status = request.args.get('status', type=str)
-    if get_auth_status(auth_token) != 'valid':
-        return get_auth_response(auth_token)
+    auth_status = get_auth_status(auth_token)
+    if auth_status != 'valid':
+        return get_auth_response(auth_status)
 
     return return_data(get_files_by_status(auth_token, status))
 
 
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>", methods=['PUT'])
 def update_upload_status(auth_token, sample_name, identifier):
+    auth_token = str(auth_token)
+    sample_name = str(sample_name)
+    identifier = str(identifier)
     data = {
         'status': request.form.get('status', type=str),
-        'identifier': str(identifier),
-        'sample_name': str(sample_name),
-        'auth_token': str(auth_token),
+        'identifier': identifier,
+        'sample_name': sample_name,
+        'auth_token': auth_token,
         'total_chunks': request.form.get('flowTotalChunks', type=int),
         'total_size': request.form.get('flowTotalSize', type=int),
         'filename': request.form.get('flowFilename', type=str),
@@ -107,8 +112,13 @@ def update_upload_status(auth_token, sample_name, identifier):
 
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>", methods=['DELETE'])
 def cancel_upload(auth_token, sample_name, identifier):
-    if get_auth_status(auth_token) != 'valid':
-        return get_auth_response(auth_token)
+    auth_token = str(auth_token)
+    sample_name = str(sample_name)
+    identifier = str(identifier)
+
+    auth_status = get_auth_status(auth_token)
+    if auth_status != 'valid':
+        return get_auth_response(auth_status)
 
     if not get_file_data(identifier, 'upload_status'):
         return return_message('Error: Identifier does not exist', 404)
@@ -123,13 +133,17 @@ def cancel_upload(auth_token, sample_name, identifier):
 
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['HEAD'])
 def chunk_info(auth_token, sample_name, identifier, chunk_number):
+    auth_token = str(auth_token)
+    sample_name = str(sample_name)
+    identifier = str(identifier)
     try:
         chunk_number = int(chunk_number)
     except ValueError:
         return return_message('Error: invalid chunk number', 400)
 
-    if get_auth_status(auth_token) != 'valid':
-        return get_auth_response(auth_token)
+    auth_status = get_auth_status(auth_token)
+    if auth_status != 'valid':
+        return get_auth_response(auth_status)
 
     temp_dir = get_tempdir(auth_token, identifier)
     chunk_filename = get_chunk_filename(temp_dir, chunk_number)
@@ -142,16 +156,21 @@ def chunk_info(auth_token, sample_name, identifier, chunk_number):
 
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>/chunks/<chunk_number>", methods=['PUT'])
 def chunk_upload(auth_token, sample_name, identifier, chunk_number):
-    if get_auth_status(auth_token) != 'valid':
-        return get_auth_response(auth_token)
-
-    filename = request.form.get('flowFilename', type=str)
-    total_chunks = request.form.get('flowTotalChunks', type=int)
+    auth_token = str(auth_token)
+    sample_name = str(sample_name)
+    identifier = str(identifier)
 
     try:
         chunk_number = int(chunk_number)
     except ValueError:
         return return_message('Error: invalid chunk number', 400)
+
+    auth_status = get_auth_status(auth_token)
+    if auth_status != 'valid':
+        return get_auth_response(auth_status)
+
+    filename = request.form.get('flowFilename', type=str)
+    total_chunks = request.form.get('flowTotalChunks', type=int)
 
     if not all([filename, total_chunks]):
         return return_message('Error: missing parameter', 400)
