@@ -25,7 +25,8 @@ create table membership (
 drop table if exists files;
 create table files (
   file_id integer primary key autoincrement,
-  site_access_code varchar not null,
+  server_id varchar not null,
+  user_id varchar not null,
   auth_token varchar not null,
   identifier varchar not null unique,
   sample_name varchar not null,

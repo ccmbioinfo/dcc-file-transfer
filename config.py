@@ -9,7 +9,7 @@ SCHEMA = os.path.join(os.getcwd(), 'schema.sql')
 SECRET_KEY = 'development key'
 SERVER_TOKENS = {'server-token':
                      {'name': 'server name',
-                      'address': 'http://******.com'
+                      'address': 'http://example.com'
                       }
                  }
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')

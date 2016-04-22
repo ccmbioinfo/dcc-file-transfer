@@ -56,6 +56,12 @@ def get_auth_response(auth_status):
         return make_response(jsonify({'message': 'Error: Unexpected authentication status'}), 500)
 
 
+def auth_token_validation(auth_token):
+    auth_status = get_auth_status(auth_token)
+    if auth_status != 'valid':
+        return get_auth_response(auth_status)
+
+
 def allowed_file(filename):
     suffix = os.path.splitext(filename)[1].lower()
     return suffix in app.config['ALLOWED_EXTENSIONS']
@@ -170,11 +176,11 @@ def get_file_data(identifier, data_column):
     return False
 
 
-def get_files_by_status(auth_token, status):
+def get_files_by_status(user_id, status):
     metadata_columns = ['identifier', 'sample_name', 'filename', 'file_type', 'readset', 'platform', 'run_type',
                         'capture_kit', 'library', 'reference']
-    db_files = g.db.execute('SELECT {} FROM files WHERE upload_status=? and auth_token=?'
-                            .format(', '.join(metadata_columns)), (status, auth_token)).fetchall()
+    db_files = g.db.execute('SELECT {} FROM files WHERE upload_status=? and user_id=?'
+                            .format(', '.join(metadata_columns)), (status, user_id)).fetchall()
 
     if len(db_files) > 0:
         files = {}
@@ -196,13 +202,20 @@ def get_files_by_status(auth_token, status):
     return dict(db_files)
 
 
+def get_user_by_auth_token(auth_token):
+    if g.db.execute('select exists(select 1 from access where auth_token=? LIMIT 1)', (auth_token,)).fetchone()[0]:
+        return g.db.execute('select user_id from access where auth_token=?', (auth_token,)).fetchone()[0]
+    return False
+
+
 def insert_file_metadata(form_dict):
     # Values that need to be inserted/updated in the db
     update_keys = ['auth_token', 'identifier', 'sample_name', 'filename', 'total_size', 'file_type', 'readset',
                    'platform', 'run_type', 'capture_kit', 'library', 'reference']
     update_dict = {
-        'site_access_code': g.db.execute('select site_access_code from access where auth_token=?',
-                                         (form_dict['auth_token'],)).fetchone()[0],
+        'server_id': g.db.execute('select server_id from access where auth_token=?',
+                                  (form_dict['auth_token'],)).fetchone()[0],
+        'user_id': get_user_by_auth_token(form_dict['auth_token']),
         'date_upload_start': dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ"),
         'upload_status': 'ongoing'
     }
