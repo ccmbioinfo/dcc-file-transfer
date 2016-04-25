@@ -17,13 +17,14 @@ CHUNK_PREFIX = 'chunk.'
 def generate_auth_token(server_id, user, name=None, email=None, duration_days=None):
     auth_token = base64.urlsafe_b64encode(os.urandom(12))
     current_date = dt.datetime.today()
-    if not duration_days: duration_days = 1
+    if not duration_days:
+        duration_days = 1
     expiry_date = current_date + dt.timedelta(duration_days)  # Code expires in 24 hours by default
-    insert_into_access(server_id, user, name, email, auth_token, current_date, expiry_date)
+    save_auth_token(server_id, user, name, email, auth_token, current_date, expiry_date)
     return auth_token, expiry_date
 
 
-def insert_into_access(server_id, user, name, email, auth_token, date_created, expiry_date):
+def save_auth_token(server_id, user, name, email, auth_token, date_created, expiry_date):
     server_name = app.config['SERVER_TOKENS'][server_id]['name']
     server_address = app.config['SERVER_TOKENS'][server_id]['address']
     g.db.execute('insert into access (server_id, server_name, server_address, user_id, user_name, user_email, auth_token, date_created, date_expired) '
@@ -54,12 +55,6 @@ def get_auth_response(auth_status):
         return make_response(jsonify({'message': 'Error: Transfer code does not exist'}), 404)
     else:
         return make_response(jsonify({'message': 'Error: Unexpected authentication status'}), 500)
-
-
-def auth_token_validation(auth_token):
-    auth_status = get_auth_status(auth_token)
-    if auth_status != 'valid':
-        return get_auth_response(auth_status)
 
 
 def allowed_file(filename):
