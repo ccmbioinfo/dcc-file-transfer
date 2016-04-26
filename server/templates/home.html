@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Based off of example: https://raw.githubusercontent.com/23/resumable.js/master/samples/Node.js/public/index.html -->
+<!-- Based off of example: http://getbootstrap.com/examples/dashboard/# -->
 
 <head>
     <meta charset="UTF-8">
@@ -10,15 +10,38 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header><h1>Upload files to the DCC</h1></header>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <h6 class="navbar-brand" href="/">Upload files to the DCC</h6>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a class="logout" href="/">
+                            <span class="glyphicon glyphicon-log-out"></span> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container-fluid">
 
-        <!-- Transfer code and login -->
-        <div class="row col-sm-10 col-sm-offset-1 transfer-code">
-            <div class="resumable-error">
+         <!-- Transfer code and login -->
+        <div class="col-sm-10 col-sm-offset-1 col-md-10 col-md-offset-1 transfer-code">
+            <div class="flow-error">
                 Oh no! Your browser isn't supported. Please try a recent version of Chrome or Firefox.
             </div>
-            <form class="form-horizontal auth-token-form col-sm-10">
+            <form class="form-horizontal auth-token-form">
                 <div class="form-group">
                     <label for="auth-token" class="control-label">Transfer code</label>
                     <div class="input-group">
@@ -35,106 +58,213 @@
                     </div>
                 </div>
             </form>
-            <div class="logout col-sm-2">
-                    <button class="btn btn-default pull-right logout-button">
-                            <span class="glyphicon glyphicon-log-out"></span> Logout
-                    </button>
-            </div>
         </div>
 
-        <!-- Table showing selected sample files -->
-        <div class="row col-sm-10 col-sm-offset-1 sample-table">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <span class="collapse-icon glyphicon glyphicon-triangle-bottom pull-left"></span>
-                    <span class="collapse-icon glyphicon glyphicon-triangle-right pull-left" style="display: none;"></span>
-                    Select Samples for Upload
-                </div>
-                <div class="panel-body">
-                    <p>
-                        To start uploading your files hit the <em>Add Sample</em> button. You will be required to
-                        provide a sample name and specify all applicable metadata for the sample you wish to upload.
-                        You may also alter sample and individual metadata options after attaching your files. Sample
-                        name, readset, and library must be composed solely of letters, numbers, hyphens, and/or
-                        underscores to ensure compatibility with downstream pipelines.
-                    </p>
-                    <div data-toggle="tooltip" title="Add a new sample">
-                        <button class="btn btn-primary pull-right modal-add-sample-button"
-                                data-toggle="modal"
-                                data-target="#add-sample-modal">
-                            <span class="glyphicon glyphicon-plus"></span>
-                            Add Sample
-                        </button>
+        <div class="row">
+            <div class="main col-sm-10 col-sm-offset-1 col-md-10 col-md-offset-1">
+
+              <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a class="tab-label" href="#upload" role="tab" data-toggle="tab">Upload</a>
+                    </li>
+                    <li role="presentation">
+                        <a class="tab-label" href="#manage" role="tab" data-toggle="tab">Manage</a>
+                    </li>
+                    <li role="presentation">
+                        <a class="tab-label" href="#analyze" role="tab" data-toggle="tab">Analyze</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="upload">
+                        <div class="">
+                            <h1 class="page-header">Upload Files to the DCC</h1>
+
+                            <div class="row">
+                                <div class="col-xs-6 col-sm-3">
+                                    <h3 class="step-header">1. Select samples</h3>
+                                    <div class="step-description">
+                                        <span class="text-muted">
+                                            To start uploading sample/patient specific files, such as .fastq or .bam, click
+                                            the button below. Each sample should contain all the files pertaining to the
+                                            sequenced individual. You will be required to provide a sample name and specify
+                                            all applicable metadata for the sample you wish to upload.
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-primary modal-add-sample-button"
+                                                data-toggle="modal"
+                                                data-target="#add-sample-modal">
+                                            <span class="glyphicon glyphicon-plus"></span>
+                                            Add Sample
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 col-sm-3">
+                                    <h3 class="step-header">2. Additional files</h3>
+                                    <div class="step-description">
+                                        <span class="text-muted">
+                                            For non-sample related files that are necessary for your pipeline or
+                                            downstream analysis, such as capture kit BED files, references, or variant
+                                            files, click the button below. These files will be available to all samples
+                                            when choosing details about the analysis pipeline you would like to run.
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-primary modal-add-files-button"
+                                                data-toggle="modal"
+                                                data-target="#add-sample-modal">
+                                            <span class="glyphicon glyphicon-plus"></span>
+                                            Other Files
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 col-sm-3">
+                                    <h3 class="step-header">3. Provide metadata</h3>
+                                    <div class="step-description">
+                                        <span class="text-muted">
+                                            Having complete and accurate metadata will help to ensure compatibility with
+                                            downstream pipelines and help automate manifest creation. All metadata can be
+                                            edited per file or for all files within a sample by clicking on the edit icon.
+                                            Please ensure that you have indicated the appropriate readset for each file
+                                            within a sample.
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 col-sm-3">
+                                    <h3 class="step-header">4. Upload files</h3>
+                                    <div class="step-description">
+                                        <span class="text-muted">
+                                            Once you have selected all your files and provided their respective metadata,
+                                            you can begin uploading your files by click the button below. Once the upload of
+                                            all files is complete you will be able to view and manage them on the Manage
+                                            tab. Any files that fail to upload will be left in the table below and you may
+                                            choose to retry the upload.
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-default cancel-upload"
+                                            data-toggle="tooltip" title="Cancel upload of all files">
+                                            Cancel
+                                        </button>
+                                        <button class="btn btn-primary start-upload disabled"
+                                                data-toggle="tooltip" title="Upload all files to the DCC">
+                                            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive sample-table">
+                                <table class="table table-striped table-data">
+                                    <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th class="files header" colspan="2">Files</th>
+                                        <th class="type header">File Type</th>
+                                        <th class="readset header">Readset</th>
+                                        <th class="platform header">Platform</th>
+                                        <th class="run-type header">Run Type</th>
+                                        <th class="capture-kit header">Capture Kit</th>
+                                        <th class="library header">Library</th>
+                                        <th class="reference header">Reference</th>
+                                        <th class="progress header">Status</th>
+                                        <th class="option header">Options</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="sample-template sample-section">
+                                    <tr class="sample-header-row sample-header-template">
+                                        <td class="sample-collapse">
+                                            <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
+                                            <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
+                                        </td>
+                                        <td class="sample-collapse"><a class="sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
+                                        <td class="sample-collapse" colspan="8"></td>
+                                        <td class="sample-collapse sample-option">
+                                             <span class="option-icon edit-sample glyphicon glyphicon-pencil"
+                                                   data-toggle="modal"
+                                                   data-target="#edit-sample-modal"
+                                                   title="Edit metadata for entire sample"></span>
+                                            <span class="option-icon flow-add add-files glyphicon glyphicon-plus"
+                                                  data-toggle="modal"
+                                                  data-target="#add-sample-modal"
+                                                  title="Add file(s) to sample"></span>
+                                            <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
+                                                  title="Remove sample"></span>
+                                        </td>
+                                    </tr>
+                                    <tr class="sample-file-row sample-file-template">
+                                        <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
+                                        <td class="cell" colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
+                                        <td class="file-type cell"></td>
+                                        <td class="file-readset cell"></td>
+                                        <td class="file-platform cell"></td>
+                                        <td class="file-run-type cell"></td>
+                                        <td class="file-capture-kit cell"></td>
+                                        <td class="file-library cell"></td>
+                                        <td class="file-reference cell"></td>
+                                        <td class="file-progress progress cell">
+                                            <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
+                                        </td>
+                                        <td class="file-option option cell">
+                                            <span class="option-icon edit-file glyphicon glyphicon-pencil"
+                                                  data-toggle="modal"
+                                                  data-target="#edit-file-modal"
+                                                  title="Edit file metadata"></span>
+                                            <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
+                                                  title="Remove file"></span>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <table class="table table-condensed table-data">
-                    <thead>
-                    <tr class="active">
-                        <th></th>
-                        <th class="files header" colspan="2">Files</th>
-                        <th class="type header">File Type</th>
-                        <th class="readset header">Readset</th>
-                        <th class="platform header">Platform</th>
-                        <th class="run-type header">Run Type</th>
-                        <th class="capture-kit header">Capture Kit</th>
-                        <th class="library header">Library</th>
-                        <th class="reference header">Reference</th>
-                        <th class="progress header">Status</th>
-                        <th class="option header">Options</th>
-                    </tr>
-                    </thead>
-                    <tbody class="sample-template sample-section">
-                    <tr class="sample-header-row sample-header-template">
-                        <td class="sample-collapse">
-                            <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
-                            <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
-                        </td>
-                        <td class="sample-collapse"><a class="sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
-                        <td class="sample-collapse" colspan="8"></td>
-                        <td class="sample-collapse sample-option">
-                             <span class="option-icon edit-sample glyphicon glyphicon-pencil"
-                                   data-toggle="modal"
-                                   data-target="#edit-sample-modal"
-                                   title="Edit metadata for entire sample"></span>
-                            <span class="option-icon resumable-add add-files glyphicon glyphicon-plus"
-                                  data-toggle="modal"
-                                  data-target="#add-sample-modal"
-                                  title="Add file(s) to sample"></span>
-                            <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
-                                  title="Remove sample"></span>
-                        </td>
-                    </tr>
-                    <tr class="sample-file-row sample-file-template">
-                        <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
-                        <td class="cell" colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
-                        <td class="file-type cell"></td>
-                        <td class="file-readset cell"></td>
-                        <td class="file-platform cell"></td>
-                        <td class="file-run-type cell"></td>
-                        <td class="file-capture-kit cell"></td>
-                        <td class="file-library cell"></td>
-                        <td class="file-reference cell"></td>
-                        <td class="file-progress progress cell">
-                            <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
-                        </td>
-                        <td class="file-option option cell">
-                            <span class="option-icon edit-file glyphicon glyphicon-pencil"
-                                  data-toggle="modal"
-                                  data-target="#edit-file-modal"
-                                  title="Edit file metadata"></span>
-                            <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
-                                  title="Remove file"></span>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="panel-footer">
-                    <button type="button" class="btn btn-primary col-xs-2 pull-right start-upload disabled"
-                            data-toggle="tooltip" title="Upload all files to the DCC">
-                        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Upload All
-                    </button>
-                    <button type="button" class="btn btn-default pull-right cancel-upload"
-                            data-toggle="tooltip" title="Cancel upload of all files">Cancel</button>
+                    <div role="tabpanel" class="tab-pane fade" id="manage">
+                        <h1 class="page-header">Files on the DCC</h1>
+                        <div class="table-responsive dcc-table">
+                            <table class="table table-striped table-data">
+                                <thead>
+                                <tr>
+                                    <th></th>
+                                    <th class="files header" colspan="2">Files</th>
+                                    <th class="type header">File Type</th>
+                                    <th class="readset header">Readset</th>
+                                    <th class="platform header">Platform</th>
+                                    <th class="run-type header">Run Type</th>
+                                    <th class="capture-kit header">Capture Kit</th>
+                                    <th class="library header">Library</th>
+                                    <th class="reference header">Reference</th>
+                                </tr>
+                                </thead>
+                                <tbody class="sample-template sample-section">
+                                <tr class="sample-header-row sample-header-template">
+                                    <td class="sample-collapse">
+                                        <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
+                                        <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
+                                    </td>
+                                     <td class="sample-collapse"><span class="sample-name pull-left"></span></td>
+                                    <td class="sample-collapse" colspan="7"></td>
+                                    <td class="sample-collapse sample-option">
+                                    </td>
+                                </tr>
+                                <tr class="sample-file-row sample-file-template">
+                                    <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
+                                    <td class="cell" colspan="2"><span class="file-name"></span></td>
+                                    <td class="file-type cell"></td>
+                                    <td class="file-readset cell"></td>
+                                    <td class="file-platform cell"></td>
+                                    <td class="file-run-type cell"></td>
+                                    <td class="file-capture-kit cell"></td>
+                                    <td class="file-library cell"></td>
+                                    <td class="file-reference cell"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="analyze">...</div>
                 </div>
             </div>
         </div>
@@ -201,9 +331,9 @@
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-11 col-sm-offset-1">
-                                    <div class="resumable-droparea">
+                                    <div class="flow-droparea">
                                         <span>Drop files here or</span>
-                                        <input type="button" class="resumable-browse btn btn-default" value="Browse your computer">
+                                        <input type="button" class="flow-browse btn btn-default" value="Browse your computer">
                                     </div>
                                 </div>
                             </div>
@@ -442,70 +572,8 @@
             </div>
         </div>
 
-        <!-- Table showing the files currently sitting on the DCC -->
-        <div class="row col-sm-10 col-sm-offset-1 dcc-table">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <span class="collapse-icon glyphicon glyphicon-triangle-bottom pull-left"></span>
-                    <span class="collapse-icon glyphicon glyphicon-triangle-right pull-left" style="display: none;"></span>
-                    Uploaded Samples on the DCC
-                </div>
-                <div class="panel-body">
-                    <p>
-                        The samples below have been successfully uploaded to the DCC.
-                    </p>
-                </div>
-                <table class="table table-condensed table-data">
-                    <thead>
-                    <tr class="active">
-                        <th></th>
-                        <th class="files header" colspan="2">Files</th>
-                        <th class="type header">File Type</th>
-                        <th class="readset header">Readset</th>
-                        <th class="platform header">Platform</th>
-                        <th class="run-type header">Run Type</th>
-                        <th class="capture-kit header">Capture Kit</th>
-                        <th class="library header">Library</th>
-                        <th class="reference header">Reference</th>
-                        <th class="progress header">Status</th>
-                        <th class="option header">Options</th>
-                    </tr>
-                    </thead>
-                    <tbody class="sample-template sample-section">
-                    <tr class="sample-header-row sample-header-template">
-                        <td class="sample-collapse">
-                            <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
-                            <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
-                        </td>
-                         <td class="sample-collapse"><span class="sample-name pull-left"></span></td>
-                        <td class="sample-collapse" colspan="8"></td>
-                        <td class="sample-collapse sample-option">
-                        </td>
-                    </tr>
-                    <tr class="sample-file-row sample-file-template">
-                        <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
-                        <td class="cell" colspan="2"><span class="file-name"></span></td>
-                        <td class="file-type cell"></td>
-                        <td class="file-readset cell"></td>
-                        <td class="file-platform cell"></td>
-                        <td class="file-run-type cell"></td>
-                        <td class="file-capture-kit cell"></td>
-                        <td class="file-library cell"></td>
-                        <td class="file-reference cell"></td>
-                        <td class="file-progress progress cell">
-                            <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
-                        </td>
-                        <td class="file-option option cell">
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                 <div class="panel-footer"></div>
-            </div>
-        </div>
-
         <!-- Footer row -->
-        <div class="row col-sm-8 col-sm-offset-1 footer-row">
+        <div class="row col-sm-10 col-sm-offset-1 col-md-10 col-md-offset-1 footer-row">
             <div class="footer">
                 If you have any questions or run into issues, please email Orion
                 &lt;<a href="mailto:buske@cs.toronto.edu">buske@cs.toronto.edu</a>&gt;
@@ -514,6 +582,8 @@
             </div>
         </div>
     </div>
+
+
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"

@@ -51,7 +51,7 @@ $(function () {
     };
 
     function toggleDropArea(toggle) {
-        $(this).toggleClass('resumable-dragging', toggle);
+        $(this).toggleClass('flow-dragging', toggle);
     }
 
     function activateDropArea() {
@@ -102,7 +102,7 @@ $(function () {
                 $('.transfer-symbol').removeClass('glyphicon-log-in').addClass('glyphicon-ok-sign');
                 $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
                 $('.auth-success').addClass('disabled');
-                $('.sample-table, .dcc-table').show();
+                $('.main').show();
                 $('.transfer-code-invalid').hide();
                 $('.logout').show();
                 getSampleDataFromServer('complete', $('.dcc-table'));
@@ -450,9 +450,9 @@ $(function () {
         permanentErrors: [400, 403, 404, 415, 500, 501]
     });
 
-    flow.assignBrowse($('.resumable-browse'));
+    flow.assignBrowse($('.flow-browse'));
 
-    flow.assignDrop($('.resumable-droparea'));
+    flow.assignDrop($('.flow-droparea'));
 
     flow.on('fileAdded', function (flowFile) {
         var sampleName = $('#add-sample-name').val();
@@ -522,7 +522,7 @@ $(function () {
     flow.on('complete', function () {
     });
 
-    $('.resumable-droparea').on({
+    $('.flow-droparea').on({
         'dragenter': activateDropArea,
         'dragleave': deactivateDropArea,
         'dragend': deactivateDropArea,
@@ -550,7 +550,7 @@ $(function () {
         validateField.call(this, reLibrary);
     });
     $('#add-sample-modal').on('fieldValidation', function(e) {
-        $('.resumable-droparea').toggle($(this).find('.has-error').length === 0);
+        $('.flow-droparea').toggle($(this).find('.has-error').length === 0);
     });
     $('#edit-sample-modal, #edit-file-modal').on('fieldValidation', function(e) {
         $('.save-edit-button').prop('disabled', $(this).find('.has-error').length);
@@ -633,7 +633,7 @@ $(function () {
         $('#add-sample-modal').modal('show');
         $('#add-sample-name').val(sampleName).prop('disabled', true);
         validateField.call($('#add-sample-name'), reSampleName);
-        $('.resumable-droparea').show();
+        $('.flow-droparea').show();
         //prevents bubbling of click event to .sample-collapse parent
         return false;
     });
