@@ -161,15 +161,25 @@ $(function () {
     }
 
     function resetSampleModal() {
-       // Set the library and and run-type fields to blank and N/A respectively
-        $('#add-library').val('');
+        showAdditionalFileModalOptions(false);
+        // Set the readset, library and and run-type fields to blank and N/A respectively
+        $('#add-readset, #add-library').val('');
         $('#add-run-type').val('N/A');
         // Set all typeahead fields to blank
         $('#add-platform, #add-capture-kit, #add-reference').typeahead('val', '');
         // Set the sample/patient id field to blank and add the error class
-        $('#add-sample-name').val('');
+        $('#add-sample-name').val('').closest('.form-group').show();
         validateField.call($('#add-sample-name'), reSampleName);
         validateField.call($('#add-library'), reLibrary);
+        validateField.call($('#add-readset'), reReadset);
+    }
+
+    function showAdditionalFileModalOptions(toggle) {
+        $('.add-other-description').toggle(toggle);
+        $('.add-other-title').toggle(toggle);
+        //Show sample on False, hide on True
+        $('.add-sample-description').toggle(!toggle);
+        $('.add-sample-title').toggle(!toggle);
     }
 
     function toggleEditableFields (fileType) {
@@ -236,6 +246,7 @@ $(function () {
         }
         fileRow.find('.file-type').text(fileType);
         if (fileType !== 'Other') {
+            fileRow.find('.file-readset').text($('#add-readset').val());
             fileRow.find('.file-platform').text($('#add-platform').val());
             fileRow.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
             fileRow.find('.file-capture-kit').text($('#add-capture-kit').val());
@@ -550,7 +561,12 @@ $(function () {
         validateField.call(this, reLibrary);
     });
     $('#add-sample-modal').on('fieldValidation', function(e) {
-        $('.flow-droparea').toggle($(this).find('.has-error').length === 0);
+        var numErrors = $(this).find('.has-error').length;
+        if ($('.add-other-title').is(":visible")) {
+            //The sampleName for additional files is '~' which is not valid and must be ignored
+            numErrors = numErrors - 1
+        }
+        $('.flow-droparea').toggle( numErrors === 0);
     });
     $('#edit-sample-modal, #edit-file-modal').on('fieldValidation', function(e) {
         $('.save-edit-button').prop('disabled', $(this).find('.has-error').length);
@@ -599,6 +615,17 @@ $(function () {
 
     $('#edit-file-modal').on('hide.bs.modal', function () {
         resetEditFileModal();
+    });
+
+    $('body').on('click', '.modal-add-files-button', function (e) {
+        $('#add-sample-modal').modal('show');
+        $('#add-sample-name')
+            .val('~')
+            .closest('.form-group')
+            .hide();
+        showAdditionalFileModalOptions(true);
+        $('.flow-droparea').show();
+        return false;
     });
 
     // Remove file from add sample table
@@ -795,10 +822,5 @@ $(function () {
     $('body').on('click', '.continue-session', function (e){
         refreshUploadReadyState();
         $('#upload-complete-modal').modal('hide');
-    });
-
-    // Log out (refresh the page)
-    $('body').on('click', '.logout-button', function (e){
-        document.location.reload();
     });
 });
