@@ -14,16 +14,23 @@ from server import app
 CHUNK_PREFIX = 'chunk.'
 
 
-def generate_auth_token(access_code):
+def generate_auth_token(server_token, user, name=None, email=None, duration_days=1):
     auth_token = base64.urlsafe_b64encode(os.urandom(12))
     current_date = dt.datetime.today()
-    expiry_date = current_date + dt.timedelta(days=1)  # Code expires in 24 hours
-    g.db.execute('insert into access (site_access_code,auth_token,date_created,date_expired) '
-                 'values (?,?,?,?)',
-                 (access_code, auth_token, current_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                  expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
-    g.db.commit()
+    expiry_date = current_date + dt.timedelta(duration_days)  # Code expires in 24 hours by default
+    save_auth_token(server_token, user, name, email, auth_token, current_date, expiry_date)
     return auth_token, expiry_date
+
+
+def save_auth_token(server_token, user, name, email, auth_token, date_created, expiry_date):
+    server_name = app.config['SERVER_TOKENS'][server_token]['name']
+    server_id = app.config['SERVER_TOKENS'][server_token]['id']
+    g.db.execute('insert into access (server_name, server_id, user_id, auth_token, date_created, date_expired) '
+                 'values (?,?,?,?,?,?)',
+                 (server_name, server_id, user, auth_token, date_created.strftime("%Y-%m-%dT%H:%M:%SZ"), expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
+    g.db.execute('insert into users (server_id, user_id, user_name, user_email) values (?,?,?,?)',
+                 (server_id, user, name, email))
+    g.db.commit()
 
 
 def get_auth_status(auth_token):
@@ -164,11 +171,11 @@ def get_file_data(identifier, data_column):
     return False
 
 
-def get_files_by_status(auth_token, status):
+def get_files_by_status(user_id, status):
     metadata_columns = ['identifier', 'sample_name', 'filename', 'file_type', 'readset', 'platform', 'run_type',
                         'capture_kit', 'library', 'reference']
-    db_files = g.db.execute('SELECT {} FROM files WHERE upload_status=? and auth_token=?'
-                            .format(', '.join(metadata_columns)), (status, auth_token)).fetchall()
+    db_files = g.db.execute('SELECT {} FROM files WHERE upload_status=? and user_id=?'
+                            .format(', '.join(metadata_columns)), (status, user_id)).fetchall()
 
     if len(db_files) > 0:
         files = {}
@@ -190,13 +197,19 @@ def get_files_by_status(auth_token, status):
     return dict(db_files)
 
 
+def get_user_by_auth_token(auth_token):
+    if g.db.execute('select exists(select 1 from access where auth_token=? LIMIT 1)', (auth_token,)).fetchone()[0]:
+        return g.db.execute('select user_id from access where auth_token=?', (auth_token,)).fetchone()[0]
+
+
 def insert_file_metadata(form_dict):
     # Values that need to be inserted/updated in the db
     update_keys = ['auth_token', 'identifier', 'sample_name', 'filename', 'total_size', 'file_type', 'readset',
                    'platform', 'run_type', 'capture_kit', 'library', 'reference']
     update_dict = {
-        'site_access_code': g.db.execute('select site_access_code from access where auth_token=?',
-                                         (form_dict['auth_token'],)).fetchone()[0],
+        'server_id': g.db.execute('select server_id from access where auth_token=?',
+                                  (form_dict['auth_token'],)).fetchone()[0],
+        'user_id': get_user_by_auth_token(form_dict['auth_token']),
         'date_upload_start': dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ"),
         'upload_status': 'ongoing'
     }

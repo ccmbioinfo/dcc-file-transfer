@@ -1,9 +1,9 @@
 drop table if exists users;
 create table users (
-  user_id integer primary key autoincrement,
-  username varchar not null,
-  login_site varchar not null,
-  auth_token varchar not null
+  server_id varchar not null,
+  user_id varchar not null,
+  user_name varchar,
+  user_email varchar
 );
 
 
@@ -25,7 +25,8 @@ create table membership (
 drop table if exists files;
 create table files (
   file_id integer primary key autoincrement,
-  site_access_code varchar not null,
+  server_id varchar not null,
+  user_id varchar not null,
   auth_token varchar not null,
   identifier varchar not null unique,
   sample_name varchar not null,
@@ -63,7 +64,9 @@ create table fileruns (
 drop table if exists access;
 create table access (
   access_id integer primary key autoincrement,
-  site_access_code varchar not null,
+  server_id varchar not null,
+  server_name varchar,
+  user_id varchar not null,
   auth_token varchar not null,
   date_created varchar not null,
   date_expired varchar not null
