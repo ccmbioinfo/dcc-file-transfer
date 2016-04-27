@@ -170,7 +170,7 @@
                                         <th class="capture-kit header">Capture Kit</th>
                                         <th class="library header">Library</th>
                                         <th class="reference header">Reference</th>
-                                        <th class="progress header">Status</th>
+                                        <th class="progress header">Progress</th>
                                         <th class="option header">Options</th>
                                     </tr>
                                     </thead>
@@ -183,10 +183,10 @@
                                         <td class="sample-collapse"><a class="sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
                                         <td class="sample-collapse" colspan="8"></td>
                                         <td class="sample-collapse sample-option">
-                                             <span class="option-icon edit-sample glyphicon glyphicon-pencil"
-                                                   data-toggle="modal"
-                                                   data-target="#edit-sample-modal"
-                                                   title="Edit metadata for entire sample"></span>
+                                            <span class="option-icon edit-sample glyphicon glyphicon-pencil"
+                                                  data-toggle="modal"
+                                                  data-target="#edit-sample-modal"
+                                                  title="Edit metadata for entire sample"></span>
                                             <span class="option-icon flow-add add-files glyphicon glyphicon-plus"
                                                   data-toggle="modal"
                                                   data-target="#add-sample-modal"
@@ -237,6 +237,8 @@
                                     <th class="capture-kit header">Capture Kit</th>
                                     <th class="library header">Library</th>
                                     <th class="reference header">Reference</th>
+                                    <th class="status header">DCC Status</th>
+                                    <th class="options header">Options</th>
                                 </tr>
                                 </thead>
                                 <tbody class="sample-template sample-section">
@@ -246,8 +248,12 @@
                                         <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
                                     </td>
                                      <td class="sample-collapse"><span class="sample-name pull-left"></span></td>
-                                    <td class="sample-collapse" colspan="7"></td>
+                                    <td class="sample-collapse" colspan="9"></td>
                                     <td class="sample-collapse sample-option">
+                                        <span class="option-icon edit-sample glyphicon glyphicon-pencil"
+                                              data-toggle="modal"
+                                              data-target="#edit-sample-modal"
+                                              title="Edit metadata for entire sample"></span>
                                     </td>
                                 </tr>
                                 <tr class="sample-file-row sample-file-template">
@@ -260,6 +266,13 @@
                                     <td class="file-capture-kit cell"></td>
                                     <td class="file-library cell"></td>
                                     <td class="file-reference cell"></td>
+                                    <td class="file-status cell"></td>
+                                    <td class="file-option option cell">
+                                        <span class="option-icon edit-file glyphicon glyphicon-pencil"
+                                              data-toggle="modal"
+                                              data-target="#edit-file-modal"
+                                              title="Edit file metadata"></span>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
