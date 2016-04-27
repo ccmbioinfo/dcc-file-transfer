@@ -75,7 +75,7 @@ $(function () {
     }
 
     function getFileRow(file, table) {
-        return table.find('#'+file.uniqueIdentifier);
+        return table.find("[id='"+file.uniqueIdentifier+"']");
     }
 
     function getExtraParams(flowFile, flowChunk) {
@@ -133,7 +133,7 @@ $(function () {
     }
 
     function updateFileMetadata(metadata, table) {
-        var fileRow = table.find('#'+metadata.identifier);
+        var fileRow = table.find("[id='"+metadata.identifier+"']");
         for (var fieldName in fieldProperties) {
             if (fieldProperties.hasOwnProperty(fieldName)) {
                 var fieldType = fieldProperties[fieldName]['type'];
@@ -161,7 +161,6 @@ $(function () {
     }
 
     function resetSampleModal() {
-        showAdditionalFileModalOptions(false);
         // Set the readset, library and and run-type fields to blank and N/A respectively
         $('#add-readset, #add-library').val('');
         $('#add-run-type').val('N/A');
@@ -174,12 +173,20 @@ $(function () {
         validateField.call($('#add-readset'), reReadset);
     }
 
-    function showAdditionalFileModalOptions(toggle) {
-        $('.add-other-description').toggle(toggle);
-        $('.add-other-title').toggle(toggle);
+    function showAdditionalFileModalOptions(isAuxiliary) {
+        if (isAuxiliary) {
+            $('#add-sample-name, #edit-sample-name')
+                .val('~')
+                .closest('.form-group')
+                .removeClass('has-error');
+        }
+        $('#add-sample-name, #edit-sample-name')
+            .prop('disabled', isAuxiliary)
+            .closest('.form-group')
+            .toggle(!isAuxiliary);
+        $('.add-other-title, .add-other-description, .edit-other-title').toggle(isAuxiliary);
         //Show sample on False, hide on True
-        $('.add-sample-description').toggle(!toggle);
-        $('.add-sample-title').toggle(!toggle);
+        $('.add-sample-title, .add-sample-description, .edit-sample-title').toggle(!isAuxiliary);
     }
 
     function toggleEditableFields (fileType) {
@@ -267,7 +274,7 @@ $(function () {
     }
 
     function validateField(regex) {
-        var isValid = regex.test($(this).val());
+        var isValid = $(this).is(':disabled') || regex.test($(this).val());
         // Toggle error classes based on regex test
         $(this)
             .closest('.form-group')
@@ -314,13 +321,13 @@ $(function () {
     function showUploadStateOptions() {
         $('.cancel-upload, .progress').show();
         $('.option').hide();
-        $('.add-sample, .file-name, .sample-name, .sample-option, .start-upload').addClass('disabled');
+        $('.modal-add-sample-button, .modal-add-files-button, .file-name, .sample-name, .sample-option, .start-upload').addClass('disabled');
     }
 
     function hideUploadStateOptions() {
         $('.option').show();
         $('.cancel-upload, .progress').hide();
-        $('.add-sample, .file-name, .sample-name, .sample-option, .start-upload').removeClass('disabled');
+        $('.modal-add-sample-button, .modal-add-files-button, .file-name, .sample-name, .sample-option, .start-upload').removeClass('disabled');
     }
 
     function clearTable(table) {
@@ -363,7 +370,7 @@ $(function () {
     function addFileToErrorTable (flowFile, errorMsg) {
         var id = flowFile.uniqueIdentifier;
         var fileErrorFields = {
-            'sample': $('#' + id).closest('.sample-section').attr('name'),
+            'sample': $("[id='"+id+"']").closest('.sample-section').attr('name'),
             'file': flowFile.name,
             'msg': errorMsg
         };
@@ -498,7 +505,7 @@ $(function () {
         var fileRow = getFileRow(file, $('.sample-table'));
         var authToken = $('#auth-token').val();
         var uniqueIdentifier = file.uniqueIdentifier;
-        var sampleName = $('#'+uniqueIdentifier).closest('.sample-section').attr('name');
+        var sampleName = $("[id='"+uniqueIdentifier+"']").closest('.sample-section').attr('name');
         var urlParts = ['transfers', authToken, 'samples', sampleName, 'files', uniqueIdentifier];
         $.ajax({
             url: window.location.pathname + urlParts.join('/'),
@@ -561,12 +568,7 @@ $(function () {
         validateField.call(this, reLibrary);
     });
     $('#add-sample-modal').on('fieldValidation', function(e) {
-        var numErrors = $(this).find('.has-error').length;
-        if ($('.add-other-title').is(":visible")) {
-            //The sampleName for additional files is '~' which is not valid and must be ignored
-            numErrors = numErrors - 1
-        }
-        $('.flow-droparea').toggle( numErrors === 0);
+        $('.flow-droparea').toggle($(this).find('.has-error').length === 0);
     });
     $('#edit-sample-modal, #edit-file-modal').on('fieldValidation', function(e) {
         $('.save-edit-button').prop('disabled', $(this).find('.has-error').length);
@@ -608,9 +610,9 @@ $(function () {
     });
 
     // Enable sample name field after adding files to an existing sample
-    $('#add-sample-modal').on('hide.bs.modal', function () {
+    $('#add-sample-modal, #edit-sample-modal').on('hide.bs.modal', function () {
+        showAdditionalFileModalOptions(false);
         resetSampleModal();
-        $(this).find('#add-sample-name').prop('disabled', false);
     });
 
     $('#edit-file-modal').on('hide.bs.modal', function () {
@@ -619,10 +621,6 @@ $(function () {
 
     $('body').on('click', '.modal-add-files-button', function (e) {
         $('#add-sample-modal').modal('show');
-        $('#add-sample-name')
-            .val('~')
-            .closest('.form-group')
-            .hide();
         showAdditionalFileModalOptions(true);
         $('.flow-droparea').show();
         return false;
@@ -632,7 +630,8 @@ $(function () {
     $('.table-data').on('click', '.remove-file', function (e) {
         var uniqueId = $(this).closest('.sample-file-row').attr('id');
         flow.removeFile(flow.getFromUniqueIdentifier(uniqueId));
-        $('#'+uniqueId).remove();
+        $("[id='"+uniqueId+"']").remove();
+
     });
 
     // Remove entire sample from add sample table
@@ -652,6 +651,9 @@ $(function () {
     // Add files to a specific sample
     $('.table-data').on('click', '.add-files', function (e) {
         var sampleName = $(this).closest('tbody').attr('name');
+        if (sampleName === '~') {
+            showAdditionalFileModalOptions(true);
+        }
         var sampleRow = $(this).closest('.sample-header-row');
 
         if (!sampleRow.nextUntil('.sample-header-row').is(':visible')) {
@@ -669,6 +671,8 @@ $(function () {
     $('.table-data').on('click', '.edit-sample, .sample-name', function (e) {
         var sampleRow = $(this).closest('.sample-header-row');
         var currentName = sampleRow.find('.sample-name').text();
+
+
         $('#edit-sample-name').val(currentName);
         validateField.call($('#edit-sample-name'), reSampleName);
         // Show modal in data-target
@@ -676,6 +680,7 @@ $(function () {
         if (modalId) {
             $(modalId).attr('data-sample-name', currentName).modal('show');
         }
+        showAdditionalFileModalOptions(currentName === '~');
         return false;
     });
 
@@ -746,7 +751,7 @@ $(function () {
     // Save file edits to table
     $('body').on('click', '.save-edit-file', function (e) {
         var modal = $(this).closest('.modal');
-        var tableRow = $('#' + modal.attr('data-file-id'));
+        var tableRow = $("[id='"+modal.attr('data-file-id')+"']");
         copyFromModalToTable(modal, tableRow);
         modal.removeAttr('data-file-id').modal('hide');
     });
@@ -770,7 +775,7 @@ $(function () {
             $.each(flow.files, function (i, file) {
                 var authToken = $('#auth-token').val();
                 var uniqueIdentifier = file.uniqueIdentifier;
-                var sampleName = $('#'+uniqueIdentifier).closest('.sample-section').attr('name');
+                var sampleName = $("[id='"+uniqueIdentifier+"']").closest('.sample-section').attr('name');
                 var urlParts = ['transfers', authToken, 'samples', sampleName, 'files', uniqueIdentifier];
                 var fileData = {
                     'status': 'start',

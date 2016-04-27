@@ -18,12 +18,20 @@ body {
  * Top navigation
  * Hide default border to remove 1px line.
  */
+.navbar-title {
+    font-size: 18px;
+    color: white;
+    padding: 15px;
+    cursor: default;
+}
+
 .navbar-fixed-top {
   border: 0;
 }
 
 .tab-label,
 .tab-label:hover {
+    font-size: 14px;
     color: black;
 }
 
@@ -487,7 +495,8 @@ p.error-description {
 }
 
 .add-other-title,
-.add-other-description {
+.add-other-description,
+.edit-other-title {
     display: none;
 }
 
