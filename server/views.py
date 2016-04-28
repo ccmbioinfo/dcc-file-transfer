@@ -62,10 +62,10 @@ def create_auth_token():
     # get server token from header (convert to str to fix weird encoding issue on production)
     server_token = request.headers.get('X-Server-Token', type=str)
     json_data = request.get_json()
-    user = str(json_data['user'])
-    name = str(json_data['name'])
-    email = str(json_data['email'])
-    duration = int(json_data['duration'])
+    user = str(json_data.get('user'))
+    name = str(json_data.get('name', ''))
+    email = str(json_data.get('email', ''))
+    duration = int(json_data.get('duration', 1))
 
     if not all([server_token, user]):
         return return_message('Error: missing parameter', 400)
