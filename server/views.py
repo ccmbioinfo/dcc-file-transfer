@@ -61,10 +61,11 @@ def home():
 def create_auth_token():
     # get server token from header (convert to str to fix weird encoding issue on production)
     server_token = request.headers.get('X-Server-Token', type=str)
-    user = str(request.get_json()['user'])
-    name = str(request.get_json()['name'])
-    email = str(request.get_json()['email'])
-    duration = int(request.get_json()['duration'])
+    json_data = request.get_json()
+    user = str(json_data['user'])
+    name = str(json_data['name'])
+    email = str(json_data['email'])
+    duration = int(json_data['duration'])
 
     if not all([server_token, user]):
         return return_message('Error: missing parameter', 400)

@@ -1,9 +1,9 @@
 drop table if exists users;
 create table users (
-  user_id integer primary key autoincrement,
-  username varchar not null,
-  login_site varchar not null,
-  auth_token varchar not null
+  server_id varchar not null,
+  user_id varchar not null,
+  user_name varchar,
+  user_email varchar
 );
 
 
@@ -66,10 +66,7 @@ create table access (
   access_id integer primary key autoincrement,
   server_id varchar not null,
   server_name varchar,
-  server_address varchar,
   user_id varchar not null,
-  user_name varchar,
-  user_email varchar,
   auth_token varchar not null,
   date_created varchar not null,
   date_expired varchar not null

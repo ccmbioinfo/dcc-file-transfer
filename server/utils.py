@@ -14,22 +14,22 @@ from server import app
 CHUNK_PREFIX = 'chunk.'
 
 
-def generate_auth_token(server_id, user, name=None, email=None, duration_days=None):
+def generate_auth_token(server_token, user, name=None, email=None, duration_days=1):
     auth_token = base64.urlsafe_b64encode(os.urandom(12))
     current_date = dt.datetime.today()
-    if not duration_days:
-        duration_days = 1
     expiry_date = current_date + dt.timedelta(duration_days)  # Code expires in 24 hours by default
-    save_auth_token(server_id, user, name, email, auth_token, current_date, expiry_date)
+    save_auth_token(server_token, user, name, email, auth_token, current_date, expiry_date)
     return auth_token, expiry_date
 
 
-def save_auth_token(server_id, user, name, email, auth_token, date_created, expiry_date):
-    server_name = app.config['SERVER_TOKENS'][server_id]['name']
-    server_address = app.config['SERVER_TOKENS'][server_id]['address']
-    g.db.execute('insert into access (server_id, server_name, server_address, user_id, user_name, user_email, auth_token, date_created, date_expired) '
-                 'values (?,?,?,?,?,?,?,?,?)',
-                 (server_id, server_name, server_address, user, name, email, auth_token, date_created.strftime("%Y-%m-%dT%H:%M:%SZ"),expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
+def save_auth_token(server_token, user, name, email, auth_token, date_created, expiry_date):
+    server_name = app.config['SERVER_TOKENS'][server_token]['name']
+    server_id = app.config['SERVER_TOKENS'][server_token]['id']
+    g.db.execute('insert into access (server_name, server_id, user_id, auth_token, date_created, date_expired) '
+                 'values (?,?,?,?,?,?)',
+                 (server_name, server_id, user, auth_token, date_created.strftime("%Y-%m-%dT%H:%M:%SZ"), expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
+    g.db.execute('insert into users (server_id, user_id, user_name, user_email) values (?,?,?,?)',
+                 (server_id, user, name, email))
     g.db.commit()
 
 
@@ -200,7 +200,6 @@ def get_files_by_status(user_id, status):
 def get_user_by_auth_token(auth_token):
     if g.db.execute('select exists(select 1 from access where auth_token=? LIMIT 1)', (auth_token,)).fetchone()[0]:
         return g.db.execute('select user_id from access where auth_token=?', (auth_token,)).fetchone()[0]
-    return False
 
 
 def insert_file_metadata(form_dict):
