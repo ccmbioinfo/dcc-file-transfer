@@ -36,18 +36,21 @@ body {
 }
 
 .main,
-.sample-table {
+.sample-table,
+.analysis-table {
     margin-top: 30px;
 }
 
 .step-header {
-    margin-top: 15px;
-    margin-bottom: 15px;
+    font-size: 18px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    text-align: left;
 }
 
 .step-description {
-    text-align: justify;
-    margin-bottom: 10px;
+    text-align: left;
+    margin-bottom: 20px;
 }
 
 @media (min-width: 768px) {
@@ -105,7 +108,7 @@ body, p, h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: bold;
 }
 
@@ -150,12 +153,14 @@ body {
 
 .main,
 .cancel-upload,
-.pause-upload {
+.pause-upload,
+.analysis-parameters {
     display: none;
 }
 
 .sample-file-template,
-.sample-header-template {
+.sample-header-template,
+.sample-analysis-row-template {
     display: none !important;
 }
 
@@ -473,7 +478,8 @@ p.error-description {
     font-size: 10px;
 }
 .readset-field-error,
-.library-field-error {
+.library-field-error,
+.invalid-file-error {
     display: none;
 }
 
@@ -483,8 +489,10 @@ p.error-description {
 
 .start-upload,
 .modal-add-sample-button,
-.modal-add-files-button {
-    width: 120px;
+.modal-add-files-button,
+.modal-add-analysis-button,
+.submit-analysis-button {
+    width: 125px;
 }
 
 .modal-add-files-button {
@@ -492,6 +500,10 @@ p.error-description {
     background-color: #fff;
     border-color: #2e6da4;
     width: 120px;
+}
+
+.modal-sample-form>p {
+    margin: 0 15px 25px 15px;
 }
 
 .add-other-title,

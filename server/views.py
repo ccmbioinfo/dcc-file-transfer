@@ -95,6 +95,16 @@ def get_samples(auth_token):
     return return_data(get_files_by_status(user, status))
 
 
+@app.route("/transfers/<auth_token>/runs/", methods=['GET'])
+@valid_auth_token_required
+def get_runs(auth_token):
+    auth_token = str(auth_token)
+    # The status argument can be used to retrieve files that are complete, corrupt, or ongoing
+    status = request.args.get('status', type=str)
+    user = get_user_by_auth_token(auth_token)
+    return return_data(get_runs_by_status(user, status))
+
+
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>", methods=['PUT'])
 @valid_auth_token_required
 def update_upload_status(auth_token, sample_name, identifier):

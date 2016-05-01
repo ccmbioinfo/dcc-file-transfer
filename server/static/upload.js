@@ -36,6 +36,8 @@ $(function () {
         'VCF': {'fields': ['type', 'readset', 'platform', 'runType', 'captureKit', 'library', 'reference']},
         'Other': {'fields': ['type', 'readset']}
     };
+    var uploadedSampleData = {};
+    var uploadedSampleNames = [];
 
     var substringMatcher = function(strs) {
         return function findMatches(queryString, cb) {
@@ -96,41 +98,49 @@ $(function () {
 
     function authorize(authToken) {
         $.ajax({
-                method: 'GET',
-                url: window.location.pathname + 'transfers/' + authToken,
-                data: {'authToken': authToken}
-            }).done(function (data) {
-                $('.transfer-symbol').removeClass('glyphicon-log-in').addClass('glyphicon-ok-sign');
-                $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
-                $('.auth-success').addClass('disabled');
-                $('.main').show();
-                $('.transfer-code-invalid').hide();
-                $('.logout').show();
-                getSampleDataFromServer('complete', $('.dcc-table'));
-            })
-            .fail(function (data) {
-                $('#auth-token').closest('.form-group').addClass('has-error');
-                $('.transfer-code-invalid').show();
-                return false;
-            });
+            method: 'GET',
+            url: window.location.pathname + 'transfers/' + authToken,
+            data: {'authToken': authToken}
+        }).done(function (data) {
+            $('.transfer-symbol').removeClass('glyphicon-log-in').addClass('glyphicon-ok-sign');
+            $('#auth-token').prop('disabled', true).closest('.form-group').removeClass('has-error');
+            $('.auth-success').addClass('disabled');
+            $('.main').show();
+            $('.transfer-code-invalid').hide();
+            $('.logout').show();
+            getSampleDataFromServer('complete')
+                .done(function (sampleData) {
+                    uploadedSampleData = sampleData;
+                    refreshAnalysisState();
+                    insertSampleDataIntoTable(sampleData, $('.dcc-table'));
+                });
+        }).fail(function (data) {
+            $('#auth-token').closest('.form-group').addClass('has-error');
+            $('.transfer-code-invalid').show();
+            return false;
+        });
     }
 
-    function getSampleDataFromServer (status, table) {
-        $.ajax({
-                method: 'GET',
-                url: window.location.pathname + 'transfers/' + $('#auth-token').val() + '/samples/',
-                data: {'status': status}
-            })
-            .done(function (data) {
-                for (var file in data) {
-                    createSampleHeader(data[file]['sample-name'], table);
-                    createFileRow(data[file]['filename'], data[file]['identifier'], data[file]['sample-name'], table);
-                    updateFileMetadata(data[file], table);
-                }
-            })
-            .fail(function (data) {
-                console.log(data)
-            });
+    function getSampleDataFromServer (status) {
+        return $.ajax({
+                    method: 'GET',
+                    url: window.location.pathname + 'transfers/' + $('#auth-token').val() + '/samples/',
+                    data: {'status': status}
+                });
+    }
+
+    function insertSampleDataIntoTable(data, table) {
+        for (var file in data) {
+            createSampleHeader(data[file]['sample-name'], table);
+            createFileRow(data[file]['filename'], data[file]['identifier'], data[file]['sample-name'], table);
+            updateFileMetadata(data[file], table);
+        }
+    }
+
+    function getUploadedSampleNames () {
+        return $.unique($.map(uploadedSampleData, function (value, key) {
+            return value['sample-name']
+        }));
     }
 
     function updateFileMetadata(metadata, table) {
@@ -423,10 +433,91 @@ $(function () {
         clearTableOfCompleted($('.sample-table'));
         // Refresh the DCC table with newly completed files
         clearTable($('.dcc-table'));
-        getSampleDataFromServer('complete', $('.dcc-table'));
+        getSampleDataFromServer('complete')
+                .done(function (sampleData) {
+                    uploadedSampleData = sampleData;
+                    refreshAnalysisState();
+                    insertSampleDataIntoTable(sampleData, $('.dcc-table'));
+                });
         // Clear the error table of previous errors
         clearErrorTable();
         toggleUploadIfReady();
+    }
+
+    function refreshAnalysisState() {
+        uploadedSampleNames = getUploadedSampleNames();
+        generateTypeAheadOptions('#analysis-sample-name', uploadedSampleNames);
+    }
+
+    function generateTypeAheadOptions(input, optionList) {
+        $(input).typeahead({
+            hint: true,
+            highlight: true,
+            minLength: 1
+        }, {
+            source: substringMatcher(optionList)
+        });
+
+        generateTypeAheadErrorListener(input, optionList);
+    }
+
+    function generateTypeAheadErrorListener(input, optionList) {
+         $(input).on('input change typeahead:selected', function (e) {
+             var isValid = $.inArray($(input).val(), optionList) !== -1;
+             $(input)
+                 .closest('.form-group')
+                 .toggleClass('has-error', !isValid)
+                 .find('.error-description').toggle(!isValid);
+             $(input).closest('.modal').trigger('fieldValidation');
+         });
+    }
+
+    function populateAnalysisParameters() {
+        var selectedSample = $('#analysis-sample-name').val();
+            var readsetName = '';
+            var libraryName = '';
+            var runType = '';
+            var BAMnames = [];
+            var FASTQnames = [];
+
+            for (var identifier in uploadedSampleData) {
+                if (uploadedSampleData.hasOwnProperty(identifier)) {
+                    if (uploadedSampleData[identifier]['sample-name'] === selectedSample && (uploadedSampleData[identifier]['type'] === 'FASTQ' || uploadedSampleData[identifier]['type'] === 'BAM')) {
+                        var fileName = uploadedSampleData[identifier]['filename'];
+
+                        readsetName = uploadedSampleData[identifier]['readset'];
+                        libraryName = uploadedSampleData[identifier]['library'];
+                        runType = uploadedSampleData[identifier]['runType'];
+
+                        if (uploadedSampleData[identifier]['type'] === 'FASTQ') {
+                            FASTQnames.push(fileName);
+                        } else {
+                            BAMnames.push(fileName);
+                        }
+                    }
+                }
+            }
+        // populate modal and trigger field validation on modal.
+        $('#analysis-readset').val(readsetName);
+        $('#analysis-library').val(libraryName);
+        if (runType === 'Paired End' || runType === 'Single End') {
+            $('#analysis-runType').val(runType);
+        }
+        $('#analysis-fastq2').closest('.form-group').toggle(runType === 'Paired End');
+        if (FASTQnames.length >= 2) {
+            $('#analysis-fastq2').val(FASTQnames[1]);
+        }
+        if (FASTQnames.length >= 1) {
+            $('#analysis-fastq1').val(FASTQnames[0]);
+        }
+        if (BAMnames.length >= 1) {
+            $('#analysis-bam').val(BAMnames[0]);
+        }
+
+        //generateTypeAheadOptions('#analysis-bed', );
+        generateTypeAheadOptions('#analysis-fastq1', FASTQnames);
+        generateTypeAheadOptions('#analysis-fastq2', FASTQnames);
+        generateTypeAheadOptions('#analysis-bam', BAMnames);
     }
 
     function showUploadSuccess (file) {
@@ -571,7 +662,6 @@ $(function () {
     $('.auth-token-form').on('submit', function (e) {
         authorize($('#auth-token').val());
         // Update the DCC table with completed uploads
-
         return false;
     });
 
@@ -585,11 +675,30 @@ $(function () {
     $('.field-library').on('input', function (e) {
         validateField.call(this, reLibrary);
     });
+    $('#analysis-sample-name').on('input change typeahead:selected', function (e) {
+        //Sample name must match existing sample
+        var isValid = $.inArray($(this).val(), uploadedSampleNames) !== -1;
+        if (isValid) {
+            populateAnalysisParameters();
+        }
+    });
+    $('#analysis-runType').on('change', function (e) {
+       $('#analysis-fastq2').closest('.form-group').toggle($('#analysis-runType').val() === 'Paired End');
+    });
     $('#add-sample-modal').on('fieldValidation', function(e) {
         $('.flow-droparea').toggle($(this).find('.has-error').length === 0);
     });
     $('#edit-sample-modal, #edit-file-modal').on('fieldValidation', function(e) {
-        $('.save-edit-button').prop('disabled', $(this).find('.has-error').length);
+        $(this).find('.save-button').prop('disabled', $(this).find('.has-error').length);
+    });
+    $('#add-analysis-modal').on('fieldValidation', function(e) {
+
+        // if paired end FQ1 and FQ2 no error then remove BAM error prop save changes OR BAM no error remove FQ errors and prop save changes
+        // if single end FQ1 no error then remove BAM error prop save changes
+
+        var isValid = $(this).find('.has-error').length;
+        $(this).find('.save-button').prop('disabled', isValid);
+        $(this).find('.analysis-parameters').toggle(!$(this).find('#analysis-sample-name').closest('.form-group').hasClass('has-error'));
     });
 
     // Platform typeahead
@@ -761,7 +870,12 @@ $(function () {
             }
         });
         clearTable($('.dcc-table'));
-        getSampleDataFromServer('complete', $('.dcc-table'));
+        getSampleDataFromServer('complete')
+                .done(function (sampleData) {
+                    uploadedSampleData = sampleData;
+                    refreshAnalysisState();
+                    insertSampleDataIntoTable(sampleData, $('.dcc-table'));
+                });
         $('#edit-sample-modal').removeAttr('data-sample-name').modal('hide');
     });
 
@@ -823,8 +937,32 @@ $(function () {
         }
         copyFromModalToTable(modal, tableRow);
         clearTable($('.dcc-table'));
-        getSampleDataFromServer('complete', $('.dcc-table'));
+        getSampleDataFromServer('complete')
+                .done(function (sampleData) {
+                    uploadedSampleData = sampleData;
+                    refreshAnalysisState();
+                    insertSampleDataIntoTable(sampleData, $('.dcc-table'));
+                });
         modal.removeAttr('data-file-id').modal('hide');
+    });
+
+    // Save sample analysis
+    $('body').on('click', '.save-analysis', function (e) {
+        //create a sample row
+        var analysisTable = $('.analysis-table').find('.table-data');
+        var sampleRow = analysisTable.find('.sample-analysis-row-template').clone();
+
+        sampleRow.find('.sample-name').html($('#add-analysis-modal').find('#analysis-sample-name').val());
+        sampleRow.find('.sample-readset').html($('#add-analysis-modal').find('#analysis-readset').val());
+        sampleRow.find('.sample-runType').html($('#add-analysis-modal').find('#analysis-runType').val());
+        sampleRow.find('.sample-library').html($('#add-analysis-modal').find('#analysis-library').val());
+        sampleRow.find('.sample-pipeline').html($('#add-analysis-modal').find('#analysis-pipeline').val());
+        sampleRow.find('.sample-status').html('ready');
+
+        analysisTable.append(sampleRow);
+        // Remove the template class
+        sampleRow.removeClass('sample-analysis-row-template');
+        $('#add-analysis-modal').modal('hide');
     });
 
     // Collapse the table contents and show only the panel header
@@ -899,4 +1037,11 @@ $(function () {
         refreshUploadReadyState();
         $('#upload-complete-modal').modal('hide');
     });
+
+    // Log out (refresh the page)
+    $('body').on('click', '.logout-button', function (e){
+        document.location.reload();
+    });
+
 });
+

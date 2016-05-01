@@ -44,20 +44,19 @@ create table files (
   date_upload_end varchar
 );
 
-
 drop table if exists runs;
 create table runs (
-  run_id integer primary key autoincrement,
-  owner integer references users(user_id),
-  status varchar,
-  configuration varchar
-);
-
-
-drop table if exists fileruns;
-create table fileruns (
-  file_id integer references files(file_id),
-  run_id integer references runs(run_id)
+  run_id varchar not null UNIQUE ,
+  user_id varchar not null,
+  sample_name varchar not null,
+  readset varchar,
+  library varchar,
+  run_type varchar,
+  bed varchar,
+  fastq1 varchar,
+  fastq2 varchar,
+  bam varchar,
+  status varchar
 );
 
 

@@ -151,7 +151,7 @@ def generate_file(data):
         return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
 
     update_file_status(data['identifier'], 'complete')
-    return make_response(jsonify({'message': 'Success: File upload compeleted successfully'}), 200)
+    return make_response(jsonify({'message': 'Success: File upload completed successfully'}), 200)
 
 
 def remove_from_uploads(tempdir):
@@ -164,10 +164,12 @@ def remove_from_uploads(tempdir):
         pass
 
 
-def get_file_data(identifier, data_column):
+def get_file_data(identifier, data_columns):
     # Check if identifier is in the db first
     if g.db.execute('select exists(select 1 from files where identifier=? LIMIT 1)', (identifier,)).fetchone()[0]:
-        return g.db.execute('select {} from files where identifier=?'.format(data_column), (identifier,)).fetchone()[0]
+        if type(data_columns) == str:
+             return g.db.execute('select {} from files where identifier=?'.format(data_columns), (identifier,)).fetchone()[0]
+        return g.db.execute('select {} from files where identifier=?'.format(",".join(data_columns)), (identifier,)).fetchall()[0]
     return False
 
 
