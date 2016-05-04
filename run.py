@@ -3,7 +3,7 @@
 import logging
 import sys
 
-from server import app, database
+from server import app, db
 
 
 DEBUG = app.config['DEBUG']
@@ -20,7 +20,7 @@ def parse_args(args):
     subparsers = parser.add_subparsers(title='subcommands')
     subparser = subparsers.add_parser('initdb',
                                       description="Initialize database")
-    subparser.set_defaults(function=database.init)
+    subparser.set_defaults(function=db.create_all)
 
     subparser = subparsers.add_parser('server', description="Start running the server")
     subparser.add_argument("-p", "--port", default=app.config['PORT'],

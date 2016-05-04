@@ -6,9 +6,10 @@ import datetime as dt
 
 from glob import glob
 
-from flask import jsonify, make_response, g
+from flask import jsonify, make_response
 
-from server import app
+from server import app, db
+from models import User, Access, File
 
 
 CHUNK_PREFIX = 'chunk.'
@@ -16,31 +17,27 @@ CHUNK_PREFIX = 'chunk.'
 
 def generate_auth_token(server_token, user, name=None, email=None, duration_days=1):
     auth_token = base64.urlsafe_b64encode(os.urandom(12))
-    current_date = dt.datetime.today()
-    expiry_date = current_date + dt.timedelta(duration_days)  # Code expires in 24 hours by default
-    save_auth_token(server_token, user, name, email, auth_token, current_date, expiry_date)
-    return auth_token, expiry_date
-
-
-def save_auth_token(server_token, user, name, email, auth_token, date_created, expiry_date):
     server_name = app.config['SERVER_TOKENS'][server_token]['name']
     server_id = app.config['SERVER_TOKENS'][server_token]['id']
-    g.db.execute('insert into access (server_name, server_id, user_id, auth_token, date_created, date_expired) '
-                 'values (?,?,?,?,?,?)',
-                 (server_name, server_id, user, auth_token, date_created.strftime("%Y-%m-%dT%H:%M:%SZ"), expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")))
-    g.db.execute('insert into users (server_id, user_id, user_name, user_email) values (?,?,?,?)',
-                 (server_id, user, name, email))
-    g.db.commit()
+    current_date = dt.datetime.today()
+    expiry_date = current_date + dt.timedelta(duration_days)  # Code expires in 24 hours by default
+
+    new_user = User(server_id=server_id, server_name=server_name, user_id=user, user_name=name, user_email=email)
+    new_access = Access(server_id=server_id, server_name=server_name, user_id=user, auth_token=auth_token,
+                        date_created=current_date, date_expired=expiry_date)
+
+    db.session.add_all([new_user, new_access])
+    db.session.commit()
+
+    return auth_token, expiry_date
 
 
 def get_auth_status(auth_token):
     current_time = dt.datetime.today()
-    expiry_date = g.db.execute('SELECT date_expired FROM access WHERE auth_token=?',(auth_token,)).fetchone()
-    if not expiry_date:
+    access = Access.query.filter_by(auth_token=auth_token).first()
+    if not access:
         return 'not found'
-
-    expiry_date = dt.datetime.strptime(expiry_date[0], "%Y-%m-%dT%H:%M:%SZ")
-    if current_time > expiry_date:
+    if current_time > access.date_expired:
         return 'expired'
 
     return 'valid'
@@ -151,7 +148,7 @@ def generate_file(data):
         return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
 
     update_file_status(data['identifier'], 'complete')
-    return make_response(jsonify({'message': 'Success: File upload compeleted successfully'}), 200)
+    return make_response(jsonify({'message': 'Success: File upload completed successfully'}), 200)
 
 
 def remove_from_uploads(tempdir):
@@ -164,87 +161,62 @@ def remove_from_uploads(tempdir):
         pass
 
 
-def get_file_data(identifier, data_column):
-    # Check if identifier is in the db first
-    if g.db.execute('select exists(select 1 from files where identifier=? LIMIT 1)', (identifier,)).fetchone()[0]:
-        return g.db.execute('select {} from files where identifier=?'.format(data_column), (identifier,)).fetchone()[0]
-    return False
-
-
-def get_files_by_status(user_id, status):
-    metadata_columns = ['identifier', 'sample_name', 'filename', 'file_type', 'readset', 'platform', 'run_type',
-                        'capture_kit', 'library', 'reference']
-    db_files = g.db.execute('SELECT {} FROM files WHERE upload_status=? and user_id=?'
-                            .format(', '.join(metadata_columns)), (status, user_id)).fetchall()
-
-    if len(db_files) > 0:
-        files = {}
-        for file_metadata in db_files:
-            identifier = file_metadata[0]
-            files[identifier] = {
-                'identifier': file_metadata[0],
-                'sample-name': file_metadata[1],
-                'filename': file_metadata[2],
-                'type': file_metadata[3],
-                'readset': file_metadata[4],
-                'platform': file_metadata[5],
-                'run-type': file_metadata[6],
-                'capture-kit': file_metadata[7],
-                'library': file_metadata[8],
-                'reference': file_metadata[9]
+def get_user_files(user_id, status):
+    files = File.query.filter_by(user_id=user_id, upload_status=status).all()
+    db_files = {}
+    for row in files:
+        db_files[row.identifier] = {
+                'identifier': row.identifier,
+                'sample-name': row.sample_name,
+                'filename': row.filename,
+                'type': row.file_type,
+                'readset': row.readset,
+                'platform': row.platform,
+                'run-type': row.run_type,
+                'capture-kit': row.capture_kit,
+                'library': row.library,
+                'reference': row.reference
             }
-        return files
-    return dict(db_files)
+    return db_files
 
 
 def get_user_by_auth_token(auth_token):
-    if g.db.execute('select exists(select 1 from access where auth_token=? LIMIT 1)', (auth_token,)).fetchone()[0]:
-        return g.db.execute('select user_id from access where auth_token=?', (auth_token,)).fetchone()[0]
+    return Access.query.filter_by(auth_token=auth_token).first().user_id
 
 
-def insert_file_metadata(form_dict):
-    # Values that need to be inserted/updated in the db
-    update_keys = ['auth_token', 'identifier', 'sample_name', 'filename', 'total_size', 'file_type', 'readset',
-                   'platform', 'run_type', 'capture_kit', 'library', 'reference']
-    update_dict = {
-        'server_id': g.db.execute('select server_id from access where auth_token=?',
-                                  (form_dict['auth_token'],)).fetchone()[0],
-        'user_id': get_user_by_auth_token(form_dict['auth_token']),
-        'date_upload_start': dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        'upload_status': 'ongoing'
-    }
+def insert_new_file(data):
+    file_row = File.query.filter_by(identifier=data['identifier']).first()
+    if not file_row:
+        file_row = File()
 
-    for key in update_keys:
-        update_dict[key] = form_dict[key]
+    file_row.server_id = Access.query.filter_by(auth_token=data['auth_token']).first().server_id
+    file_row.user_id = Access.query.filter_by(auth_token=data['auth_token']).first().user_id
+    file_row.identifier = data['identifier']
+    file_row.sample_name = data['sample_name']
+    file_row.auth_token = data['auth_token']
+    file_row.total_size = data['total_size']
+    file_row.filename = data['filename']
+    file_row.file_type = data['file_type']
+    file_row.readset = data['readset']
+    file_row.library = data['library']
+    file_row.run_type = data['run_type']
+    file_row.platform = data['platform']
+    file_row.capture_kit = data['capture_kit']
+    file_row.reference = data['reference']
+    file_row.upload_status = 'ongoing'
+    file_row.date_upload_start = dt.datetime.today()
 
-    keys = sorted(update_dict)
-    values = [update_dict[key] for key in keys]
-
-    # If the identifier exists, update the metadata
-    SQL = 'INSERT OR REPLACE INTO files ({}) VALUES ({})'.format(', '.join(keys), ','.join('?' * len(keys)))
-    g.db.execute(SQL, values)
-    g.db.commit()
-
-
-def update_file_metadata(form_dict):
-    # Values that need to be updated in the db
-    update_keys = ['sample_name', 'filename', 'total_size', 'file_type', 'readset', 'platform', 'run_type',
-                   'capture_kit', 'library', 'reference']
-    update_dict = {}
-    for key in update_keys:
-        update_dict[key] = form_dict[key]
-
-    g.db.execute('update files set {} where identifier=?'
-                 .format(', '.join('{0}="{1}"'.format(item[0], item[1]) for item in update_dict.items())),
-                 (form_dict['identifier'],))
-    g.db.commit()
+    db.session.add(file_row)
+    db.session.commit()
 
 
 def update_file_status(identifier, status):
-    # Update the end timestamp for cancelled, complete, or corrupt statuses
-    if status != 'ongoing':
-        current_date = dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
-        g.db.execute('update files set date_upload_end=? where identifier=?', (current_date, identifier))
+    file_row = File.query.filter_by(identifier=identifier).first()
+    if file_row:
+        file_row.upload_status = status
 
-    g.db.execute('update files set upload_status=? where identifier=?', (status, identifier))
-    g.db.commit()
+        if status != 'ongoing':
+            file_row.date_upload_end = dt.datetime.today()
+
+        db.session.add(file_row)
+        db.session.commit()

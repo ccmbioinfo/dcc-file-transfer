@@ -5,10 +5,10 @@ from flask import jsonify, make_response, request, g, render_template
 from functools import wraps
 
 from server import app
-from .database import connect_db
+from models import Access, File
 from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
-    get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_file_data, get_files_by_status, \
-    insert_file_metadata, update_file_status, get_user_by_auth_token
+    get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
+    insert_new_file, update_file_status
 
 
 def return_data(data, status_code=200):
@@ -32,20 +32,6 @@ def internal_server_error(error):
 def page_not_found(error):
     app.logger.error(error)
     return return_message('This page does not exist', 404)
-
-
-@app.before_request
-def before_request():
-    # connect to the database before processing a request
-    g.db = connect_db()
-
-
-@app.teardown_request
-def teardown_request(exception):
-    # close the database connection regardless of request outcome
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
 
 
 def valid_auth_token_required(func):
@@ -97,8 +83,8 @@ def get_samples(auth_token):
     auth_token = str(auth_token)
     # The status argument can be used to retrieve files that are complete, corrupt, or ongoing
     status = request.args.get('status', type=str)
-    user = get_user_by_auth_token(auth_token)
-    return return_data(get_files_by_status(user, status))
+    user_id = Access.query.filter_by(auth_token=auth_token).first().user_id
+    return return_data(get_user_files(user_id, status))
 
 
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>", methods=['PUT'])
@@ -125,10 +111,11 @@ def update_upload_status(auth_token, sample_name, identifier):
     }
 
     if data['status'] == 'start':
-        if get_file_data(identifier, 'upload_status') == 'complete':
+        file_row = File.query.filter_by(identifier=identifier).first()
+        if file_row and file_row.upload_status == 'complete':
             return return_message('Error: File already uploaded', 400)
 
-        insert_file_metadata(data)
+        insert_new_file(data)
         return return_message('Success: Upload set to ongoing in db', 200)
 
     elif data['status'] == 'complete':
@@ -144,10 +131,10 @@ def cancel_upload(auth_token, sample_name, identifier):
     sample_name = str(sample_name)
     identifier = str(identifier)
 
-    if not get_file_data(identifier, 'upload_status'):
+    if not File.query.filter_by(identifier=identifier).first():
         return return_message('Error: Identifier does not exist', 404)
 
-    if get_file_data(identifier, 'upload_status') != 'complete':
+    if File.query.filter_by(identifier=identifier).first().upload_status != 'complete':
         update_file_status(identifier, 'cancelled')
         remove_from_uploads(get_tempdir(auth_token, identifier))
         return return_message('Success: Cancel received', 200)
@@ -193,7 +180,7 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
     if not all([filename, total_chunks]):
         return return_message('Error: missing parameter', 400)
 
-    if get_file_data(identifier, 'upload_status') != 'ongoing':
+    if File.query.filter_by(identifier=identifier).first().upload_status != 'ongoing':
         return return_message('Error: Chunk refused, file status not set to ongoing', 202)
 
     input_chunk = request.files['file']
@@ -217,7 +204,7 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
         return return_message('Error: Chunk could not be saved', 500)
 
     # BAM test for integrity done here since only the prioritized last chunk is needed to determine corruption
-    if chunk_number == total_chunks and get_file_data(identifier, 'file_type') == 'BAM/SAM':
+    if chunk_number == total_chunks and File.query.filter_by(identifier=identifier).first().file_type == 'BAM/SAM':
         if not bam_test(chunk_filename):
             remove_from_uploads(temp_dir)
             update_file_status(identifier, 'corrupt')
