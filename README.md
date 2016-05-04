@@ -9,6 +9,11 @@ Initialize the database according to the schema.sql:
 python run.py initdb
 ```
 
+### Initialize the database manager
+Initialize the database manager to handle upgrades and downgrades:
+```sh
+python manage.py db init
+```
 
 ### Start up the server
 Start up the server in one console:
