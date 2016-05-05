@@ -19,7 +19,7 @@ python run.py server
 ### Generate a transfer code
 Run the following curl command in the console using a valid server token (configurable in config.py) to obtain a transfer code valid for 24 hours
 ```sh
-curl -i -X POST -H "X-Server-Token: your-server-token" http://localhost:8000/transfers/
+curl -H "X-Server-Token: your-server-token" -H "Content-Type: application/json" -X POST -d '{"user":"your-user-id","name":"your-user-name","email":"your-user-email","duration":7}' http://localhost:8000/transfers/
 ```
 
 ### Upload a file:

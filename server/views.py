@@ -7,7 +7,7 @@ from server import app
 from .database import connect_db
 from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_file_data, get_files_by_status, \
-    insert_file_metadata, update_file_status, get_user_by_auth_token
+    insert_file_metadata, update_file_metadata, update_file_status, get_user_by_auth_token
 
 
 def return_message(message, status_code):
@@ -68,10 +68,10 @@ def create_auth_token():
     # get server token from header (convert to str to fix weird encoding issue on production)
     server_token = request.headers.get('X-Server-Token', type=str)
     json_data = request.get_json()
-    user = str(json_data['user'])
-    name = str(json_data['name'])
-    email = str(json_data['email'])
-    duration = int(json_data['duration'])
+    user = str(json_data.get('user'))
+    name = str(json_data.get('name', ''))
+    email = str(json_data.get('email', ''))
+    duration = int(json_data.get('duration', 1))
 
     if not all([server_token, user]):
         return return_message('Error: missing parameter', 400)
@@ -122,6 +122,7 @@ def update_upload_status(auth_token, sample_name, identifier):
         'platform': request.form.get('platform', type=str, default=''),
         'capture_kit': request.form.get('captureKit', type=str, default=''),
         'reference': request.form.get('reference', type=str, default=''),
+        'new_sample_name': request.form.get('new-sample-name', type=str, default=sample_name),
     }
 
     if data['status'] == 'start':
@@ -133,6 +134,10 @@ def update_upload_status(auth_token, sample_name, identifier):
 
     elif data['status'] == 'complete':
         return generate_file(data)
+
+    elif data['status'] == 'update':
+        update_file_metadata(data)
+        return return_message('Success: Updated file metadata', 200)
 
     return return_message('Error: Unexpected status', 400)
 

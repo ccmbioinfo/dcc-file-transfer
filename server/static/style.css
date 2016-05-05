@@ -1,5 +1,62 @@
 /* Downloaded from: https://github.com/23/resumable.js/blob/master/samples/Node.js/public/style.css */
 
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+}
+
+/*
+ * Global add-ons
+ */
+
+.sub-header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/*
+ * Top navigation
+ * Hide default border to remove 1px line.
+ */
+.navbar-title {
+    font-size: 18px;
+    color: white;
+    padding: 15px;
+    cursor: default;
+}
+
+.navbar-fixed-top {
+  border: 0;
+}
+
+.tab-label,
+.tab-label:hover {
+    font-size: 14px;
+    color: black;
+}
+
+.main,
+.sample-table {
+    margin-top: 30px;
+}
+
+.step-header {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.step-description {
+    text-align: justify;
+    margin-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+  .footer-row {
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+}
+
 /* Reset */
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td {
     margin: 0;
@@ -91,8 +148,7 @@ body {
     text-align: left;
 }
 
-.dcc-table,
-.sample-table,
+.main,
 .cancel-upload,
 .pause-upload {
     display: none;
@@ -160,11 +216,11 @@ th.header.files, th.header.option, th.header.progress {
     text-align: center;
 }
 
-.sample-header-row {
-    background-color: #f5f5f5;
+.table-striped>tbody>tr.sample-header-row {
+    background-color: #eeeeee;
 }
 
-.sample-header-row:hover {
+.table-striped>tbody>tr.sample-header-row:hover {
     background-color: #dadada;
 }
 
@@ -253,6 +309,7 @@ a.menu-item,
 }
 
 .sample-table td.file-progress.progress {
+    background-color: inherit;
     padding-right: 10px;
     width: 100px;
     display: none;
@@ -403,21 +460,7 @@ input.error {
 }
 
 .logout {
-    margin-top: 68px;
-    padding: 0;
-    display: none;
-}
-
-.logout-button {
-    color: black;
-    background-color: #eee;
-    border-color: #ddd;
-}
-
-.logout-button:hover {
-    color: black;
-    background-color: #dadada;
-    border-color: #a2a2a2;
+    font-size: 14px;
 }
 
 /* Add Sample */
@@ -439,8 +482,22 @@ p.error-description {
 }
 
 .start-upload,
-.modal-add-sample-button {
+.modal-add-sample-button,
+.modal-add-files-button {
     width: 120px;
+}
+
+.modal-add-files-button {
+    color: #2e6da4;
+    background-color: #fff;
+    border-color: #2e6da4;
+    width: 120px;
+}
+
+.add-other-title,
+.add-other-description,
+.edit-other-title {
+    display: none;
 }
 
 .cancel-upload {
@@ -460,14 +517,14 @@ p.error-description {
 }
 
 /* Uploader: Drag & Drop */
-.resumable-error {
+.flow-error {
     display: none;
     font-size: 14px;
     font-style: italic;
     margin-top: 40px;
 }
 
-.resumable-droparea {
+.flow-droparea {
     padding: 60px 0;
     margin-top: 20px;
     font-size: 16px;
@@ -480,17 +537,17 @@ p.error-description {
     display: none;
 }
 
-.resumable-dragging {
+.flow-dragging {
     color: white;
     background-color: rgba(51, 51, 51, 0.61);
     border: 2px solid #999;
 }
 
-.resumable-dragging * {
+.flow-dragging * {
     pointer-events: none;
 }
 
-.resumable-browse u {
+.flow-browse u {
     cursor: pointer;
 }
 
@@ -505,12 +562,12 @@ p.error-description {
 }
 
 /* Uploader: Progress bar */
-#resumable-progress-template,
+#flow-progress-template,
 .file-error-template {
     display: none;
 }
 
-.resumable-progress {
+.flow-progress {
     margin: 10px 0;
     width: 100%;
     height: 30px;

@@ -188,8 +188,8 @@ def get_files_by_status(user_id, status):
                 'type': file_metadata[3],
                 'readset': file_metadata[4],
                 'platform': file_metadata[5],
-                'run-type': file_metadata[6],
-                'capture-kit': file_metadata[7],
+                'runType': file_metadata[6],
+                'captureKit': file_metadata[7],
                 'library': file_metadata[8],
                 'reference': file_metadata[9]
             }
@@ -228,9 +228,9 @@ def insert_file_metadata(form_dict):
 
 def update_file_metadata(form_dict):
     # Values that need to be updated in the db
-    update_keys = ['sample_name', 'filename', 'total_size', 'file_type', 'readset', 'platform', 'run_type',
-                   'capture_kit', 'library', 'reference']
-    update_dict = {}
+    update_keys = ['file_type', 'readset', 'platform', 'run_type', 'capture_kit', 'library',
+                   'reference', 'identifier']
+    update_dict = {'sample_name': form_dict['new_sample_name']}
     for key in update_keys:
         update_dict[key] = form_dict[key]
 
