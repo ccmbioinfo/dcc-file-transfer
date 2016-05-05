@@ -11,6 +11,12 @@ from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_
 
 
 def return_message(message, status_code):
+    if status_code >= 300:
+        log_message = app.logger.warning
+    else:
+        log_message = app.logger.debug
+        
+    log_message('{!r} - {}'.format(message, status_code))
     return make_response(jsonify({'message': message}), status_code)
 
 
@@ -25,7 +31,7 @@ def internal_server_error(error):
 
 @app.errorhandler(404)
 def page_not_found(error):
-    return 'This page does not exist', 404
+    return return_message('This page does not exist', 404)
 
 
 @app.before_request
