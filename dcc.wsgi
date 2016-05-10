@@ -10,5 +10,5 @@ log_handler.setLevel(logging.WARNING)
 application.logger.addHandler(log_handler)
 
 application.logger.error("Don't stop")
-print('... beliving')
+print('... believing')
 
