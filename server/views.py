@@ -1,4 +1,5 @@
 import os
+import errno
 
 from flask import jsonify, make_response, request, g, render_template
 from functools import wraps
@@ -10,27 +11,26 @@ from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_
     insert_file_metadata, update_file_status, get_user_by_auth_token
 
 
-def return_message(message, status_code):
-    if status_code >= 300:
-        log_message = app.logger.warning
-    else:
-        log_message = app.logger.debug
-        
-    log_message('{!r} - {}'.format(message, status_code))
-    return make_response(jsonify({'message': message}), status_code)
-
-
 def return_data(data, status_code=200):
+    if status_code >= 300:
+        app.logger.warning('{} - {}'.format(data, status_code))
+
     return make_response(jsonify(data), status_code)
+
+
+def return_message(message, status_code):
+    return return_data({'message': message}, status_code=status_code)
 
 
 @app.errorhandler(500)
 def internal_server_error(error):
+    app.logger.error(error)
     return return_message('Error: Caught an internal server error', 500)
 
 
 @app.errorhandler(404)
 def page_not_found(error):
+    app.logger.error(error)
     return return_message('This page does not exist', 404)
 
 
@@ -203,8 +203,12 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
     if not os.path.isdir(temp_dir):
         try:
             os.makedirs(temp_dir, 511)  # rwxrwxrwx (octal: 777)
-        except OSError:
-            return return_message('Error: File directory could not be created', 500)
+        except OSError as e:
+            if e.errno == errno.EEXIST and os.path.isdir(temp_dir):
+                pass
+            else:
+                app.logger.error('Could not create directory: {}\n{}'.format(temp_dir, e))
+                return return_message('Error: File directory could not be created', 500)
 
     try:
         input_chunk.save(chunk_filename)

@@ -75,3 +75,6 @@ uploads/
 
 # PyCharm
 .idea/
+
+# production config
+config/prod.py
