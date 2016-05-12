@@ -201,10 +201,9 @@ def get_user_by_auth_token(auth_token):
     access = Access.query.filter_by(auth_token=auth_token).first()
     if access:
         return access.user.user_id
-    return None
 
 
-def get_sample(sample_name, user_id):
+def get_or_create_sample(sample_name, user_id):
     try:
         sample = Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
         if not sample:
@@ -221,11 +220,11 @@ def get_sample(sample_name, user_id):
         return Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
 
 
-def get_file(data):
+def get_or_create_file(data):
     auth_token = data.get('auth_token')
 
     user = User.query.filter_by(user_id=get_user_by_auth_token(auth_token)).first()
-    sample = get_sample(data.get('sample_name'), user.user_id)
+    sample = get_or_create_sample(data.get('sample_name'), user.user_id)
     access = Access.query.filter_by(auth_token=auth_token).first()
     file = File.query.filter_by(identifier=data.get('identifier')).first()
     if not file:

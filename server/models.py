@@ -25,7 +25,7 @@ class File(db.Model):
 class Access(db.Model):
     __tablename__ = 'access'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    auth_token = db.Column(db.String(12), unique=True)
+    auth_token = db.Column(db.String, unique=True)
     creation_date = db.Column(db.DateTime)
     expiration_date = db.Column(db.DateTime)
 
@@ -61,8 +61,6 @@ class Sample(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sample_name = db.Column(db.String)
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
-
-    db.UniqueConstraint('sample_name', 'user_id', name='sample_id')
 
     files = db.relationship(File, secondary=sample_file_link, backref="samples")
     runs = db.relationship(Run, backref="sample")

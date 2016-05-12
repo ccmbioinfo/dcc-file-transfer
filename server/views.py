@@ -8,7 +8,7 @@ from server import app
 from models import File
 from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
-    get_file, update_file_status, get_user_by_auth_token, InvalidServerToken
+    get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken
 
 
 def return_data(data, status_code=200):
@@ -118,7 +118,7 @@ def update_upload_status(auth_token, sample_name, identifier):
         if file_row and file_row.upload_status == 'complete':
             return return_message('Error: File already uploaded', 400)
 
-        get_file(data)
+        get_or_create_file(data)
         return return_message('Success: Upload set to ongoing in db', 200)
 
     elif data['status'] == 'complete':
