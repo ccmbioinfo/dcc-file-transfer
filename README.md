@@ -5,7 +5,7 @@
 
 ### Load the database with a new server and server-token
 ```sh
-python run.py authorize-server my-server-id "My Server Name" my-server-token
+python run.py authorize-server "my-server-id" "My Server Name" "my-server-token"
 ```
 
 ### Initialize the database migration manager
