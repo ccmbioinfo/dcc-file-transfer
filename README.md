@@ -3,21 +3,21 @@
 
 ## Quickstart
 
-### Initialize the database and the migration manager
-Initialize the database manager to handle upgrades and downgrades:
+### Initialize the database
+Initialize the database based on the last migrations:
 ```sh
-python manage.py db init
+python manage.py db upgrade
 ```
 
 ### Load the database with a new server and server-token
 ```sh
-python run.py authorize-server "my-server-id" "My Server Name" "my-server-token"
+python manage.py authorize_server "my-server-id" "My Server Name" "my-server-token"
 ```
 
 ### Start up the DCC server
 Start up the server in one console:
 ```sh
-python run.py start
+python manage.py runserver
 ```
 
 ### Generate a transfer code
@@ -54,17 +54,17 @@ $ pip install -r requirements.txt
 
 After modifying the schema, create a new migration script:
 ```
-$ python migrate.py db migrate
+$ python manage.py db migrate
 ```
 
 Upgrade to the new version:
 ```
-$ python migrate.py db upgrade
+$ python manage.py db upgrade
 ```
 
 Downgrade to the previous version:
 ```
-$ python migrate.py db downgrade
+$ python manage.py db downgrade
 ```
 
 *Note: for OperationalErrors with SQLite when dropping or adding columns, please modify
