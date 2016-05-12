@@ -16,10 +16,8 @@ def start_server(host, port):
 
 
 def authorize_server(id, name, token):
-    # create tables if db was not yet initialized
-    db.create_all()
+    server = Server(server_id=id, server_name=name, server_token=token)
     try:
-        server = Server(server_id=id, server_name=name, server_token=token)
         db.session.add(server)
         db.session.commit()
     except IntegrityError:

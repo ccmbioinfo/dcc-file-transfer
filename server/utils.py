@@ -204,20 +204,21 @@ def get_user_by_auth_token(auth_token):
 
 
 def get_or_create_sample(sample_name, user_id):
-    try:
-        sample = Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
-        if not sample:
-            sample = Sample(sample_name=sample_name)
-            user = User.query.filter_by(user_id=user_id).first()
-            user.samples.append(sample)
+    sample = Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
+
+    if not sample:
+        sample = Sample(sample_name=sample_name)
+        user = User.query.filter_by(user_id=user_id).first()
+        user.samples.append(sample)
+        try:
             db.session.add(user)
             db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            # Sample was added already or in a separate thread, therefore rollback and return the existing sample
+            return Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
 
-        return sample
-    except IntegrityError:
-        db.session.rollback()
-        # Sample was added already or in a separate thread, therefore rollback and return the existing sample
-        return Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
+    return sample
 
 
 def get_or_create_file(data):
