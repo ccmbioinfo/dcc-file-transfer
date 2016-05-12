@@ -8,3 +8,5 @@ db = SQLAlchemy(app)
 
 # Must go last to avoid circular imports
 from server import views, models
+
+db.create_all()

@@ -22,7 +22,7 @@ def authorize_server(id, name, token):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        # Should notify the user that the server_token is already in use
+        app.logger.error('Server authentication token already in use')
 
 
 def parse_args(args):
