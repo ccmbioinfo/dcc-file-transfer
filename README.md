@@ -48,3 +48,31 @@ Install the dependencies:
 ```
 $ pip install -r requirements.txt
 ```
+
+
+## Performing database migrations
+
+After modifying the schema, create a new migration script:
+```
+$ python migrate.py db migrate
+```
+
+Upgrade to the new version:
+```
+$ python migrate.py db upgrade
+```
+
+Downgrade to the previous version:
+```
+$ python migrate.py db downgrade
+```
+
+*Note: for OperationalErrors with SQLite when dropping or adding columns, please modify
+the migration script to use the following workaround:
+```
+with op.batch_alter_table("some_table") as batch_op:
+    # Add a column
+    batch_op.add_column(Column('foo', Integer))
+    # Drop a column
+    batch_op.drop_column('bar')
+```
