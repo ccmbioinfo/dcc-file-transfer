@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import logging
 import sys
 
 from server import app, db
@@ -13,6 +12,11 @@ def start_server(host, port):
     app.run(debug=DEBUG, host=host, port=port, threaded=True)
 
 
+def authorize_server(id, name, token):
+    # try to create object and add to db, except if db not created yet, let user know to run initdb first
+    pass
+
+
 def parse_args(args):
     from argparse import ArgumentParser
 
@@ -22,7 +26,7 @@ def parse_args(args):
                                       description="Initialize database")
     subparser.set_defaults(function=db.create_all)
 
-    subparser = subparsers.add_parser('server', description="Start running the server")
+    subparser = subparsers.add_parser('start', description="Start running the server")
     subparser.add_argument("-p", "--port", default=app.config['PORT'],
                            dest="port", type=int, metavar="PORT",
                            help="The port the server will listen on (default: %(default)s)")
@@ -31,6 +35,15 @@ def parse_args(args):
                            help="The host the server will listen to (0.0.0.0 to listen globally; 127.0.0.1 to listen locally; default: %(default)s)")
     subparser.set_defaults(function=start_server)
 
+    subparser = subparsers.add_parser('authorize-server', description="Authorize server to make requests")
+    subparser.add_argument("id", metavar="SERVER_ID",
+                           help="The port the server will listen on (default: %(default)s)")
+    subparser.add_argument("name", metavar="SERVER_NAME",
+                           help="The host the server will listen to (0.0.0.0 to listen globally; 127.0.0.1 to listen locally; default: %(default)s)")
+    subparser.add_argument("token", metavar="SERVER_TOKEN",
+                           help="The host the server will listen to (0.0.0.0 to listen globally; 127.0.0.1 to listen locally; default: %(default)s)")
+    subparser.set_defaults(function=authorize_server)
+
     args = parser.parse_args(args)
     if not hasattr(args, 'function'):
         parser.error('a subcommand must be specified')
@@ -38,8 +51,6 @@ def parse_args(args):
 
 
 def main(args=sys.argv[1:]):
-    logging.basicConfig(filename=app.config['LOGFILE'], format='%(asctime)s - %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S', level='DEBUG' if DEBUG else 'INFO')
     args = parse_args(args)
 
     # Call the function for the corresponding subparser

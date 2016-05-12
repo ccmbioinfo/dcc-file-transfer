@@ -5,10 +5,10 @@ from flask import jsonify, make_response, request, g, render_template
 from functools import wraps
 
 from server import app
-from models import Access, File
+from models import File
 from .utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
-    insert_new_file, update_file_status
+    get_file, update_file_status, get_user_by_auth_token, InvalidServerToken
 
 
 def return_data(data, status_code=200):
@@ -53,6 +53,7 @@ def home():
 def create_auth_token():
     # get server token from header (convert to str to fix weird encoding issue on production)
     server_token = request.headers.get('X-Server-Token', type=str)
+
     json_data = request.get_json()
     user = str(json_data.get('user'))
     name = str(json_data.get('name', ''))
@@ -61,14 +62,16 @@ def create_auth_token():
 
     if not all([server_token, user]):
         return return_message('Error: missing parameter', 400)
+    if user.find('/') != -1:
+        return return_message('Error: invalid username, must not contain "/"', 400)
 
-    if server_token and server_token in app.config['SERVER_TOKENS']:
+    try:
         auth_token, expiry_date = generate_auth_token(server_token, user, name, email, duration)
         return return_data({'user': user,
                             'transferCode': auth_token,
                             'expiresAt': expiry_date.strftime("%Y-%m-%dT%H:%M:%SZ")})
-
-    return return_message('Error: Unauthorized', 401)
+    except InvalidServerToken:
+        return return_message('Error: Unauthorized', 401)
 
 
 @app.route("/transfers/<auth_token>", methods=['GET'])
@@ -83,7 +86,7 @@ def get_samples(auth_token):
     auth_token = str(auth_token)
     # The status argument can be used to retrieve files that are complete, corrupt, or ongoing
     status = request.args.get('status', type=str)
-    user_id = Access.query.filter_by(auth_token=auth_token).first().user_id
+    user_id = get_user_by_auth_token(auth_token)
     return return_data(get_user_files(user_id, status))
 
 
@@ -115,7 +118,7 @@ def update_upload_status(auth_token, sample_name, identifier):
         if file_row and file_row.upload_status == 'complete':
             return return_message('Error: File already uploaded', 400)
 
-        insert_new_file(data)
+        get_file(data)
         return return_message('Success: Upload set to ongoing in db', 200)
 
     elif data['status'] == 'complete':
@@ -131,10 +134,12 @@ def cancel_upload(auth_token, sample_name, identifier):
     sample_name = str(sample_name)
     identifier = str(identifier)
 
-    if not File.query.filter_by(identifier=identifier).first():
+    file_row = File.query.filter_by(identifier=identifier).first()
+
+    if not file_row:
         return return_message('Error: Identifier does not exist', 404)
 
-    if File.query.filter_by(identifier=identifier).first().upload_status != 'complete':
+    if file_row.upload_status != 'complete':
         update_file_status(identifier, 'cancelled')
         remove_from_uploads(get_tempdir(auth_token, identifier))
         return return_message('Success: Cancel received', 200)
@@ -168,6 +173,7 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
     auth_token = str(auth_token)
     sample_name = str(sample_name)
     identifier = str(identifier)
+    file = File.query.filter_by(identifier=identifier).first()
 
     try:
         chunk_number = int(chunk_number)
@@ -180,7 +186,7 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
     if not all([filename, total_chunks]):
         return return_message('Error: missing parameter', 400)
 
-    if File.query.filter_by(identifier=identifier).first().upload_status != 'ongoing':
+    if not file or file.upload_status != 'ongoing':
         return return_message('Error: Chunk refused, file status not set to ongoing', 202)
 
     input_chunk = request.files['file']
@@ -204,7 +210,7 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
         return return_message('Error: Chunk could not be saved', 500)
 
     # BAM test for integrity done here since only the prioritized last chunk is needed to determine corruption
-    if chunk_number == total_chunks and File.query.filter_by(identifier=identifier).first().file_type == 'BAM/SAM':
+    if chunk_number == total_chunks and file.file_type == 'BAM/SAM':
         if not bam_test(chunk_filename):
             remove_from_uploads(temp_dir)
             update_file_status(identifier, 'corrupt')

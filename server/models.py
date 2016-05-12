@@ -1,35 +1,10 @@
 from server import db
 
 
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    server_id = db.Column(db.String)
-    server_name = db.Column(db.String)
-    user_id = db.Column(db.String)
-    user_name = db.Column(db.String)
-    user_email = db.Column(db.String)
-
-
-class Access(db.Model):
-    __tablename__ = 'access'
-    access_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    server_id = db.Column(db.String)
-    server_name = db.Column(db.String)
-    user_id = db.Column(db.String)
-    auth_token = db.Column(db.String(12), unique=True)
-    date_created = db.Column(db.DateTime)
-    date_expired = db.Column(db.DateTime)
-
-
 class File(db.Model):
     __tablename__ = 'files'
-    file_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    server_id = db.Column(db.String)
-    user_id = db.Column(db.String)
-    auth_token = db.Column(db.String(12))
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     identifier = db.Column(db.String, unique=True)
-    sample_name = db.Column(db.String)
     filename = db.Column(db.String)
     total_size = db.Column(db.Integer)
     file_type = db.Column(db.String)
@@ -40,15 +15,28 @@ class File(db.Model):
     library = db.Column(db.String)
     reference = db.Column(db.String)
     upload_status = db.Column(db.String)
-    date_upload_start = db.Column(db.DateTime)
-    date_upload_end = db.Column(db.DateTime)
+    upload_start_date = db.Column(db.DateTime)
+    upload_end_date = db.Column(db.DateTime)
+
+    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
+    access_id = db.Column(db.Integer, db.ForeignKey("access.id"))
+
+
+class Access(db.Model):
+    __tablename__ = 'access'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    auth_token = db.Column(db.String(12), unique=True)
+    creation_date = db.Column(db.DateTime)
+    expiration_date = db.Column(db.DateTime)
+
+    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
+
+    files = db.relationship(File, backref="access")
 
 
 class Run(db.Model):
     __tablename__ = 'runs'
-    run_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.String)
-    sample_name = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     readset = db.Column(db.String)
     library = db.Column(db.String)
     run_type = db.Column(db.String)
@@ -57,3 +45,49 @@ class Run(db.Model):
     fastq2 = db.Column(db.String)
     bam = db.Column(db.String)
     status = db.Column(db.String)
+
+    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
+    sample_id = db.Column(db.Integer, db.ForeignKey('samples.id'))
+
+
+sample_file_link = db.Table('sample_file_link',
+                            db.Column('sample_id', db.Integer, db.ForeignKey('samples.id')),
+                            db.Column('file_id', db.Integer, db.ForeignKey('files.id')))
+
+
+class Sample(db.Model):
+    __tablename__ = 'samples'
+    __table_args__ = (db.UniqueConstraint('sample_name', 'user_id', name='sample_id'),)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sample_name = db.Column(db.String)
+    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
+
+    db.UniqueConstraint('sample_name', 'user_id', name='sample_id')
+
+    files = db.relationship(File, secondary=sample_file_link, backref="samples")
+    runs = db.relationship(Run, backref="sample")
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String, unique=True)
+    user_name = db.Column(db.String)
+    user_email = db.Column(db.String)
+
+    server_id = db.Column(db.String, db.ForeignKey('servers.server_id'))
+
+    access = db.relationship(Access, backref="user")
+    samples = db.relationship(Sample, backref="user")
+    files = db.relationship(File, backref="user")
+    runs = db.relationship(Run, backref="user")
+
+
+class Server(db.Model):
+    __tablename__ = 'servers'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    server_token = db.Column(db.String, unique=True)
+    server_id = db.Column(db.String)
+    server_name = db.Column(db.String)
+
+    users = db.relationship(User, backref='server')

@@ -3,30 +3,44 @@ import hashlib
 import os
 import base64
 import datetime as dt
+from sqlalchemy.exc import IntegrityError
 
 from glob import glob
 
 from flask import jsonify, make_response
 
 from server import app, db
-from models import User, Access, File
+from models import Server, User, Access, Sample, File
 
 
 CHUNK_PREFIX = 'chunk.'
 
 
-def generate_auth_token(server_token, user, name=None, email=None, duration_days=1):
+class InvalidServerToken(Exception):
+    pass
+
+
+def generate_auth_token(server_token, username, name=None, email=None, duration_days=1):
+    # Check for a valid server token in the database
+    server = Server.query.filter_by(server_token=server_token).first()
+    if not server:
+        raise InvalidServerToken({"message": "Invalid server token"})
+
+    # Get user from db or create a new one
+    user_id = '{}/{}'.format(server.server_id, username)
+    user = User.query.filter_by(user_id=user_id).first()
+    if not user:
+        user = User(user_id=user_id, user_name=name, user_email=email)
+        db.session.add(user)
+
     auth_token = base64.urlsafe_b64encode(os.urandom(12))
-    server_name = app.config['SERVER_TOKENS'][server_token]['name']
-    server_id = app.config['SERVER_TOKENS'][server_token]['id']
     current_date = dt.datetime.today()
-    expiry_date = current_date + dt.timedelta(duration_days)  # Code expires in 24 hours by default
+    expiry_date = current_date + dt.timedelta(duration_days)
+    access = Access(auth_token=auth_token, creation_date=current_date, expiration_date=expiry_date)
+    db.session.add(access)
 
-    new_user = User(server_id=server_id, server_name=server_name, user_id=user, user_name=name, user_email=email)
-    new_access = Access(server_id=server_id, server_name=server_name, user_id=user, auth_token=auth_token,
-                        date_created=current_date, date_expired=expiry_date)
-
-    db.session.add_all([new_user, new_access])
+    # Attach the new token to the user
+    user.access.append(access)
     db.session.commit()
 
     return auth_token, expiry_date
@@ -37,7 +51,7 @@ def get_auth_status(auth_token):
     access = Access.query.filter_by(auth_token=auth_token).first()
     if not access:
         return 'not found'
-    if current_time > access.date_expired:
+    if current_time > access.expiration_date:
         return 'expired'
 
     return 'valid'
@@ -164,59 +178,90 @@ def remove_from_uploads(tempdir):
 def get_user_files(user_id, status):
     files = File.query.filter_by(user_id=user_id, upload_status=status).all()
     db_files = {}
-    for row in files:
-        db_files[row.identifier] = {
-                'identifier': row.identifier,
-                'sample-name': row.sample_name,
-                'filename': row.filename,
-                'type': row.file_type,
-                'readset': row.readset,
-                'platform': row.platform,
-                'run-type': row.run_type,
-                'capture-kit': row.capture_kit,
-                'library': row.library,
-                'reference': row.reference
+    for file in files:
+        db_files[file.identifier] = {
+                'identifier': file.identifier,
+                # Sample name passed is from the first sample it was originally uploaded with
+                'sample-name': file.samples[0].sample_name,
+                'filename': file.filename,
+                'type': file.file_type,
+                'readset': file.readset,
+                'platform': file.platform,
+                'run-type': file.run_type,
+                'capture-kit': file.capture_kit,
+                'library': file.library,
+                'reference': file.reference
             }
     return db_files
 
 
 def get_user_by_auth_token(auth_token):
-    return Access.query.filter_by(auth_token=auth_token).first().user_id
+    access = Access.query.filter_by(auth_token=auth_token).first()
+    if access:
+        return access.user.user_id
+    return None
 
 
-def insert_new_file(data):
-    file_row = File.query.filter_by(identifier=data['identifier']).first()
-    if not file_row:
-        file_row = File()
+def get_sample(sample_name, user_id):
+    try:
+        sample = Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
+        if not sample:
+            sample = Sample(sample_name=sample_name)
+            user = User.query.filter_by(user_id=user_id).first()
+            user.samples.append(sample)
+            db.session.add(user)
+            db.session.commit()
 
-    file_row.server_id = Access.query.filter_by(auth_token=data['auth_token']).first().server_id
-    file_row.user_id = Access.query.filter_by(auth_token=data['auth_token']).first().user_id
-    file_row.identifier = data['identifier']
-    file_row.sample_name = data['sample_name']
-    file_row.auth_token = data['auth_token']
-    file_row.total_size = data['total_size']
-    file_row.filename = data['filename']
-    file_row.file_type = data['file_type']
-    file_row.readset = data['readset']
-    file_row.library = data['library']
-    file_row.run_type = data['run_type']
-    file_row.platform = data['platform']
-    file_row.capture_kit = data['capture_kit']
-    file_row.reference = data['reference']
-    file_row.upload_status = 'ongoing'
-    file_row.date_upload_start = dt.datetime.today()
+        return sample
+    except IntegrityError:
+        db.session.rollback()
+        # Sample was added already or in a separate thread, therefore rollback and return the existing sample
+        return Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
 
-    db.session.add(file_row)
-    db.session.commit()
+
+def get_file(data):
+    auth_token = data.get('auth_token')
+
+    user = User.query.filter_by(user_id=get_user_by_auth_token(auth_token)).first()
+    sample = get_sample(data.get('sample_name'), user.user_id)
+    access = Access.query.filter_by(auth_token=auth_token).first()
+    file = File.query.filter_by(identifier=data.get('identifier')).first()
+    if not file:
+        file = File()
+
+        file.identifier = data.get('identifier')
+        file.filename = data.get('filename')
+        file.total_size = data.get('total_size')
+        file.file_type = data.get('file_type')
+        file.user_id = user.user_id
+        file.access_id = access.id
+        file.readset = data.get('readset')
+        file.platform = data.get('platform')
+        file.run_type = data.get('run_type')
+        file.capture_kit = data.get('capture_kit')
+        file.library = data.get('library')
+        file.reference = data.get('reference')
+        file.upload_status = 'ongoing'
+        file.upload_start_date = dt.datetime.today()
+
+        # Attach the file to this sample and access objects
+        sample.files.append(file)
+        access.files.append(file)
+
+        db.session.add(file)
+        db.session.commit()
+
+    return file
 
 
 def update_file_status(identifier, status):
-    file_row = File.query.filter_by(identifier=identifier).first()
-    if file_row:
-        file_row.upload_status = status
-
+    file = File.query.filter_by(identifier=identifier).first()
+    if file:
+        # set the file status
+        file.upload_status = status
+        # set the upload end date for any status other than 'ongoing'
         if status != 'ongoing':
-            file_row.date_upload_end = dt.datetime.today()
+            file.upload_end_date = dt.datetime.today()
 
-        db.session.add(file_row)
+        db.session.add(file)
         db.session.commit()
