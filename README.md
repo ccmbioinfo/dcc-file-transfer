@@ -3,15 +3,15 @@
 
 ## Quickstart
 
-### Initialize the database manager
-Initialize the database manager to handle upgrades and downgrades:
-```sh
-python manage.py db init
-```
-
 ### Load the database with a new server and server-token
 ```sh
 python run.py authorize-server my-server-id "My Server Name" my-server-token
+```
+
+### Initialize the database migration manager
+Initialize the database manager to handle upgrades and downgrades:
+```sh
+python manage.py db init
 ```
 
 ### Start up the DCC server
