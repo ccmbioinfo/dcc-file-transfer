@@ -69,7 +69,7 @@ $ python migrate.py db downgrade
 
 *Note: for OperationalErrors with SQLite when dropping or adding columns, please modify
 the migration script to use the following workaround:
-```
+```python
 with op.batch_alter_table("some_table") as batch_op:
     # Add a column
     batch_op.add_column(Column('foo', Integer))
