@@ -3,24 +3,18 @@
 
 ## Quickstart
 
-### Initialize the database
-Initialize the database according to the schema.sql:
-```sh
-python run.py initdb
-```
-
 ### Initialize the database manager
 Initialize the database manager to handle upgrades and downgrades:
 ```sh
 python manage.py db init
 ```
 
-### Grant access to a server
+### Load the database with a new server and server-token
 ```sh
-python run.py authorize-server myserver "My Server" my-server-token
+python run.py authorize-server my-server-id "My Server Name" my-server-token
 ```
 
-### Start up the server
+### Start up the DCC server
 Start up the server in one console:
 ```sh
 python run.py start
@@ -29,7 +23,7 @@ python run.py start
 ### Generate a transfer code
 Run the following curl command in the console using a valid server token (configurable in config.py) to obtain a transfer code valid for 24 hours
 ```sh
-curl -H "X-Server-Token: your-server-token" -H "Content-Type: application/json" -X POST -d '{"user":"your-user-id","name":"your-user-name","email":"your-user-email","duration":7}' http://localhost:8000/transfers/
+curl -H "X-Server-Token: my-server-token" -H "Content-Type: application/json" -X POST -d '{"user":"your-user-id","name":"your-user-name","email":"your-user-email","duration":7}' http://localhost:8000/transfers/
 ```
 
 ### Upload a file:

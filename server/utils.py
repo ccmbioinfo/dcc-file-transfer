@@ -3,11 +3,11 @@ import hashlib
 import os
 import base64
 import datetime as dt
-from sqlalchemy.exc import IntegrityError
 
 from glob import glob
 
 from flask import jsonify, make_response
+from sqlalchemy.exc import IntegrityError
 
 from server import app, db
 from models import Server, User, Access, Sample, File
@@ -32,6 +32,8 @@ def generate_auth_token(server_token, username, name=None, email=None, duration_
     if not user:
         user = User(user_id=user_id, user_name=name, user_email=email)
         db.session.add(user)
+        # Attach the new user to the server
+        server.users.append(user)
 
     auth_token = base64.urlsafe_b64encode(os.urandom(12))
     current_date = dt.datetime.today()
