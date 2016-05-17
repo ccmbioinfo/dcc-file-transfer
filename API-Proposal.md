@@ -108,16 +108,96 @@ duration | integer | (optional) the number of days the new token will be valid (
 
 
 
-### `GET /user/{user-id}/access` — 
-### `GET /user/{user-id}/samples` — 
-### `GET /user/{user-id}/files` —
-### `GET /user/{user-id}/runs` — 
-### `GET /access/{auth-token}/files` —
-### `POST /sample` — 
-### `GET /sample/{sample-id}/files` — 
-### `POST /file` —
-### `PUT /file/{file-id}/metadata` —
-### `PUT /file/{file-id}/upload` —
-### `DELETE /file/{file-id}/upload` —
-### `HEAD /file/{file-id}/upload/chunks/{chunk-number}` —
-### `PUT /file/{file-id}/upload/chunks/{chunk-number}` —
+### `GET /user/{user-id}/access` — View user's auth-tokens
+
+Get a list of the auth-tokens belonging to a particular user.
+
+**Request headers**
+
+* `X-Server-Token`: must belong to an existing authorized server
+
+**Response**
+
+```json
+{
+  "authTokens": [
+    {
+      "authToken": "00ff2913e48a443985a44c19c9502f5a",
+      "creationDate": "2016-04-28T00:00:00",
+      "expirationDate": "2016-04-29T00:00:00"
+    }
+  ]
+}
+```
+
+
+
+
+
+### `GET /user/{user-id}/samples` — View user's samples
+
+Get a list of the samples belonging to a particular user.
+
+**Request headers**
+
+* `X-Server-Token`: must belong to an existing authorized server
+
+**Response**
+
+```json
+{
+  "samples": [
+    {
+      "sampleName": "sample"
+    }
+  ]
+}
+```
+
+
+
+
+
+### `GET /user/{user-id}/files` — View user's files
+
+**Request headers**
+
+* `X-Server-Token`: must belong to an existing authorized server
+
+Get a list of the files the user can see. By default, only completed files are returned. However, the `status` parameter can be given to request files in a non-complete state.
+
+**Parameters**
+
+ Name | Type | Description
+------|------|-------------
+status | string | list files with the provided state (e.g., "complete", "corrupt", "cancelled", "ongoing")
+
+**Response**
+
+```json
+{
+  "files": [
+    {
+      "id": "c458f7af-c5b9-49c6-9b21-9b395efe19a5",
+      "filename": "sample.bam",
+      "sample": "sample",
+      "state": "complete"
+    }
+  ]
+}
+```
+
+
+
+
+
+### `GET /user/{user-id}/runs` — View user's pipeline runs
+### `GET /access/{auth-token}/files` — View auth-token files
+### `POST /sample` — Create a new sample
+### `GET /sample/{sample-id}/files` — View sample files
+### `POST /file` — Create a new file
+### `PUT /file/{file-id}/metadata` — Update file metadata
+### `PUT /file/{file-id}/upload` — Change status to ongoing
+### `DELETE /file/{file-id}/upload` — Change status to cancelled
+### `HEAD /file/{file-id}/upload/chunks/{chunk-number}` — Check for a chunk
+### `PUT /file/{file-id}/upload/chunks/{chunk-number}` — Upload a chunk
