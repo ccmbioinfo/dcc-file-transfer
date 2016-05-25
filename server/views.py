@@ -34,6 +34,12 @@ def page_not_found(error):
     return return_message('This page does not exist', 404)
 
 
+@app.errorhandler(400)
+def bad_request(error):
+    app.logger.error(error)
+    return return_message('Bad request', 400)
+
+
 def valid_auth_token_required(func):
     @wraps(func)
     def auth_token_validation(auth_token, *args, **kwargs):

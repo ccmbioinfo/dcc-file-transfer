@@ -211,7 +211,7 @@ def get_or_create_sample(sample_name, user_id):
         user = User.query.filter_by(user_id=user_id).first()
         user.samples.append(sample)
         try:
-            db.session.add(user)
+            db.session.add(sample)
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
