@@ -231,27 +231,27 @@ def get_or_create_file(data):
     if not file:
         file = File()
 
-        file.identifier = data.get('identifier')
-        file.filename = data.get('filename')
-        file.total_size = data.get('total_size')
-        file.file_type = data.get('file_type')
-        file.user_id = user.user_id
-        file.access_id = access.id
-        file.readset = data.get('readset')
-        file.platform = data.get('platform')
-        file.run_type = data.get('run_type')
-        file.capture_kit = data.get('capture_kit')
-        file.library = data.get('library')
-        file.reference = data.get('reference')
-        file.upload_status = 'ongoing'
-        file.upload_start_date = dt.datetime.today()
+    file.identifier = data.get('identifier')
+    file.filename = data.get('filename')
+    file.total_size = data.get('total_size')
+    file.file_type = data.get('file_type')
+    file.user_id = user.user_id
+    file.access_id = access.id
+    file.readset = data.get('readset')
+    file.platform = data.get('platform')
+    file.run_type = data.get('run_type')
+    file.capture_kit = data.get('capture_kit')
+    file.library = data.get('library')
+    file.reference = data.get('reference')
+    file.upload_status = 'ongoing'
+    file.upload_start_date = dt.datetime.today()
 
-        # Attach the file to this sample and access objects
-        sample.files.append(file)
-        access.files.append(file)
+    # Attach the file to this sample and access objects
+    sample.files.append(file)
+    access.files.append(file)
 
-        db.session.add(file)
-        db.session.commit()
+    db.session.add(file)
+    db.session.commit()
 
     return file
 

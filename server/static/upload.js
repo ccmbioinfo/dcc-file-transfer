@@ -230,7 +230,7 @@ $(function () {
         var fileType = 'Other';
         for (var ext in fileExtensions) {
             if (fileExtensions.hasOwnProperty(ext) &&
-                file.name.toLowerCase().indexOf(ext) > -1) {
+                file.name.toLowerCase().endsWith(ext)) {
                 fileType = fileExtensions[ext];
             }
         }
