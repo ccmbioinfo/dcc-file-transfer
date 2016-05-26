@@ -4,7 +4,7 @@
 
 
 
-### `POST /server` — Create a new authorized server
+#### `POST /server` — Create a new authorized server
 
 Load the database with a new server and server-token
 
@@ -29,7 +29,7 @@ server token | string | will be used for authenticating the generation user auth
 
 
 
-### `GET /server/{server-id}/users` — View the server users
+#### `GET /server/{server-id}/users` — View the server users
 
 Get a list of the users belonging to a particular server.
 
@@ -55,7 +55,7 @@ Get a list of the users belonging to a particular server.
 
 
 
-### `POST /user` — Create a new user
+#### `POST /user` — Create a new user
 
 Create a new user belonging to an authorized server.
 
@@ -80,7 +80,7 @@ email | string | the email address of the user
 
 
 
-### `POST /user/{user-id}/access` — Create a user authentication token
+#### `POST /user/{user-id}/access` — Create a user authentication token
 
 Generate a fixed-duration authentication token for a particular user.
 
@@ -108,7 +108,7 @@ duration | integer | (optional) the number of days the new token will be valid (
 
 
 
-### `GET /user/{user-id}/access` — View user's auth-tokens
+#### `GET /user/{user-id}/access` — View user's auth-tokens
 
 Get a list of the auth-tokens belonging to a particular user.
 
@@ -134,7 +134,7 @@ Get a list of the auth-tokens belonging to a particular user.
 
 
 
-### `GET /user/{user-id}/samples` — View user's samples
+#### `GET /user/{user-id}/samples` — View user's samples
 
 Get a list of the samples belonging to a particular user.
 
@@ -158,7 +158,7 @@ Get a list of the samples belonging to a particular user.
 
 
 
-### `GET /user/{user-id}/files` — View user's files
+#### `GET /user/{user-id}/files` — View user's files
 
 **Request headers**
 
@@ -191,13 +191,18 @@ status | string | list files with the provided state (e.g., "complete", "corrupt
 
 
 
-### `GET /user/{user-id}/runs` — View user's pipeline runs
-### `GET /access/{auth-token}/files` — View auth-token files
-### `POST /sample` — Create a new sample
-### `GET /sample/{sample-id}/files` — View sample files
-### `POST /file` — Create a new file
-### `PUT /file/{file-id}/metadata` — Update file metadata
-### `PUT /file/{file-id}/upload` — Change status to ongoing
-### `DELETE /file/{file-id}/upload` — Change status to cancelled
-### `HEAD /file/{file-id}/upload/chunks/{chunk-number}` — Check for a chunk
-### `PUT /file/{file-id}/upload/chunks/{chunk-number}` — Upload a chunk
+#### `GET /access/{auth-token}/files` — View auth-token files
+#### `POST /sample` — Create a new sample
+#### `GET /sample/{sample-id}/files` — View sample files
+#### `POST /file` — Create a new file
+#### `PUT /file/{file-id}/metadata` — Update file metadata
+#### `PUT /file/{file-id}/upload` — Change status to ongoing
+#### `DELETE /file/{file-id}/upload` — Change status to cancelled
+#### `HEAD /file/{file-id}/upload/chunks/{chunk-number}` — Check for a chunk
+#### `PUT /file/{file-id}/upload/chunks/{chunk-number}` — Upload a chunk
+
+
+#### `POST /user/{user-id}/jobs/` — Create a new job (pipeline run)
+#### `PUT /user/{user-id}/jobs/{job-id}/` — Submit/start a job
+#### `DELETE /user/{user-id}/jobs/{job-id}/` — Cancel a submitted job
+#### `GET /user/{user-id}/jobs/{job-id}/` — View the status of a job
