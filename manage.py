@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import os
 
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
@@ -10,10 +10,10 @@ from server import app, db
 from server.models import Server
 
 
+migrate = Migrate(app, db)
 manager = Manager(app)
 
 # Set up Flask-Migrate db management
-migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
 
 
@@ -29,6 +29,13 @@ def authorize_server(id, name, token):
     except IntegrityError:
         db.session.rollback()
         app.logger.error('Server authentication token already in use')
+
+
+@manager.command
+def test():
+    import unittest
+    tests = unittest.TestLoader().discover('tests')
+    unittest.TextTestRunner(verbosity=2).run(tests)
 
 
 if __name__ == '__main__':
