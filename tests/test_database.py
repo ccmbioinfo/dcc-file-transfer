@@ -8,9 +8,9 @@ from server.models import Server, User, Access
 class TestDatabase(BaseTestCase):
 
     def test_add_server(self):
-        server = Server(server_token="some-hard-to-crack-key",
-                        server_id='serverid',
-                        server_name='Server Name')
+        server = Server(server_token="my-server-token",
+                        server_id='my-server-id',
+                        server_name='My Server Name')
 
         db.session.add(server)
 
@@ -19,8 +19,8 @@ class TestDatabase(BaseTestCase):
     def test_add_user(self):
         self.test_add_server()
 
-        user = User(user_name='name',
-                    user_id='dcc-name',
+        user = User(user_name='My name',
+                    user_id='name',
                     user_email='dont@email.me')
 
         server = Server.query.filter_by().first()
@@ -33,7 +33,7 @@ class TestDatabase(BaseTestCase):
     def test_add_access(self):
         self.test_add_user()
 
-        access = Access(auth_token='CS_w3okdl5hwrI4V',
+        access = Access(auth_token='CShw3okdl5hwrI4V',
                         creation_date=dt.datetime.today(),
                         expiration_date=dt.datetime.today()+dt.timedelta(7))
 
