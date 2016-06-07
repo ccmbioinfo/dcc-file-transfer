@@ -60,7 +60,12 @@ def create_auth_token():
     server_token = request.headers.get('X-Server-Token', type=str)
 
     json_data = request.get_json()
-    user = str(json_data.get('user'))
+
+    try:
+        user = str(json_data.get('user'))
+    except AttributeError:
+        return return_message('Error: missing user', 400)
+
     name = str(json_data.get('name', ''))
     email = str(json_data.get('email', ''))
     duration = int(json_data.get('duration', 1))
