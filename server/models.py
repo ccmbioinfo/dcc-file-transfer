@@ -17,7 +17,9 @@ class File(db.Model):
     upload_status = db.Column(db.String)
     upload_start_date = db.Column(db.DateTime)
     upload_end_date = db.Column(db.DateTime)
+    location = db.Column(db.String)
 
+    # Outside References
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
     access_id = db.Column(db.Integer, db.ForeignKey("access.id"))
 
@@ -29,25 +31,42 @@ class Access(db.Model):
     creation_date = db.Column(db.DateTime)
     expiration_date = db.Column(db.DateTime)
 
-    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
-
+    # Inner References
     files = db.relationship(File, backref="access")
+
+    # Outside References
+    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
 
 
 class Run(db.Model):
     __tablename__ = 'runs'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sample_name = db.Column(db.String, db.ForeignKey('samples.sample_name'))
     readset = db.Column(db.String)
     library = db.Column(db.String)
     run_type = db.Column(db.String)
-    bed = db.Column(db.String)
-    fastq1 = db.Column(db.String)
-    fastq2 = db.Column(db.String)
-    bam = db.Column(db.String)
-    status = db.Column(db.String)
+    bed = db.Column(db.Integer, db.ForeignKey('files.id'))
+    fastq1 = db.Column(db.Integer, db.ForeignKey('files.id'))
+    fastq2 = db.Column(db.Integer, db.ForeignKey('files.id'))
+    bam = db.Column(db.Integer, db.ForeignKey('files.id'))
 
+    # Outside References
+    job_id = db.Column(db.String, db.ForeignKey('jobs.id'))
+
+
+class Job(db.Model):
+    __tablename__ = 'jobs'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String)
+    status = db.Column(db.String)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+
+    # Inner References
+    runs = db.relationship(Run, backref="job")
+
+    # Outside References
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
-    sample_id = db.Column(db.Integer, db.ForeignKey('samples.id'))
 
 
 sample_file_link = db.Table('sample_file_link',
@@ -60,10 +79,12 @@ class Sample(db.Model):
     __table_args__ = (db.UniqueConstraint('sample_name', 'user_id', name='sample_id'),)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sample_name = db.Column(db.String)
-    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
 
+    # Inner References
     files = db.relationship(File, secondary=sample_file_link, backref="samples")
-    runs = db.relationship(Run, backref="sample")
+
+    # Outside References
+    user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
 
 
 class User(db.Model):
@@ -73,12 +94,14 @@ class User(db.Model):
     user_name = db.Column(db.String)
     user_email = db.Column(db.String)
 
-    server_id = db.Column(db.String, db.ForeignKey('servers.server_id'))
-
+    # Inner References
     access = db.relationship(Access, backref="user")
     samples = db.relationship(Sample, backref="user")
     files = db.relationship(File, backref="user")
-    runs = db.relationship(Run, backref="user")
+    jobs = db.relationship(Job, backref="user")
+
+    # Outside References
+    server_id = db.Column(db.String, db.ForeignKey('servers.server_id'))
 
 
 class Server(db.Model):
@@ -88,4 +111,5 @@ class Server(db.Model):
     server_id = db.Column(db.String)
     server_name = db.Column(db.String)
 
+    # Inner References
     users = db.relationship(User, backref='server')
