@@ -10,7 +10,7 @@ from flask import jsonify, make_response
 from sqlalchemy.exc import IntegrityError
 
 from server import app, db
-from server.models import Server, User, Access, Sample, File
+from server.models import Server, User, Access, Sample, File, Job
 
 
 CHUNK_PREFIX = 'chunk.'
@@ -200,7 +200,7 @@ def get_user_files(user_id, status):
 def get_user_by_auth_token(auth_token):
     access = Access.query.filter_by(auth_token=auth_token).first()
     if access:
-        return access.user.user_id
+        return access.user
 
 
 def get_or_create_sample(sample_name, user_id):
@@ -267,3 +267,29 @@ def update_file_status(identifier, status):
 
         db.session.add(file)
         db.session.commit()
+
+
+def generate_job(user_id, job_name):
+    user = User.query.filter_by(user_id=user_id).first()
+    if job_name not in [jobs.name for jobs in user.jobs]:
+        job = Job(name=job_name, status='pending', pipeline='dnaseq')
+        user.jobs.append(job)
+
+        try:
+            db.session.add(job)
+            db.session.commit()
+            return job
+        except IntegrityError:
+            db.session.rollback()
+
+
+def get_job(user_id, job_name):
+    return Job.query.filter_by(user_id=user_id, name=job_name).first()
+
+
+def update_job_status(job, status):
+    try:
+        job.status = status
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()

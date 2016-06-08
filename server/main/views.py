@@ -7,7 +7,8 @@ from server import app
 from server.models import File
 from server.main.utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
-    get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken
+    get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken, generate_job, \
+    get_job, update_job_status
 
 
 def return_data(data, status_code=200):
@@ -21,10 +22,10 @@ def return_message(message, status_code):
     return return_data({'message': message}, status_code=status_code)
 
 
-@app.errorhandler(500)
-def internal_server_error(error):
+@app.errorhandler(400)
+def bad_request(error):
     app.logger.error(error)
-    return return_message('Error: Caught an internal server error', 500)
+    return return_message('Bad request', 400)
 
 
 @app.errorhandler(404)
@@ -33,10 +34,16 @@ def page_not_found(error):
     return return_message('This page does not exist', 404)
 
 
-@app.errorhandler(400)
-def bad_request(error):
+@app.errorhandler(405)
+def method_not_allowed(error):
     app.logger.error(error)
-    return return_message('Bad request', 400)
+    return return_message('This method is not allowed', 405)
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    app.logger.error(error)
+    return return_message('Error: Caught an internal server error', 500)
 
 
 def valid_auth_token_required(func):
@@ -96,13 +103,13 @@ def get_samples(auth_token):
     auth_token = str(auth_token)
     # The status argument can be used to retrieve files that are complete, corrupt, or ongoing
     status = request.args.get('status', type=str)
-    user_id = get_user_by_auth_token(auth_token)
+    user_id = get_user_by_auth_token(auth_token).user_id
     return return_data(get_user_files(user_id, status))
 
 
 @app.route("/transfers/<auth_token>/samples/<sample_name>/files/<identifier>", methods=['PUT'])
 @valid_auth_token_required
-def update_upload_status(auth_token, sample_name, identifier):
+def change_upload_status(auth_token, sample_name, identifier):
     auth_token = str(auth_token)
     sample_name = str(sample_name)
     identifier = str(identifier)
@@ -227,3 +234,67 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
             return return_message('Error: Truncated BAM file', 415)
 
     return return_message('Success: Upload of chunk complete', 200)
+
+
+@app.route("/transfers/<auth_token>/users/<user_id>/jobs", methods=['POST'])
+@valid_auth_token_required
+def create_job(auth_token, user_id):
+    auth_token = str(auth_token)
+    user_id = str(user_id)
+
+    user = get_user_by_auth_token(auth_token)
+
+    if user_id != user.user_id.split('/')[1]:
+        return return_message('Error: Unauthorized', 401)
+
+    json_data = request.get_json()
+
+    try:
+        job_name = str(json_data.get('jobName'))
+    except AttributeError:
+        return return_message('Error: missing jobName', 400)
+
+    if not generate_job(user.user_id, job_name):
+        return return_message('Error: Could not create job, ensure name is unique', 400)
+
+    return return_message('Success: new job %s created' % job_name, 200)
+
+
+@app.route("/transfers/<auth_token>/users/<user_id>/jobs/<job_name>", methods=['PUT'])
+@valid_auth_token_required
+def change_job_status(auth_token, user_id, job_name):
+    auth_token = str(auth_token)
+    user_id = str(user_id)
+    job_name = str(job_name)
+
+    user = get_user_by_auth_token(auth_token)
+
+    if user_id != user.user_id.split('/')[1]:
+        return return_message('Error: Unauthorized', 401)
+
+    job = get_job(user.user_id, job_name)
+
+    if not job:
+        return return_message('Error: Job %s, does not exist' % job_name, 400)
+
+    if job.status in ['running', 'complete']:
+        return return_message('Error: Status cannot be changed on a running or complete job', 400)
+
+    json_data = request.get_json()
+
+    try:
+        status = str(json_data.get('status'))
+    except AttributeError:
+        return return_message('Error: missing status', 400)
+
+    if status not in ['submit', 'cancel']:
+        return return_message('Error: Invalid status given', 400)
+
+    update_job_status(job, status)
+    return return_message('Success: job status was updated', 200)
+
+
+@app.route("/transfers/<auth_token>/users/<user_id>/jobs/<job_name>/runs", methods=['POST'])
+@valid_auth_token_required
+def create_run(auth_token, user_id, job_name):
+    pass
