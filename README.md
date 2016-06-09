@@ -33,7 +33,26 @@ cat /dev/random | head -c 10000000 > test.bin
 ```
 
 Open a browser to `localhost:8000` , then log in using your transfer code.
-Add a sample and drop your file to upload the file in chunks of 1MB:
+Add a sample and drop your file to upload the file in chunks of 1MB.
+
+
+### Create a new job
+To create a new job, run the following curl command in the console with your respective transfer code and user id in the url
+```sh
+curl -H "Content-Type: application/json" -X POST -d '{"jobName":"my-unique-job-name"}' http://localhost:8000/transfers/<transfer_code>/users/<user_id>/jobs
+```
+
+### Add runs to the job
+Jobs will contain one or several pipeline runs each of which can be added using the following curl command. The id's of uploaded files must be provided
+```sh
+curl -H "Content-Type: application/json" -X POST -d '{}' http://localhost:8000/transfers/<transfer_code>/users/<user_id>/jobs/<job_name>/runs
+```
+
+### Submit the job
+Run the following curl command in the console with a status of 'sumbit' or 'cancel'.
+```sh
+curl -H "Content-Type: application/json" -X POST -d '{"status":"submit"}' http://localhost:8000/transfers/<transfer_code>/users/<user_id>/jobs/<job_name>
+```
 
 
 ## Setting up the environment

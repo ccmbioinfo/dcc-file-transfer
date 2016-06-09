@@ -10,7 +10,7 @@ from flask import jsonify, make_response
 from sqlalchemy.exc import IntegrityError
 
 from server import app, db
-from server.models import Server, User, Access, Sample, File, Job
+from server.models import Server, User, Access, Sample, File, Job, Run
 
 
 CHUNK_PREFIX = 'chunk.'
@@ -272,7 +272,7 @@ def update_file_status(identifier, status):
 def generate_job(user_id, job_name):
     user = User.query.filter_by(user_id=user_id).first()
     if job_name not in [jobs.name for jobs in user.jobs]:
-        job = Job(name=job_name, status='pending', pipeline='dnaseq')
+        job = Job(name=job_name, status='ready', pipeline='dnaseq')
         user.jobs.append(job)
 
         try:
@@ -283,8 +283,40 @@ def generate_job(user_id, job_name):
             db.session.rollback()
 
 
+def generate_run(user_id, job_name, sample, readset, library, run_type, bam, fastq1, fastq2, bed):
+    job = Job.query.filter_by(user_id=user_id, name=job_name).first()
+    run = Run(sample_name=sample.sample_name,
+              readset=readset,
+              library=library,
+              run_type=run_type,
+              bed=get_file_path(bed),
+              fastq1=get_file_path(fastq1),
+              fastq2=get_file_path(fastq2),
+              bam=get_file_path(bam))
+    job.runs.append(run)
+    try:
+        db.session.add(run)
+        db.session.commit()
+        return run
+    except IntegrityError:
+        db.session.rollback()
+
+
+def get_file_path(file):
+    if file:
+        return os.path.join(app.config['UPLOAD_FOLDER'], file.access.auth_token, file.identifier, file.filename)
+
+
 def get_job(user_id, job_name):
     return Job.query.filter_by(user_id=user_id, name=job_name).first()
+
+
+def get_sample(user_id, sample_name):
+    return Sample.query.filter_by(user_id=user_id, sample_name=sample_name).first()
+
+
+def get_file(user_id, file_id):
+    return File.query.filter_by(user_id=user_id, identifier=file_id).first()
 
 
 def update_job_status(job, status):

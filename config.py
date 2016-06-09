@@ -27,6 +27,7 @@ class TestingConfig(Config):
     TESTING = True
     PORT = 5500
 
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.getcwd(), 'tests/DCC-test.db')
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'test-uploads')
     LOGFILE = os.path.join(os.getcwd(), 'dcc-test.log')

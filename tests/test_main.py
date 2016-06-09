@@ -3,7 +3,7 @@ import datetime as dt
 
 from flask import json
 from base import BaseTestCase, db
-from server.models import Server, User, Access, File, Job, Run
+from server.models import Server, User, Access, Sample, File, Job, Run
 
 
 class TestMain(BaseTestCase):
@@ -35,6 +35,9 @@ class PopulatedTestCase(BaseTestCase):
                              auth_token='LxI6PrSvaCGUg3t5',
                              creation_date=dt.datetime.today(),
                              expiration_date=dt.datetime.today() + dt.timedelta(7))
+
+        self.sample = Sample(sample_name='test',
+                             user_id='my-server-id/old-name')
 
         self.file1 = File(identifier='LxI6PrSvaCGUg3t5_test_testraw_R1fastqgz_100030523',
                           filename='test_raw_R1.fastq.gz',
@@ -70,7 +73,7 @@ class PopulatedTestCase(BaseTestCase):
 
         self.job = Job(user_id=self.user.user_id,
                        name='test-job',
-                       status='pending')
+                       status='ready')
 
         self.run = Run(sample_name='test',
                        fastq1=self.file1.id,
@@ -81,8 +84,13 @@ class PopulatedTestCase(BaseTestCase):
 
         self.server.users.append(self.user)
         self.user.access.append(self.access)
+        self.user.samples.append(self.sample)
         self.user.files.append(self.file1)
         self.user.files.append(self.file2)
+        self.sample.files.append(self.file1)
+        self.sample.files.append(self.file2)
+        self.access.files.append(self.file1)
+        self.access.files.append(self.file2)
         self.user.jobs.append(self.job)
         self.job.runs.append(self.run)
 
@@ -189,7 +197,7 @@ class TestViewsJobs(PopulatedTestCase):
         user = User.query.filter_by(user_id='my-server-id/old-name').first()
         job = Job.query.filter_by(name='test-job-1').first()
         self.assertTrue(job is not None)
-        self.assertTrue(job.status == 'pending')
+        self.assertTrue(job.status == 'ready')
         self.assertTrue(job.start_date is None and job.end_date is None)
         self.assertTrue(job in user.jobs)
 
@@ -244,7 +252,63 @@ class TestViewsJobs(PopulatedTestCase):
 
 
 class TestViewsRuns(PopulatedTestCase):
-    pass
+    def test_create_run_unauthorized(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/wrong-user/jobs/test-job/runs")
+        self.assertEquals(response.json, dict(message='Error: Unauthorized'))
+
+    def test_create_run_wrong_job_name(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/wrong_job/runs")
+        self.assertEquals(response.json, dict(message='Error: Job wrong_job, does not exist'))
+
+    def test_create_run_job_not_ready(self):
+        self.job.status = 'running'
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/test-job/runs")
+        self.assertEquals(response.json, dict(message='Error: Cannot add run to job, status is not ready'))
+
+    def test_create_run_no_params(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/test-job/runs")
+        self.assertEquals(response.json, dict(message='Error: missing parameter, sampleName and runType are mandatory'))
+
+    def test_create_run_invalid_sample(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/test-job/runs",
+                                    data=json.dumps(dict(sampleName='',
+                                                         runType='Paired End')),
+                                    content_type='application/json')
+        self.assertEquals(response.json, dict(message='Error: invalid sample'))
+
+    def test_create_run_invalid_run_type(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/test-job/runs",
+                                    data=json.dumps(dict(sampleName='test',
+                                                         runType='')),
+                                    content_type='application/json')
+        self.assertEquals(response.json, dict(message="Error: invalid run type, must be 'Paired End' or 'Single End'"))
+
+    def test_create_run_no_files(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/test-job/runs",
+                                    data=json.dumps(dict(sampleName='test',
+                                                         runType='Paired End',
+                                                         readset='')),
+                                    content_type='application/json')
+        self.assertEquals(response.json, dict(message='Error: invalid bam or fastq files provided'))
+
+    def test_create_run_mismatch_run_type(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/test-job/runs",
+                                    data=json.dumps(dict(sampleName='test',
+                                                         runType='Paired End',
+                                                         readset='',
+                                                         fastq1='LxI6PrSvaCGUg3t5_test_testraw_R1fastqgz_100030523')),
+                                    content_type='application/json')
+        self.assertEquals(response.json, dict(message='Error: mismatch of run type and files'))
+
+    def test_create_run(self):
+        response = self.client.post("/transfers/LxI6PrSvaCGUg3t5/users/old-name/jobs/test-job/runs",
+                                    data=json.dumps(dict(sampleName='test',
+                                                         runType='Paired End',
+                                                         readset='',
+                                                         fastq1='LxI6PrSvaCGUg3t5_test_testraw_R1fastqgz_100030523',
+                                                         fastq2='LxI6PrSvaCGUg3t5_test_testraw_R2fastqgz_100030523')),
+                                    content_type='application/json')
+        self.assertEquals(response.json, dict(message='Success: run was successfully added to job'))
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ def authorize_server(id, name, token):
 def test():
     import unittest
     tests = unittest.TestLoader().discover('tests')
-    unittest.TextTestRunner(verbosity=2).run(tests)
+    unittest.TextTestRunner(verbosity=1).run(tests)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from server.models import File
 from server.main.utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
     get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken, generate_job, \
-    get_job, update_job_status
+    get_job, update_job_status, get_sample, get_file, generate_run
 
 
 def return_data(data, status_code=200):
@@ -297,4 +297,68 @@ def change_job_status(auth_token, user_id, job_name):
 @app.route("/transfers/<auth_token>/users/<user_id>/jobs/<job_name>/runs", methods=['POST'])
 @valid_auth_token_required
 def create_run(auth_token, user_id, job_name):
-    pass
+    auth_token = str(auth_token)
+    user_id = str(user_id)
+    job_name = str(job_name)
+
+    user = get_user_by_auth_token(auth_token)
+
+    if user_id != user.user_id.split('/')[1]:
+        return return_message('Error: Unauthorized', 401)
+
+    job = get_job(user.user_id, job_name)
+
+    if not job:
+        return return_message('Error: Job %s, does not exist' % job_name, 400)
+
+    if job.status != 'ready':
+        return return_message('Error: Cannot add run to job, status is not ready', 400)
+
+    json_data = request.get_json()
+
+    try:
+        sample_name = str(json_data.get('sampleName'))
+        run_type = str(json_data.get('runType'))
+    except AttributeError:
+        return return_message('Error: missing parameter, sampleName and runType are mandatory', 400)
+
+    # Ensure run type is Paired or Single end
+    if run_type not in ['Paired End', 'Single End']:
+        return return_message("Error: invalid run type, must be 'Paired End' or 'Single End'", 400)
+
+    readset = str(json_data.get('readset', sample_name))
+    library = str(json_data.get('library', sample_name))
+    bed_id = str(json_data.get('bed', None))
+    fastq1_id = str(json_data.get('fastq1', None))
+    fastq2_id = str(json_data.get('fastq2', None))
+    bam_id = str(json_data.get('bam', None))
+
+    sample = get_sample(user.user_id, sample_name)
+
+    # Ensure sample exists and belongs to the user
+    if sample not in user.samples:
+        return return_message('Error: invalid sample', 400)
+
+    # Ensure readset name is unique within sample
+    if readset in [run.readset for run in job.runs if run.sample_name == sample.sample_name]:
+        return make_response(jsonify({'message': 'Error: readset name not unique in sample'}), 400)
+
+    bam = get_file(user.user_id, bam_id)
+    fastq1 = get_file(user.user_id, fastq1_id)
+    fastq2 = get_file(user.user_id, fastq2_id)
+    bed = get_file(user.user_id, bed_id)  # Optional file, does not need to belong to any user
+
+    # Ensure files are provided and belong to the sample
+    if all(file is None for file in [bam, fastq1, fastq2]) or \
+            not any(file in sample.files for file in [bam, fastq1, fastq2]):
+        return return_message('Error: invalid bam or fastq files provided', 400)
+
+    # Ensure appropriate matching of run-type and files
+    if not (run_type == 'Paired End' and (bam or all([fastq1, fastq2]))) or \
+            (run_type == 'Single End' and (bam or fastq1 or fastq2)):
+        return return_message('Error: mismatch of run type and files', 400)
+
+    if not generate_run(user.user_id, job.name, sample, readset, library, run_type, bam, fastq1, fastq2, bed):
+        return return_message('Error: run could not be added to job', 500)
+
+    return return_message('Success: run was successfully added to job', 200)
