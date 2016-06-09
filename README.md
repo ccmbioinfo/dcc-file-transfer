@@ -45,7 +45,7 @@ curl -H "Content-Type: application/json" -X POST -d '{"jobName":"my-unique-job-n
 ### Add runs to the job
 Jobs will contain one or several pipeline runs each of which can be added using the following curl command. The id's of uploaded files must be provided
 ```sh
-curl -H "Content-Type: application/json" -X POST -d '{}' http://localhost:8000/transfers/<transfer_code>/users/<user_id>/jobs/<job_name>/runs
+curl -H "Content-Type: application/json" -X POST -d '{"sampleName":"your-sample","runType":"Single End","bam":"your-bam-identifier"}' http://localhost:8000/transfers/<transfer_code>/users/<user_id>/jobs/<job_name>/runs
 ```
 
 ### Submit the job
