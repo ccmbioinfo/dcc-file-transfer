@@ -224,7 +224,7 @@ def get_or_create_sample(sample_name, user_id):
 def get_or_create_file(data):
     auth_token = data.get('auth_token')
 
-    user = User.query.filter_by(user_id=get_user_by_auth_token(auth_token)).first()
+    user = User.query.filter_by(user_id=get_user_by_auth_token(auth_token).user_id).first()
     sample = get_or_create_sample(data.get('sample_name'), user.user_id)
     access = Access.query.filter_by(auth_token=auth_token).first()
     file = File.query.filter_by(identifier=data.get('identifier')).first()
@@ -245,6 +245,7 @@ def get_or_create_file(data):
     file.reference = data.get('reference')
     file.upload_status = 'ongoing'
     file.upload_start_date = dt.datetime.today()
+    file.location = 'forge'
 
     # Attach the file to this sample and access objects
     sample.files.append(file)

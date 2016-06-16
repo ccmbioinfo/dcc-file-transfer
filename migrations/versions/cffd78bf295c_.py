@@ -54,17 +54,11 @@ def upgrade():
 
     conn = op.get_bind()
 
-    sql_create_files2 = text("CREATE TABLE files2 AS SELECT *, 'forge' AS location FROM files")
-    conn.execute(sql_create_files2)
+    sql_alter_table = text("ALTER TABLE files ADD COLUMN location")
+    conn.execute(sql_alter_table)
 
-    sql_drop_files = text("DROP TABLE files")
-    conn.execute(sql_drop_files)
-
-    sql_create_files = text("CREATE TABLE files AS SELECT * from files2")
-    conn.execute(sql_create_files)
-
-    sql_drop_files2 = text("DROP TABLE files2")
-    conn.execute(sql_drop_files2)
+    sql_update_location = text("UPDATE files SET location='forge'")
+    conn.execute(sql_update_location)
     ### end Alembic commands ###
 
 
@@ -89,20 +83,4 @@ def downgrade():
     sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-
-    conn = op.get_bind()
-
-    sql_create_files2 = text("CREATE TABLE files2 AS SELECT id,identifier,filename,total_size,file_type,readset,"
-                             "platform,run_type,capture_kit,library,reference,upload_status,upload_start_date,"
-                             "upload_end_date,user_id,access_id FROM files")
-    conn.execute(sql_create_files2)
-
-    sql_drop_files = text("DROP TABLE files")
-    conn.execute(sql_drop_files)
-
-    sql_create_files = text("CREATE TABLE files AS SELECT * from files2")
-    conn.execute(sql_create_files)
-
-    sql_drop_files2 = text("DROP TABLE files2")
-    conn.execute(sql_drop_files2)
     ### end Alembic commands ###
