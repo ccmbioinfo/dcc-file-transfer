@@ -17,7 +17,7 @@ class TestDatabase(BaseTestCase):
                          user_email='dont@email.me')
         self.access = Access(auth_token='CShw3okdl5hwrI4V',
                              creation_date=dt.datetime.today(),
-                             expiration_date=dt.datetime.today()+dt.timedelta(7))
+                             expiration_date=dt.datetime.today() + dt.timedelta(7))
 
         self.server.users.append(self.user)
         self.user.access.append(self.access)

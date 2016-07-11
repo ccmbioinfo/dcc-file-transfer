@@ -15,7 +15,7 @@ class TestMain(BaseTestCase):
 
     def test_home(self):
         response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEquals(response.status_code, 200)
 
 
 class TestViewsTransfers(BaseTestCase):
@@ -63,10 +63,10 @@ class TestViewsTransfers(BaseTestCase):
                                     data=json.dumps(dict(user='new-user')),
                                     content_type='application/json',
                                     headers={'X-Server-Token': 'my-server-token'})
-
-        self.assertTrue('expiresAt' in response.json.keys())
-        self.assertTrue('transferCode' in response.json.keys())
-        self.assertTrue('user' in response.json.keys())
+        self.assertEquals(response.status_code, 200)
+        self.assertTrue('expiresAt' in response.json)
+        self.assertTrue('transferCode' in response.json)
+        self.assertTrue('user' in response.json)
         self.assertEquals(response.json['user'], 'new-user')
         self.assertTrue(User.query.filter_by(user_id='my-server-id/new-user') is not None)
         self.assertEquals(User.query.filter_by(user_id='my-server-id/new-user').first().access[0].auth_token,
@@ -77,10 +77,10 @@ class TestViewsTransfers(BaseTestCase):
                                     data=json.dumps(dict(user='old-name')),
                                     content_type='application/json',
                                     headers={'X-Server-Token': 'my-server-token'})
-
-        self.assertTrue('expiresAt' in response.json.keys())
-        self.assertTrue('transferCode' in response.json.keys())
-        self.assertTrue('user' in response.json.keys())
+        self.assertEquals(response.status_code, 200)
+        self.assertTrue('expiresAt' in response.json)
+        self.assertTrue('transferCode' in response.json)
+        self.assertTrue('user' in response.json)
         self.assertEquals(response.json['user'], 'old-name')
         self.assertEquals(len(User.query.filter_by(user_id='my-server-id/old-name').all()), 1)
         self.assertEquals(Access.query.filter_by(auth_token=response.json['transferCode']).first().user_id,
@@ -94,10 +94,10 @@ class TestViewsTransfers(BaseTestCase):
                                                          duration=99)),
                                     content_type='application/json',
                                     headers={'X-Server-Token': 'my-server-token'})
-
-        self.assertTrue('expiresAt' in response.json.keys())
-        self.assertTrue('transferCode' in response.json.keys())
-        self.assertTrue('user' in response.json.keys())
+        self.assertEquals(response.status_code, 200)
+        self.assertTrue('expiresAt' in response.json)
+        self.assertTrue('transferCode' in response.json)
+        self.assertTrue('user' in response.json)
         self.assertEquals(response.json['user'], 'complete-user')
 
 
