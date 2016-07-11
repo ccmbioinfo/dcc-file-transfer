@@ -21,7 +21,7 @@ class TestMain(BaseTestCase):
 class TestViewsTransfers(BaseTestCase):
 
     def setUp(self):
-        db.create_all()
+        BaseTestCase.setUp(self)
         self.server = Server(server_token="my-server-token",
                              server_id='my-server-id',
                              server_name='My Server Name')
