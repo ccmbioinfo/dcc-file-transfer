@@ -36,12 +36,14 @@ class TestViewsTransfers(BaseTestCase):
 
     def test_create_auth_token_no_user(self):
         response = self.client.post("/transfers/")
+        self.assertEquals(response.status_code, 400)
         self.assertEquals(response.json, dict(message='Error: missing user'))
 
     def test_create_auth_token_no_server_token(self):
         response = self.client.post("/transfers/",
                                     data=json.dumps(dict(user='username')),
                                     content_type='application/json')
+        self.assertEquals(response.status_code, 400)
         self.assertEquals(response.json, dict(message='Error: missing parameter'))
 
     def test_create_auth_token_invalid_user(self):
@@ -49,6 +51,7 @@ class TestViewsTransfers(BaseTestCase):
                                     data=json.dumps(dict(user='user/name')),
                                     content_type='application/json',
                                     headers={'X-Server-Token': 'some-token'})
+        self.assertEquals(response.status_code, 400)
         self.assertEquals(response.json, dict(message='Error: invalid username, must not contain "/"'))
 
     def test_create_auth_token_invalid_server_token(self):
@@ -56,6 +59,7 @@ class TestViewsTransfers(BaseTestCase):
                                     data=json.dumps(dict(user='username')),
                                     content_type='application/json',
                                     headers={'X-Server-Token': 'some-wrong-token'})
+        self.assertEquals(response.status_code, 401)
         self.assertEquals(response.json, dict(message='Error: Unauthorized'))
 
     def test_create_auth_token_new_user(self):
