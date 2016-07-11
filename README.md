@@ -11,7 +11,7 @@ python manage.py db upgrade
 
 ### Load the database with a new server and server-token
 ```sh
-python manage.py authorize_server "my-server-token" "My Server Name" "my-server-id"
+python manage.py authorize_server "my-server-id" "My Server Name" "my-server-token"
 ```
 
 ### Start up the development server

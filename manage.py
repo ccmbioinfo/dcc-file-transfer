@@ -17,9 +17,9 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
 
-@manager.option(dest='id', metavar="SERVER_ID", help="The server identifier")
-@manager.option(dest='name', metavar="SERVER_NAME", help="The server's name")
 @manager.option(dest='token', metavar="SERVER_TOKEN", help="The server token required for creating users and their auth_tokens")
+@manager.option(dest='name', metavar="SERVER_NAME", help="The server's name")
+@manager.option(dest='id', metavar="SERVER_ID", help="The server identifier")
 def authorize_server(id, name, token):
     """Authorize a server to connect to the API"""
     server = Server(server_id=id, server_name=name, server_token=token)
