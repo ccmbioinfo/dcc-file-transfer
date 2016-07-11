@@ -5,7 +5,7 @@ from functools import wraps
 from flask import jsonify, make_response, request, render_template
 from server import app
 from server.models import File
-from server.main.utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
+from server.utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
     get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken
 

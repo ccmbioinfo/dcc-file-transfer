@@ -12,4 +12,4 @@ db = SQLAlchemy(app)
 
 # Must go last to avoid circular imports
 from server import models
-from server.main import views
+from server import views
