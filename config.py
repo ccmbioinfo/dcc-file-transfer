@@ -14,8 +14,6 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    HOST = '0.0.0.0'
-    PORT = 8000
 
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.getcwd(), 'DCC.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -25,7 +23,6 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    PORT = 5500
 
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.getcwd(), 'tests/DCC-test.db')
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'test-uploads')
