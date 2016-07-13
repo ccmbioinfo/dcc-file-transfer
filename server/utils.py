@@ -10,7 +10,7 @@ from flask import jsonify, make_response
 from sqlalchemy.exc import IntegrityError
 
 from server import app, db
-from models import Server, User, Access, Sample, File
+from server.models import Server, User, Access, Sample, File
 
 
 CHUNK_PREFIX = 'chunk.'

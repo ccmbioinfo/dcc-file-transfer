@@ -14,10 +14,10 @@ python manage.py db upgrade
 python manage.py authorize_server "my-server-id" "My Server Name" "my-server-token"
 ```
 
-### Start up the DCC server
-Start up the server in one console:
+### Start up the development server
+Start up the development server in one console:
 ```sh
-python manage.py runserver
+python manage.py runserver --port=8000
 ```
 
 ### Generate a transfer code
