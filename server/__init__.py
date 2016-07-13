@@ -2,10 +2,10 @@ import os
 
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
-from config import config
 
 app = Flask(__name__)
-app_settings = os.getenv('APP_SETTINGS', 'config.DevelopmentConfig')
+# Default to development configuration
+app_settings = os.getenv('APP_SETTINGS', 'config.dev.Config')
 app.config.from_object(app_settings)
 
 db = SQLAlchemy(app)

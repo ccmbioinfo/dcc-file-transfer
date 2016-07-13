@@ -8,7 +8,7 @@ from server import app, db
 class BaseTestCase(TestCase):
 
     def create_app(self):
-        app.config.from_object('config.TestingConfig')
+        app.config.from_object('config.test.Config')
         return app
 
     def setUp(self):
