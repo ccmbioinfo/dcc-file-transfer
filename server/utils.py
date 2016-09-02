@@ -20,6 +20,17 @@ class InvalidServerToken(Exception):
     pass
 
 
+def return_data(data, status_code=200):
+    if status_code >= 300:
+        app.logger.warning('{} - {}'.format(data, status_code))
+
+    return make_response(jsonify(data), status_code)
+
+
+def return_message(message, status_code):
+    return return_data({'message': message}, status_code=status_code)
+
+
 def generate_auth_token(server_token, username, name=None, email=None, duration_days=1):
     # Check for a valid server token in the database
     server = Server.query.filter_by(server_token=server_token).first()
@@ -61,13 +72,13 @@ def get_auth_status(auth_token):
 
 def get_auth_response(auth_status):
     if auth_status == 'valid':
-        return make_response(jsonify({'message': 'Success: Valid transfer code'}), 200)
+        return return_message('Success: Valid transfer code', 200)
     elif auth_status == 'expired':
-        return make_response(jsonify({'message': 'Error: Transfer code has expired'}), 410)
+        return return_message('Error: Transfer code has expired', 410)
     elif auth_status == 'not found':
-        return make_response(jsonify({'message': 'Error: Transfer code does not exist'}), 404)
+        return return_message('Error: Transfer code does not exist', 404)
     else:
-        return make_response(jsonify({'message': 'Error: Unexpected authentication status'}), 500)
+        return return_message('Error: Unexpected authentication status', 500)
 
 
 def allowed_file(filename):
@@ -151,20 +162,21 @@ def generate_file(data):
         success = merge_chunks(all_chunks, data['filename'])
         if not success:
             update_file_status(data['identifier'], 'unmerged')
-            return make_response(jsonify({'message': 'Error: File could not be merged'}), 500)
+            return return_message('Error: File could not be merged', 500)
 
     # Check for GZIP and perform integrity test
     if is_gzip_file(data['filename']) and not gzip_test(os.path.join(temp_dir, data['filename'])):
         remove_from_uploads(temp_dir)
         update_file_status(data['identifier'], 'corrupt')
-        return make_response(jsonify({'message': 'Error: Truncated GZIP file'}), 415)
+        return return_message('Error: Truncated GZIP file', 415)
 
     # Ensure the final file size on disk matches the expected size from the client
     if os.path.getsize(os.path.join(temp_dir, data['filename'])) != data['total_size']:
-        return make_response(jsonify({'message': 'Error: Inconsistent final file size'}), 415)
+        os.remove(os.path.join(temp_dir, data['filename']))
+        return return_message('Error: Inconsistent final file size', 415)
 
     update_file_status(data['identifier'], 'complete')
-    return make_response(jsonify({'message': 'Success: File upload completed successfully'}), 200)
+    return return_message('Success: File upload completed successfully', 200)
 
 
 def remove_from_uploads(tempdir):
