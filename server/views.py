@@ -1,14 +1,13 @@
-import errno
 import os
 from functools import wraps
 
 from flask import request, render_template
 from server import app
 from server.models import File
-from server.utils import generate_auth_token, get_auth_status, get_auth_response, bam_test, \
+from server.utils import generate_auth_token, get_auth_status, get_auth_response, validate_bam, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
     get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken, \
-    return_data, return_message
+    return_data, return_message, make_tempdir, InvalidFileSize, DirectoryCreationError, TruncatedBam
 
 
 @app.errorhandler(500)
@@ -183,6 +182,7 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
     filename = request.form.get('flowFilename', type=str)
     total_chunks = request.form.get('flowTotalChunks', type=int)
     current_chunk_size = request.form.get('flowCurrentChunkSize', type=int)
+    input_chunk = request.files['file']
 
     if not all([filename, total_chunks, current_chunk_size]):
         return return_message('Error: missing parameter', 400)
@@ -190,36 +190,30 @@ def chunk_upload(auth_token, sample_name, identifier, chunk_number):
     if not file or file.upload_status != 'ongoing':
         return return_message('Error: Chunk refused, file status not set to ongoing', 202)
 
-    input_chunk = request.files['file']
     temp_dir = get_tempdir(auth_token, identifier)
     chunk_filename = get_chunk_filename(temp_dir, chunk_number)
 
-    if not os.path.isdir(temp_dir):
-        try:
-            os.makedirs(temp_dir, 511)  # rwxrwxrwx (octal: 777)
-        except OSError as e:
-            if e.errno == errno.EEXIST and os.path.isdir(temp_dir):
-                pass
-            else:
-                app.logger.error('Could not create directory: {}\n{}'.format(temp_dir, e))
-                return return_message('Error: File directory could not be created', 500)
+    try:
+        make_tempdir(temp_dir)
+    except DirectoryCreationError:
+        return return_message('Error: File directory could not be created', 500)
 
     try:
         input_chunk.save(chunk_filename)
-    except IOError:
-        os.remove(chunk_filename)
-        return return_message('Error: Chunk could not be saved', 500)
-
-    # Check that the chunk was saved in its integrity on the disk
-    if os.path.getsize(chunk_filename) != current_chunk_size:
+        if os.path.getsize(chunk_filename) != current_chunk_size:
+            raise InvalidFileSize
+        # BAM test for integrity done here since only the prioritized last chunk is needed to determine corruption
+        if chunk_number == total_chunks and file.file_type == 'BAM/SAM':
+            validate_bam(chunk_filename)
+    except TruncatedBam:
+        remove_from_uploads(temp_dir)
+        update_file_status(identifier, 'corrupt')
+        return return_message('Error: Truncated BAM file', 415)
+    except InvalidFileSize:
         os.remove(chunk_filename)
         return return_message('Error: Chunk size on disk does not match', 500)
-
-    # BAM test for integrity done here since only the prioritized last chunk is needed to determine corruption
-    if chunk_number == total_chunks and file.file_type == 'BAM/SAM':
-        if not bam_test(chunk_filename):
-            remove_from_uploads(temp_dir)
-            update_file_status(identifier, 'corrupt')
-            return return_message('Error: Truncated BAM file', 415)
+    except:
+        os.remove(chunk_filename)
+        return return_message('Error: Chunk could not be saved', 500)
 
     return return_message('Success: Upload of chunk complete', 200)

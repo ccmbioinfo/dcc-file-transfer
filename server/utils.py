@@ -3,6 +3,7 @@ import hashlib
 import os
 import base64
 import datetime as dt
+import errno
 
 from glob import glob
 
@@ -17,6 +18,18 @@ CHUNK_PREFIX = 'chunk.'
 
 
 class InvalidServerToken(Exception):
+    pass
+
+
+class InvalidFileSize(Exception):
+    pass
+
+
+class DirectoryCreationError(Exception):
+    pass
+
+
+class TruncatedBam(Exception):
     pass
 
 
@@ -86,12 +99,17 @@ def allowed_file(filename):
     return suffix in app.config['ALLOWED_EXTENSIONS']
 
 
-def bam_test(data):
+def bam_test(filename):
     bam_eof = \
         '\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC\x02\x00\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    with open(data, 'rb') as f:
+    with open(filename, 'rb') as f:
         f.seek(-28, 2)
         return f.read() == bam_eof
+
+
+def validate_bam(filename):
+    if not bam_test(filename):
+        raise TruncatedBam
 
 
 def md5_test(checksum, filename):
@@ -121,6 +139,16 @@ def get_tempdir(*args):
     for subdir in list(args):
         path = os.path.join(path, subdir)
     return path
+
+
+def make_tempdir(dirname):
+    if not os.path.isdir(dirname):
+        try:
+            os.makedirs(dirname, 511)  # rwxrwxrwx (octal: 777)
+        except OSError as e:
+            if e.errno != errno.EEXIST or not os.path.isdir(dirname):
+                app.logger.error('Could not create directory: {}\n{}'.format(dirname, e))
+                raise DirectoryCreationError
 
 
 def get_chunk_filename(temp_dir, chunk_number):
@@ -157,7 +185,8 @@ def generate_file(data):
     all_chunks = get_file_chunks(temp_dir)
 
     # Check for all chunks and that the file doesn't already exists
-    if not os.path.isfile(os.path.join(temp_dir, data['filename'])):
+    merged_file = os.path.join(temp_dir, data['filename'])
+    if not os.path.isfile(merged_file):
         # Attempt to merge all chunks
         success = merge_chunks(all_chunks, data['filename'])
         if not success:
@@ -165,15 +194,14 @@ def generate_file(data):
             return return_message('Error: File could not be merged', 500)
 
     # Check for GZIP and perform integrity test
-    if is_gzip_file(data['filename']) and not gzip_test(os.path.join(temp_dir, data['filename'])):
+    if is_gzip_file(data['filename']) and not gzip_test(merged_file):
         remove_from_uploads(temp_dir)
         update_file_status(data['identifier'], 'corrupt')
         return return_message('Error: Truncated GZIP file', 415)
-
-    # Ensure the final file size on disk matches the expected size from the client
-    if os.path.getsize(os.path.join(temp_dir, data['filename'])) != data['total_size']:
-        os.remove(os.path.join(temp_dir, data['filename']))
-        return return_message('Error: Inconsistent final file size', 415)
+    elif os.path.getsize(merged_file) != data['total_size']:
+        # Ensure the final file size on disk matches the expected size from the client
+        os.remove(merged_file)
+        return return_message('Error: Inconsistent merged file size', 415)
 
     update_file_status(data['identifier'], 'complete')
     return return_message('Success: File upload completed successfully', 200)
