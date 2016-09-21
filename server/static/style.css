@@ -126,6 +126,10 @@ body {
 }
 
 /* Table properties */
+.table-area {
+    overflow-x: scroll;
+}
+
 .panel > .table > thead > tr.active > th,
 .panel > .panel-heading,
 .panel-footer {

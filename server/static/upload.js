@@ -183,7 +183,7 @@ $(function () {
     }
 
     function collapsePanel(panel) {
-        panel.find('.panel-body, table, .panel-footer, .collapse-icon').toggle();
+        panel.find('.panel-body, .table, .panel-footer, .collapse-icon').toggle();
     }
 
     function createSampleHeader (sampleName, table) {
