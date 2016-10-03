@@ -285,6 +285,7 @@ def get_or_create_file(data):
     file.reference = data.get('reference')
     file.upload_status = 'ongoing'
     file.upload_start_date = dt.datetime.today()
+    file.is_archived = 0
 
     # Attach the file to this sample and access objects
     sample.files.append(file)

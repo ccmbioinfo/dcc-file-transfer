@@ -17,6 +17,7 @@ class File(db.Model):
     upload_status = db.Column(db.String)
     upload_start_date = db.Column(db.DateTime)
     upload_end_date = db.Column(db.DateTime)
+    is_archived = db.Column(db.Integer, default=0)
 
     user_id = db.Column(db.String, db.ForeignKey('users.user_id'))
     access_id = db.Column(db.Integer, db.ForeignKey("access.id"))
