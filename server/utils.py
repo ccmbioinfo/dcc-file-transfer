@@ -17,6 +17,10 @@ from server.models import Server, User, Access, Sample, File
 CHUNK_PREFIX = 'chunk.'
 
 
+class InvalidColumnName(Exception):
+    pass
+
+
 class InvalidServerToken(Exception):
     pass
 
@@ -308,3 +312,60 @@ def update_file_status(identifier, status):
 
         db.session.add(file)
         db.session.commit()
+
+
+def get_files(server_token, column=None, value=None):
+    # Check for a valid server token in the database
+    server = Server.query.filter_by(server_token=server_token).first()
+    if not server:
+        raise InvalidServerToken({"message": "Invalid server token"})
+
+    if column and value:
+        try:
+            files = File.query.filter(File.__dict__[column] == value).all()
+        except KeyError:
+            raise InvalidColumnName({"message": "Invalid column name"})
+    else:
+        files = File.query.all()
+
+    db_files = {}
+    for file in files:
+        db_files[file.identifier] = {
+                'identifier': file.identifier,
+                # Sample name passed is from the first sample it was originally uploaded with
+                'sample-name': file.samples[0].sample_name,
+                'filename': file.filename,
+                'total_size': file.total_size,
+                'file_type': file.file_type,
+                'readset': file.readset,
+                'platform': file.platform,
+                'run_type': file.run_type,
+                'capture_kit': file.capture_kit,
+                'library': file.library,
+                'reference': file.reference,
+                'upload_status': file.upload_status,
+                'upload_start_date': file.upload_start_date,
+                'upload_end_date': file.upload_end_date,
+                'user_id': file.user_id,
+                'is_archived': file.is_archived
+            }
+    return db_files
+
+
+def update_file(server_token, identifier, column, value):
+    # Check for a valid server token in the database
+    server = Server.query.filter_by(server_token=server_token).first()
+    if not server:
+        raise InvalidServerToken({"message": "Invalid server token"})
+
+    file = File.query.filter_by(identifier=identifier).first()
+
+    if file:
+        if column not in file.__dict__:
+            return return_message('Error: Column does not exist', 400)
+        setattr(file, column, value)
+        db.session.add(file)
+        db.session.commit()
+        return return_message('Success: File archive_status updated', 200)
+    else:
+        return return_message('Error: File does not exist', 404)
