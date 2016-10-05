@@ -53,11 +53,7 @@ def get_db_files():
 
     try:
         if json_data:
-            column = json_data.get('column')
-            value = json_data.get('value')
-            if not all([column, value]):
-                return return_message('Error: missing parameter', 400)
-            data = get_files(server_token, str(column), str(value))
+            data = get_files(server_token, json_data)
         else:
             data = get_files(server_token)
         return return_data(data)

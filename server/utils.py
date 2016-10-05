@@ -8,6 +8,7 @@ import errno
 from glob import glob
 
 from flask import jsonify, make_response
+from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
 from server import app, db
@@ -314,15 +315,15 @@ def update_file_status(identifier, status):
         db.session.commit()
 
 
-def get_files(server_token, column=None, value=None):
+def get_files(server_token, filters=None):
     # Check for a valid server token in the database
     server = Server.query.filter_by(server_token=server_token).first()
     if not server:
         raise InvalidServerToken({"message": "Invalid server token"})
 
-    if column and value:
+    if filters:
         try:
-            files = File.query.filter(File.__dict__[column] == value).all()
+            files = File.query.filter(and_(File.__dict__[col] == val for col, val in filters.items())).all()
         except KeyError:
             raise InvalidColumnName({"message": "Invalid column name"})
     else:
