@@ -7,7 +7,8 @@ from server.models import File
 from server.utils import generate_auth_token, get_auth_status, get_auth_response, validate_bam, \
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
     get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken, \
-    return_data, return_message, make_tempdir, InvalidFileSize, DirectoryCreationError, TruncatedBam
+    return_data, return_message, make_tempdir, InvalidFileSize, DirectoryCreationError, TruncatedBam, \
+    get_files, update_file, InvalidColumnName
 
 
 @app.errorhandler(500)
@@ -41,6 +42,44 @@ def valid_auth_token_required(func):
 @app.route("/", methods=['GET'])
 def home():
     return render_template('home.html')
+
+
+@app.route("/db/files", methods=['GET'])
+def get_db_files():
+    # get server token from header (convert to str to fix weird encoding issue on production)
+    server_token = request.headers.get('X-Server-Token', type=str)
+
+    json_data = request.get_json()
+
+    try:
+        if json_data:
+            data = get_files(server_token, json_data)
+        else:
+            data = get_files(server_token)
+        return return_data(data)
+
+    except InvalidServerToken:
+        return return_message('Error: Unauthorized', 401)
+    except InvalidColumnName:
+        return return_message('Error: Column name does not exist', 400)
+
+
+@app.route("/db/files/<identifier>", methods=['PUT'])
+def update_db_file(identifier):
+    # get server token from header (convert to str to fix weird encoding issue on production)
+    server_token = request.headers.get('X-Server-Token', type=str)
+
+    json_data = request.get_json()
+
+    column = json_data.get('column')
+    value = json_data.get('value')
+    if not all([column, value]):
+        return return_message('Error: missing parameter', 400)
+
+    try:
+        return update_file(server_token, identifier, str(column), str(value))
+    except InvalidServerToken:
+        return return_message('Error: Unauthorized', 401)
 
 
 @app.route("/transfers/", methods=['POST'])
