@@ -2,3 +2,4 @@ Flask==0.10.1
 flask-sqlalchemy
 flask-migrate
 flask-testing
+flask-script
