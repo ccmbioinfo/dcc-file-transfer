@@ -3,6 +3,20 @@
 
 ## Quickstart
 
+## Setting up the environment
+
+Create and active a new virtual environment:
+```
+$ virtualenv -p python2.7 .virtualenv
+$ source .virtualenv/bin/activate
+```
+
+Install the dependencies:
+```
+$ pip install -r requirements.txt
+```
+
+
 ### Initialize the database
 Initialize the database based on the last migrations:
 ```sh
@@ -34,20 +48,6 @@ cat /dev/random | head -c 10000000 > test.bin
 
 Open a browser to `localhost:8000` , then log in using your transfer code.
 Add a sample and drop your file to upload the file in chunks of 1MB:
-
-
-## Setting up the environment
-
-Create and active a new virtual environment:
-```
-$ virtualenv -p python2.7 .virtualenv
-$ source .virtualenv/bin/active
-```
-
-Install the dependencies:
-```
-$ pip install -r requirements.txt
-```
 
 
 ## Performing database migrations
