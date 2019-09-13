@@ -1,5 +1,5 @@
-Flask==0.10.1
-flask-sqlalchemy
-flask-migrate
-flask-testing
-flask-script
+Flask==1.1.1
+flask_sqlalchemy
+flask_migrate
+flask_testing
+flask_script
