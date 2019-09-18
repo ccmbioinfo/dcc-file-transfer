@@ -36,6 +36,60 @@ $(function () {
         'Other': {'fields': ['type', 'readset']}
     };
 
+    var siteList = [{siteCode: 'ACH', siteName: "Alberta Children's Hospital"},
+    {siteCode: 'AHC', siteName: "Alder Hey Children's Hospital"},
+    {siteCode: 'AKCH', siteName: "Akron Children's Hospital"},
+    {siteCode: 'ASU', siteName: "Ain Shams University "},
+    {siteCode: 'AUT', siteName: "Aristotle University of Thessaloniki"},
+    {siteCode: 'BCCH', siteName: "British Columbia Children's Hospital"},
+    {siteCode: 'BHCH', siteName: "Boston Children's Hospital"},
+    {siteCode: 'CCCH', siteName: "Cleveland Clinic Children's Hospital"},
+    {siteCode: 'CCH', siteName: "Cook Children's Hospital"},
+    {siteCode: 'CCHT', siteName: " Iashvili Children's Hospital"},
+    {siteCode: 'CCHMC', siteName: "Cincinnati Children's Hsopital"},
+    {siteCode: 'CCTU', siteName: "Children's Clinic of Tartu University Hospital"},
+    {siteCode: 'CGH', siteName: "Chinese PLA General Hospital"},
+    {siteCode: 'CHCO', siteName: "Denver Children's Hospital"},
+    {siteCode: 'CHEO', siteName: "Children's Hospital of Eastern Ontario"},
+    {siteCode: 'CHOB', siteName: "Children's Hospital of Buffalo"},
+    {siteCode: 'CHOP', siteName: "Children's Hospital of Philadelphia"},
+    {siteCode: 'CHOS', siteName: "Seattle Children's Hospital"},
+    {siteCode: 'CHP', siteName: "Children's Hospital of Pittsburgh"},
+    {siteCode: 'CLCH', siteName: "Nationwide Children's Hospital"},
+    {siteCode: 'CMHC', siteName: "Children's Mercy Hospital"},
+    {siteCode: 'CNMC', siteName: "Children's National Medical Center "},
+    {siteCode: 'CUMC', siteName: "Columbia University Medical Center"},
+    {siteCode: 'ECHL', siteName: "Evelina Children's Hospital London"},
+    {siteCode: 'HDVC', siteName: "Helen DeVos Children's Hospital (Spectrum Health)"},
+    {siteCode: 'HSC', siteName: "Hospital for Sick Children"},
+    {siteCode: 'JHCC', siteName: "John Hopkins University"},
+    {siteCode: 'LBCH', siteName: "Le Bonheur Children's Hospital"},
+    {siteCode: 'LCHC', siteName: "Ann & Robert H. Lurie Children’s Hospital of Chicago"},
+    {siteCode: 'MAIM', siteName: "Maimonides Medical Center"},
+    {siteCode: 'MCHCI', siteName: "Mother and Child Health Care Institute"},
+    {siteCode: 'MUMC', siteName: "McMaster University Medical Centre"},
+    {siteCode: 'PCH', siteName: "Phoenix Children's Hospital "},
+    {siteCode: 'PGH', siteName: "Philippine General Hospital"},
+    {siteCode: 'PUCC', siteName: "Pontificia Universidad Catolica de Chile"},
+    {siteCode: 'OHSU', siteName: "Oregan Health & Sciences University"},
+    {siteCode: 'QMHK', siteName: "Queen Mary Hospital"},
+    {siteCode: 'RCHM', siteName: "Royal Children's Hospital Melbourne"},
+    {siteCode: 'RDH', siteName: "Hopital Robert Debre-Paris"},
+    {siteCode: 'RVI', siteName: "Royal Victoria Infirmary"},
+    {siteCode: 'SLCH', siteName: "St Louis Children's Hospital "},
+    {siteCode: 'SUMC', siteName: "Standford University Medical Center"},
+    {siteCode: 'UAH', siteName: "Stollery Children's Hospital"},
+    {siteCode: 'UCSF', siteName: "University of California San Francisco"},
+    {siteCode: 'UTAH', siteName: "The University of Utah and Primary Children's Medical Center"},
+    {siteCode: 'UTSW', siteName: "University of Texas Southwestern"},
+    {siteCode: 'VCH', siteName: "Vanderbilt Universtiy"},
+    {siteCode: 'WPCH', siteName: "Winnipeg Children's Hospital "},
+    {siteCode: 'WVU', siteName: "West Virginia University"},
+    {siteCode: 'BGU ', siteName: "Ben-Gurion University of the Negev"}
+    ];
+    
+    var studyList = ['IPSS', 'VIPS', 'VIPS', 'SIPS', 'CPNET', 'SPORT', 'Brain Canada'];
+    
     var substringMatcher = function(strs) {
         return function findMatches(queryString, cb) {
             var matches, substrRegex;
