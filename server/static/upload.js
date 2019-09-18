@@ -595,6 +595,19 @@ $(function () {
         return false;
     });
 
+    //Add select options to study-name
+    $.each(studyList, function(index, value){
+        $('#add-study-type').append($('<option>', {value: value,
+        text: value}));
+    })
+
+    //Add select options to site-name
+    $.each(siteList, function(index, value){
+        $('#add-site-name').append($('<option>', {value: value.siteCode, 
+        text: value.siteName}));
+    })
+
+
     // Field validations
     $('.field-sample-name').on('input', function (e) {
         validateField.call(this, reSampleName);
