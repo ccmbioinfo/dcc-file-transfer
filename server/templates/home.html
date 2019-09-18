@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header><h1>Upload files to the DCC</h1></header>
+    <header><h1>Upload files to the Data Coordination Center (DCC)</h1></header>
     <div class="container-fluid">
 
         <!-- Transfer code and login -->
@@ -48,7 +48,7 @@
                 <div class="panel-heading">
                     <span class="collapse-icon glyphicon glyphicon-triangle-bottom pull-left"></span>
                     <span class="collapse-icon glyphicon glyphicon-triangle-right pull-left" style="display: none;"></span>
-                    Select Samples for Upload
+                    Select Images for Upload
                 </div>
                 <div class="panel-body">
                     <p>
@@ -63,7 +63,7 @@
                                 data-toggle="modal"
                                 data-target="#add-sample-modal">
                             <span class="glyphicon glyphicon-plus"></span>
-                            Add Sample
+                            Add Images
                         </button>
                     </div>
                 </div>
@@ -146,7 +146,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Sample Metadata</h4>
+                        <h4 class="modal-title">Image Metadata</h4>
                     </div>
                     <div class="modal-body">
                         <form class="form-horizontal modal-sample-form">
@@ -157,46 +157,41 @@
                                 with the readset and library, must be composed solely of letters, numbers, hyphens,
                                 and/or underscores.
                             </p>
+                            <div class="form-group">
+                                <label for="add-study-type" class="col-sm-3 control-label">Study</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control field-run-type" id="add-run-type">
+                                        <option selected disabled>Please select</option>
+                                        <option>Study1</option>
+                                        <option>Study2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="add-run-type" class="col-sm-3 control-label">Site</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control field-run-type" id="add-run-type">
+                                        <option selected disabled>Please select</option>
+                                        <option>Site1</option>
+                                        <option>Site2</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="form-group has-error">
-                                <label for="add-sample-name" class="col-sm-3 control-label">Sample / Patient ID</label>
+                                <label for="add-sample-name" class="col-sm-3 control-label">Patient ID</label>
                                 <div class="col-sm-9">
                                     <input type="text" class="form-control field-sample-name" id="add-sample-name" placeholder="Sample name / Patient ID">
                                     <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="add-platform" class="col-sm-3 control-label">Platform</label>
-                                <div class="col-sm-9">
-                                    <input class="typeahead field-platform" id="add-platform" type="text" placeholder="Sequencing platform">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="add-run-type" class="col-sm-3 control-label">Run Type</label>
+                                <label for="add-run-type" class="col-sm-3 control-label">Acute/Follow Up</label>
                                 <div class="col-sm-9">
                                     <select class="form-control field-run-type" id="add-run-type">
-                                        <option selected>N/A</option>
-                                        <option>Single End</option>
-                                        <option>Paired End</option>
+                                        <option selected disabled>Please select</option>
+                                        <option>Site1</option>
+                                        <option>Follow-Up</option>
                                     </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="add-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
-                                <div class="col-sm-9">
-                                    <input class="typeahead field-capture-kit" id="add-capture-kit" type="text" placeholder="Capture kit name">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="add-library" class="col-sm-3 control-label">Library Name</label>
-                                <div class="col-sm-9">
-                                    <input type="text" class="form-control field-library" id="add-library" placeholder="Library name">
-                                    <p class="error-description library-field-error">Optional: may contain letters, numbers, hyphens, or underscores only.</p>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="add-reference" class="col-sm-3 control-label">Reference Genome</label>
-                                <div class="col-sm-9">
-                                    <input class="typeahead field-reference" id="add-reference" type="text" placeholder="Reference genome">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -448,11 +443,11 @@
                 <div class="panel-heading">
                     <span class="collapse-icon glyphicon glyphicon-triangle-bottom pull-left"></span>
                     <span class="collapse-icon glyphicon glyphicon-triangle-right pull-left" style="display: none;"></span>
-                    Uploaded Samples on the DCC
+                    Uploaded Images on the DCC
                 </div>
                 <div class="panel-body">
                     <p>
-                        The samples below have been successfully uploaded to the DCC.
+                        The Images below have been successfully uploaded to the DCC.
                     </p>
                 </div>
                 <table class="table table-condensed table-data">
@@ -505,12 +500,10 @@
         </div>
 
         <!-- Footer row -->
-        <div class="row col-sm-8 col-sm-offset-1 footer-row">
+        <div class="row col-sm-8 col-sm-offset-2 footer-row">
             <div class="footer">
-                If you have any questions or run into issues, please email Orion
-                &lt;<a href="mailto:buske@cs.toronto.edu">buske@cs.toronto.edu</a>&gt;
-                and/or Dorin
-                &lt;<a href="mailto:dorin.manase@sickkids.ca">dorin.manase@sickkids.ca</a>&gt;.
+                <a href="mailto:daniel.snider@sickkids.ca">Support</a> Provided by <a href="https://ccm.sickkids.ca/">
+                    The Center for Computational Medicine </a>
             </div>
         </div>
     </div>

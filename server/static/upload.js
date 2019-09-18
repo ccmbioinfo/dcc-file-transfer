@@ -170,6 +170,8 @@ $(function () {
         $('#add-sample-name').val('');
         validateField.call($('#add-sample-name'), reSampleName);
         validateField.call($('#add-library'), reLibrary);
+
+        
     }
 
     function toggleEditableFields (fileType) {
