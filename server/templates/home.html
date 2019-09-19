@@ -67,66 +67,70 @@
                         </button>
                     </div>
                 </div>
+
                 <table class="table table-condensed table-data">
-                    <thead>
-                    <tr class="active">
-                        <th></th>
-                        <th class="files header" colspan="2">Files</th>
-                        <th class="type header">File Type</th>
-                        <th class="readset header">Readset</th>
-                        <th class="platform header">Platform</th>
-                        <th class="run-type header">Run Type</th>
-                        <th class="capture-kit header">Capture Kit</th>
-                        <th class="library header">Library</th>
-                        <th class="reference header">Reference</th>
-                        <th class="progress header">Status</th>
-                        <th class="option header">Options</th>
-                    </tr>
-                    </thead>
-                    <tbody class="sample-template sample-section">
-                    <tr class="sample-header-row sample-header-template">
-                        <td class="sample-collapse">
-                            <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
-                            <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
-                        </td>
-                        <td class="sample-collapse"><a class="sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
-                        <td class="sample-collapse" colspan="8"></td>
-                        <td class="sample-collapse sample-option">
-                             <span class="option-icon edit-sample glyphicon glyphicon-pencil"
-                                   data-toggle="modal"
-                                   data-target="#edit-sample-modal"
-                                   title="Edit metadata for entire sample"></span>
-                            <span class="option-icon resumable-add add-files glyphicon glyphicon-plus"
-                                  data-toggle="modal"
-                                  data-target="#add-sample-modal"
-                                  title="Add file(s) to sample"></span>
-                            <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
-                                  title="Remove sample"></span>
-                        </td>
-                    </tr>
-                    <tr class="sample-file-row sample-file-template">
-                        <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
-                        <td class="cell" colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
-                        <td class="file-type cell"></td>
-                        <td class="file-readset cell"></td>
-                        <td class="file-platform cell"></td>
-                        <td class="file-run-type cell"></td>
-                        <td class="file-capture-kit cell"></td>
-                        <td class="file-library cell"></td>
-                        <td class="file-reference cell"></td>
-                        <td class="file-progress progress cell">
-                            <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
-                        </td>
-                        <td class="file-option option cell">
-                            <span class="option-icon edit-file glyphicon glyphicon-pencil"
-                                  data-toggle="modal"
-                                  data-target="#edit-file-modal"
-                                  title="Edit file metadata"></span>
-                            <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
-                                  title="Remove file"></span>
-                        </td>
-                    </tr>
-                    </tbody>
+                        <thead>
+                        <tr class="active">
+                            <th></th>
+                            <th class="files header" colspan="2">Files</th>
+                            <th class="type header hiddenAway">File Type</th>
+                            <th class="readset header hiddenAway">Readset</th>
+                            <th class="platform header hiddenAway">Platform</th>
+                            <th class="run-type header hiddenAway">Run Type</th>
+                            <th class="capture-kit header hiddenAway">Capture Kit</th>
+                            <th class="library header hiddenAway">Library</th>
+                            <th class="reference header hiddenAway">Reference</th>
+                            <th class="progress header">Status</th>
+                            <th class="option header">Options</th>
+                        </tr>
+                        </thead>
+                        <!-- File EDIT MODAL TRIGGER -->
+                        <tbody class="sample-template sample-section">
+                        <tr class="sample-header-row sample-header-template">
+                            <td class="sample-collapse">
+                                <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
+                                <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
+                            </td>
+                            <td class="sample-collapse"><a class="subject-id sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
+                            <td class="sample-collapse" colspan="8"></td>
+                            <td class="sample-collapse sample-option">
+                                 <span class="option-icon edit-sample glyphicon glyphicon-pencil"
+                                       data-toggle="modal"
+                                       data-target="#edit-sample-modal"
+                                       title="Edit metadata for entire sample"></span>
+                                <span class="option-icon resumable-add add-files glyphicon glyphicon-plus"
+                                      data-toggle="modal"
+                                      data-target="#add-sample-modal"
+                                      title="Add file(s) to sample"></span>
+                                <span class="option-icon remove-sample glyphicon glyphicon-remove" data-toggle="tooltip"
+                                      title="Remove sample"></span>
+                            </td>
+                        </tr>
+    
+                        <!-- SAMPLES LISTED -->
+                        <tr class="sample-file-row sample-file-template">
+                            <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
+                            <td class="cell" colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
+                            <td class="file-type cell"></td>
+                            <td class="file-readset cell"></td>
+                            <td class="file-platform cell"></td>
+                            <td class="file-run-type cell"></td>
+                            <td class="file-capture-kit cell"></td>
+                            <td class="file-library cell"></td>
+                            <td class="file-reference cell"></td>
+                            <td class="file-progress progress cell">
+                                <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
+                            </td>
+                            <td class="file-option option cell">
+                                <span class="option-icon edit-file glyphicon glyphicon-pencil"
+                                      data-toggle="modal"
+                                      data-target="#edit-file-modal"
+                                      title="Edit file metadata"></span>
+                                <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
+                                      title="Remove file"></span>
+                            </td>
+                        </tr>
+                        </tbody>
                 </table>
                 <div class="panel-footer">
                     <button type="button" class="btn btn-primary col-xs-2 pull-right start-upload disabled"
@@ -162,16 +166,16 @@
                             <div class="form-group">
                                 <label for="add-study-type" class="col-sm-3 control-label">Study</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control field-study-type" id="add-study-type">
-                                        <option selected disabled>Please select</option>
+                                    <select class="form-control field-study-type dropdown" id="add-study-type">
+                                        <option selected disabled value=null>Please select</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="add-site-name" class="col-sm-3 control-label">Site</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control field-site-name" id="add-site-name" data-live-search="true">
-                                        <option selected disabled>Please select</option>
+                                    <select class="form-control field-site-name dropdown" id="add-site-name">
+                                        <option selected disabled value="">Please select</option>
                                     </select>
                                 </div>
                             </div>
@@ -185,9 +189,9 @@
                             <div class="form-group">
                                 <label for="add-image-type" class="col-sm-3 control-label">Acute/Follow Up</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control field-image-type" id="add-image-type">
-                                        <option selected disabled>Please select</option>
-                                        <option>Site1</option>
+                                    <select class="form-control field-image-type dropdown" id="add-image-type">
+                                        <option selected disabled value="">Please select</option>
+                                        <option>Acute</option>
                                         <option>Follow-Up</option>
                                     </select>
                                 </div>
@@ -230,9 +234,9 @@
                                 file row.
                             </p>
                             <div class="form-group">
-                                <label for="edit-sample-name" class="col-sm-3 control-label">Sample / Patient ID</label>
+                                <label for="edit-subject-id" class="col-sm-3 control-label">Sample / Patient ID</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-sample-name" id="edit-sample-name">
+                                    <input type="text" class="form-control field-subject-id" id="edit-subject-id">
                                     <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
                                 </div>
                             </div>
@@ -470,7 +474,7 @@
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
                         </td>
-                         <td class="sample-collapse"><span class="sample-name pull-left"></span></td>
+                         <td class="sample-collapse"><span class="subject-id pull-left"></span></td>
                         <td class="sample-collapse" colspan="8"></td>
                         <td class="sample-collapse sample-option">
                         </td>

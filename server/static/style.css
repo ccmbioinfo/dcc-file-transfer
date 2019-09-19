@@ -597,3 +597,7 @@ p.error-description {
 .footer {
     margin-top: 60px;
 }
+
+.hiddenAway {
+    color: #eee;
+}
