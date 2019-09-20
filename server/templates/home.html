@@ -163,30 +163,32 @@
                             </p>
 
                             <!-- add-study-type, add-run-type, add-sample-name -->
-                            <div class="form-group">
+                            <div class="form-group has-error">
                                 <label for="add-study-type" class="col-sm-3 control-label">Study</label>
                                 <div class="col-sm-9">
                                     <select class="form-control field-study-type dropdown" id="add-study-type">
-                                        <option selected disabled value=null>Please select</option>
+                                        <option selected disabled value="">Please select</option>
                                     </select>
+                                    <p class="error-description">* Required</p>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group has-error">
                                 <label for="add-site-name" class="col-sm-3 control-label">Site</label>
                                 <div class="col-sm-9">
                                     <select class="form-control field-site-name dropdown" id="add-site-name">
                                         <option selected disabled value="">Please select</option>
                                     </select>
+                                    <p class="error-description">* Required</p>                              
                                 </div>
                             </div>
                             <div class="form-group has-error">
                                 <label for="add-sample-name" class="col-sm-3 control-label">Subject ID</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-sample-name" id="add-sample-name" placeholder="Subject-ID/ Patient ID">
+                                    <input type="text" class="form-control field-sample-name" id="add-sample-name" placeholder="Subject-ID/Patient ID">
                                     <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group has-error">
                                 <label for="add-image-type" class="col-sm-3 control-label">Acute/Follow Up</label>
                                 <div class="col-sm-9">
                                     <select class="form-control field-image-type dropdown" id="add-image-type">
@@ -194,6 +196,7 @@
                                         <option>Acute</option>
                                         <option>Follow-Up</option>
                                     </select>
+                                    <p class="error-description">* Required</p>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -233,79 +236,54 @@
                                  <span class="glyphicon glyphicon-pencil"></span> button at the end of the respective
                                 file row.
                             </p>
+
                             <div class="form-group">
-                                <label for="edit-sample-name" class="col-sm-3 control-label">Sample / Patient ID</label>
+                                <label for="edit-study-type" class="col-sm-3 control-label">Study</label>
+                                <div class="col-sm-7">
+                                    <select class="form-control field-study-type dropdown" id="edit-study-type" disabled>
+                                        <option selected disabled value="">Please select</option>
+                                    </select>
+                                </div>
+                                <label class="col-sm-2 edit-checkbox">
+                                    <input type="checkbox" value="">
+                                    Edit All
+                               </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-site-name" class="col-sm-3 control-label">Site</label>
+                                <div class="col-sm-7">
+                                    <select class="form-control field-site-name dropdown" id="edit-site-name" disabled>
+                                        <option selected disabled value="">Please select</option>
+                                    </select>
+                                </div>
+                                <label class="col-sm-2 edit-checkbox">
+                                    <input type="checkbox" value="">
+                                    Edit All
+                               </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-sample-name" class="col-sm-3 control-label">Subject ID</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-sample-name" id="edit-sample-name">
+                                    <input type="text" class="form-control field-sample-name" id="edit-sample-name" placeholder="Subject-ID/Patient ID">
                                     <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="edit-sample-readset" class="col-sm-3 control-label">Readset</label>
+                                <label for="edit-image-type" class="col-sm-3 control-label">Acute/Follow Up</label>
                                 <div class="col-sm-7">
-                                    <input type="text" class="form-control field-readset" id="edit-sample-readset" placeholder="Readset name" disabled>
-                                    <p class="error-description readset-field-error">Optional: may contain letters, numbers, hyphens, or underscores only.</p>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                     <input type="checkbox" value="">
-                                     Edit All
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-sample-platform" class="col-sm-3 control-label">Platform</label>
-                                <div class="col-sm-7">
-                                    <input class="typeahead form-control field-platform" id="edit-sample-platform" type="text" placeholder="Sequencing platform" disabled>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                     <input type="checkbox" value="">
-                                     Edit All
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-sample-run-type" class="col-sm-3 control-label">Run Type</label>
-                                <div class="col-sm-7">
-                                    <select class="form-control field-run-type" id="edit-sample-run-type" disabled>
-                                        <option selected>N/A</option>
-                                        <option>Single End</option>
-                                        <option>Paired End</option>
+                                    <select class="form-control field-image-type dropdown" id="edit-image-type" disabled>
+                                        <option selected disabled value="">Please select</option>
+                                        <option>Acute</option>
+                                        <option>Follow-Up</option>
                                     </select>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
-                                     <input type="checkbox" value="">
-                                     Edit All
-                                </label>
+                                    <input type="checkbox" value="">
+                                    Edit All
+                               </label>
                             </div>
-                            <div class="form-group">
-                                <label for="edit-sample-capture-kit" class="col-sm-3 control-label">Capture Kit</label>
-                                <div class="col-sm-7">
-                                    <input class="typeahead form-control field-capture-kit" id="edit-sample-capture-kit" type="text" placeholder="Capture kit name" disabled>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                     <input type="checkbox" value="">
-                                     Edit All
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-sample-library" class="col-sm-3 control-label">Library Name</label>
-                                <div class="col-sm-7">
-                                    <input type="text" class="form-control field-library" id="edit-sample-library" placeholder="Library name" disabled>
-                                    <p class="error-description library-field-error">Optional: may contain letters, numbers, hyphens, or underscores only.</p>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                     <input type="checkbox" value="">
-                                     Edit All
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-sample-reference" class="col-sm-3 control-label">Reference Genome</label>
-                                <div class="col-sm-7">
-                                    <input class="typeahead form-control field-reference" id="edit-sample-reference" type="text" placeholder="Reference genome" disabled>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                     <input type="checkbox" value="">
-                                     Edit All
-                                </label>
-                            </div>
+
+                           
                         </form>
                     </div>
                     <div class="modal-footer">

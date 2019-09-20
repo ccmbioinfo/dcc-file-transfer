@@ -320,15 +320,27 @@ $(function () {
             .find('.error-description').toggle(!isValid);
         // Trigger field validation event to check if modal has all valid fields to proceed
         $(this).closest('.modal').trigger('fieldValidation');
+        return regex.test(($('.field-sample-name').val()));
     }
 
-    //Any changes in the dropdown will trigger
-    function validateDropdowns(){
-        var isValid = true;
-        $.each($('.dropdown'), function(index, value){
-            value.value=='' ? isValid=false : null;
+    function validateImageForm(){        
+        //Validate the sample-name field
+        var subjectId=$('.field-sample-name');
+        var isValid=reSampleName.test(subjectId.val());
+        subjectId.closest('.form-group')
+                .toggleClass('has-error', !isValid)
+                .find('.error-description').toggle(!isValid);
+
+        //Validate the dropdown fields
+        $.each($('.dropdown'), function(index, value){  
+            dropdown=jQuery(value)
+            isValid = (dropdown.context.value=="" ? false:true);
+            dropdown.closest('.form-group')
+            .toggleClass('has-error', !isValid)
+            .find('.error-description').toggle(!isValid);
+
         })
-        isValid ? $(this).closest('.modal').trigger('fieldValidation'):null;
+        subjectId.closest('.modal').trigger('fieldValidation');
     }
 
     function copyFromTableToModal(tableRow, modal) {
@@ -606,29 +618,29 @@ $(function () {
 
     //Add select options to study-name
     $.each(studyList, function(index, value){
-        $('#add-study-type').append($('<option>', {value: value,
+        $('.field-study-type').append($('<option>', {value: value,
         text: value}));
     })
 
     //Add select options to site-name
     $.each(siteList, function(index, value){
-        $('#add-site-name').append($('<option>', {value: value.siteCode, 
+        $('.field-site-name').append($('<option>', {value: value.siteCode, 
         text: value.siteName}));
     })
 
     // Field validations
     $('.field-sample-name').on('input', function (e) {
-        validateField.call(this, reSampleName);
+        validateImageForm();
     });
-    // $('.field-study-type').on('input',function(e){
-    //     validateDropdowns();
-    // })
-    // $('.field-site-name').on('input', function (e) {
-    //     validateDropdowns();
-    // });
-    // $('.field-image-type').on('input', function (e) {
-    //     validateDropdowns();
-    // });
+    $('.field-study-type').on('input',function(e){
+        validateImageForm();
+    })
+    $('.field-site-name').on('input', function (e) {
+        validateImageForm();
+    });
+    $('.field-image-type').on('input', function (e) {
+        validateImageForm();
+    });
     $('#add-sample-modal').on('fieldValidation', function(e) {
         $('.resumable-droparea').toggle($(this).find('.has-error').length === 0);
     });
