@@ -7,7 +7,7 @@
     <title>DCC Large File Upload</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
           integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" dtype="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header><h1>Upload files to the Data Coordination Center (DCC)</h1></header>
@@ -91,7 +91,7 @@
                                 <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
                                 <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
                             </td>
-                            <td class="sample-collapse"><a class="subject-id sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
+                            <td class="sample-collapse"><a class="sample-name sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
                             <td class="sample-collapse" colspan="8"></td>
                             <td class="sample-collapse sample-option">
                                  <span class="option-icon edit-sample glyphicon glyphicon-pencil"
@@ -180,9 +180,9 @@
                                 </div>
                             </div>
                             <div class="form-group has-error">
-                                <label for="add-subject-id" class="col-sm-3 control-label">Subject ID</label>
+                                <label for="add-sample-name" class="col-sm-3 control-label">Subject ID</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-subject-id" id="add-subject-id" placeholder="Sample name / Patient ID">
+                                    <input type="text" class="form-control field-sample-name" id="add-sample-name" placeholder="Subject-ID/ Patient ID">
                                     <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
                                 </div>
                             </div>
@@ -234,9 +234,9 @@
                                 file row.
                             </p>
                             <div class="form-group">
-                                <label for="edit-subject-id" class="col-sm-3 control-label">Sample / Patient ID</label>
+                                <label for="edit-sample-name" class="col-sm-3 control-label">Sample / Patient ID</label>
                                 <div class="col-sm-9">
-                                    <input type="text" class="form-control field-subject-id" id="edit-subject-id">
+                                    <input type="text" class="form-control field-sample-name" id="edit-sample-name">
                                     <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
                                 </div>
                             </div>
@@ -457,15 +457,15 @@
                     <tr class="active">
                         <th></th>
                         <th class="files header" colspan="2">Files</th>
-                        <th class="type header">File Type</th>
-                        <th class="readset header">Readset</th>
-                        <th class="platform header">Platform</th>
-                        <th class="run-type header">Run Type</th>
-                        <th class="capture-kit header">Capture Kit</th>
-                        <th class="library header">Library</th>
-                        <th class="reference header">Reference</th>
+                        <th class="type header hiddenAway">File Type</th>
+                        <th class="readset header hiddenAway">Readset</th>
+                        <th class="platform header hiddenAway">Platform</th>
+                        <th class="run-type header hiddenAway">Run Type</th>
+                        <th class="capture-kit header hiddenAway">Capture Kit</th>
+                        <th class="library header hiddenAway">Library</th>
+                        <th class="reference header hiddenAway">Reference</th>
                         <th class="progress header">Status</th>
-                        <th class="option header">Options</th>
+                        <th class="option header hiddenAway">Options</th>
                     </tr>
                     </thead>
                     <tbody class="sample-template sample-section">
@@ -474,7 +474,7 @@
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
                         </td>
-                         <td class="sample-collapse"><span class="subject-id pull-left"></span></td>
+                        <td class="sample-collapse"><span class="sample-name pull-left"></span></td>
                         <td class="sample-collapse" colspan="8"></td>
                         <td class="sample-collapse sample-option">
                         </td>
