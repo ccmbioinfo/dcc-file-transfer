@@ -149,6 +149,9 @@ def update_upload_status(auth_token, sample_name, identifier):
         'platform': request.form.get('platform', type=str, default=''),
         'capture_kit': request.form.get('captureKit', type=str, default=''),
         'reference': request.form.get('reference', type=str, default=''),
+        'studyType' : request.form.get('studyType', type=str, default=''),
+        'siteCode' : request.form.get('siteName', type=str, default=''),
+        'timePoint' : request.form.get('imageType', type=str, default=''),
     }
 
     if data['status'] == 'start':

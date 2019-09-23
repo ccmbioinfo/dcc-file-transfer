@@ -237,7 +237,10 @@ def get_user_files(user_id, status):
                 'run-type': file.run_type,
                 'capture-kit': file.capture_kit,
                 'library': file.library,
-                'reference': file.reference
+                'reference': file.reference,
+                'studyType': file.studyType,
+                'siteCode': file.siteCode,
+                'timePoint': file.timePoint
             }
     return db_files
 
@@ -288,6 +291,9 @@ def get_or_create_file(data):
     file.capture_kit = data.get('capture_kit')
     file.library = data.get('library')
     file.reference = data.get('reference')
+    file.studyType = data.get('studyType')
+    file.siteCode = data.get('siteCode')
+    file.timePoint = data.get('timePoint')
     file.upload_status = 'ongoing'
     file.upload_start_date = dt.datetime.today()
     file.is_archived = 0
@@ -344,6 +350,9 @@ def get_files(server_token, filters=None):
                 'capture_kit': file.capture_kit,
                 'library': file.library,
                 'reference': file.reference,
+                'studyType': file.studyType,
+                'siteCode': file.siteCode,
+                'timePoint': file.timePoint,
                 'upload_status': file.upload_status,
                 'upload_start_date': file.upload_start_date,
                 'upload_end_date': file.upload_end_date,
