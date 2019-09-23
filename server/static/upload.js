@@ -143,7 +143,10 @@ $(function () {
             'runType': fileRow.find('.file-run-type').text(),
             'captureKit': fileRow.find('.file-capture-kit').text(),
             'library': fileRow.find('.file-library').text(),
-            'reference': fileRow.find('.file-reference').text()
+            'reference': fileRow.find('.file-reference').text(),
+            'studyType': fileRow.find('.file-study-type').text(),
+            'siteName' : fileRow.find('.file-site-name').text(),
+            'imageType' : fileRow.find('.file-image-type').text()
         };
     }
 
@@ -284,21 +287,25 @@ $(function () {
         // Check for file type to determine whether metadata options should be shown
         var fileRow = getFileRow(file, $('.sample-table'));
         var fileType = 'Other';
-        for (var ext in fileExtensions) {
-            if (fileExtensions.hasOwnProperty(ext) &&
-                file.name.toLowerCase().endsWith(ext)) {
-                fileType = fileExtensions[ext];
-            }
-        }
-        fileRow.find('.file-type').text(fileType);
-        if (fileType !== 'Other') {
-            fileRow.find('.file-platform').text($('#add-platform').val());
-            fileRow.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
-            fileRow.find('.file-capture-kit').text($('#add-capture-kit').val());
-            fileRow.find('.file-library').text($('#add-library').val());
-            if (fileType !== 'FASTQ') {
-                fileRow.find('.file-reference').text($('#add-reference').val());
-            }
+
+        //Automatically 'other'
+
+
+        // for (var ext in fileExtensions) {
+        //     if (fileExtensions.hasOwnProperty(ext) &&
+        //         file.name.toLowerCase().endsWith(ext)) {
+        //         fileType = fileExtensions[ext];
+        //     }
+        // }
+        fileRow.find('.file-platform').text($('#add-platform').val());
+        fileRow.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
+        fileRow.find('.file-capture-kit').text($('#add-capture-kit').val());
+        fileRow.find('.file-library').text($('#add-library').val());
+        fileRow.find('.file-study-type').text($('#add-study-type').val());
+        fileRow.find('.file-site-name').text($('#add-site-name').val());
+        fileRow.find('.file-image-type').text($('#add-image-type').val());
+        if (fileType !== 'FASTQ') {
+            fileRow.find('.file-reference').text($('#add-reference').val());
         }
     }
 
@@ -833,8 +840,6 @@ $(function () {
             showUploadStateOptions();
             // flow.upload() was used originally, but to allow resuming, this was changed to flow.file.retry()
             $.each(flow.files, function (i, file) {
-
-                console.log(file);
                 var authToken = $('#auth-token').val();
                 var uniqueIdentifier = file.uniqueIdentifier;
                 var sampleName = $('#'+uniqueIdentifier).closest('.sample-section').attr('name');
@@ -846,6 +851,7 @@ $(function () {
                     'flowTotalChunks': file.chunks.length
                 };
                 var data = getExtraParams(file);
+                console.log(data)
                 for (var attrname in fileData) { data[attrname] = fileData[attrname]; }
                 (function (file) {
                     $.ajax({
