@@ -8,7 +8,7 @@ from server.utils import generate_auth_token, get_auth_status, get_auth_response
     get_tempdir, get_chunk_filename, generate_file, remove_from_uploads, get_user_files, \
     get_or_create_file, update_file_status, get_user_by_auth_token, InvalidServerToken, \
     return_data, return_message, make_tempdir, InvalidFileSize, DirectoryCreationError, TruncatedBam, \
-    get_files, update_file, InvalidColumnName
+    get_files, update_file, InvalidColumnName, create_json
 
 
 @app.errorhandler(500)
@@ -151,7 +151,7 @@ def update_upload_status(auth_token, sample_name, identifier):
         'reference': request.form.get('reference', type=str, default=''),
         'studyType' : request.form.get('studyType', type=str, default=''),
         'siteCode' : request.form.get('siteName', type=str, default=''),
-        'timePoint' : request.form.get('imageType', type=str, default=''),
+        'timePoint' : request.form.get('imageType', type=str, default='')
     }
 
     if data['status'] == 'start':
@@ -163,6 +163,7 @@ def update_upload_status(auth_token, sample_name, identifier):
         return return_message('Success: Upload set to ongoing in db', 200)
 
     elif data['status'] == 'complete':
+        create_json(data)
         return generate_file(data)
 
     return return_message('Error: Unexpected status', 400)

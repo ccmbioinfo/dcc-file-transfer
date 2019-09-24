@@ -4,6 +4,7 @@ import os
 import base64
 import datetime as dt
 import errno
+import json
 
 from glob import glob
 
@@ -379,3 +380,19 @@ def update_file(server_token, identifier, column, value):
         return return_message('Success: File archive_status updated', 200)
     else:
         return return_message('Error: File does not exist', 404)
+
+def create_json(data):
+    path=get_tempdir(data['auth_token'], data['identifier'])
+    file=File.query.filter_by(identifier=data['identifier']).first()
+
+    jsonData={}
+    for c in File.__table__.columns._data.keys(): 
+        jsonData[str(c)]=str(getattr(file,str(c)))
+    try:
+        with open(path+'/'+data['filename']+'.json', 'w') as f:
+            json.dump(jsonData, f)
+    except IOError:
+        pass
+
+
+
