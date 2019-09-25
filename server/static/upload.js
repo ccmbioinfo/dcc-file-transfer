@@ -7,13 +7,9 @@ $(function () {
         'Life Technologies TargetSeq', 'Life Technologies AmpliSeq', 'Agilent HaloPlex'];
     var referenceGenomes = ['GRCh38/hg38', 'GRCh37/hg19', 'NCBI36/hg18'];
     var fieldProperties = {
-        'type': {'type': 'freetext', 'default': ''},
-        'readset': {'type': 'freetext', 'default': ''},
-        'run-type': {'type': 'freetext', 'default': 'N/A'},
-        'library': {'type': 'freetext', 'default': ''},
-        'platform': {'type': 'typeahead', 'default': ''},
-        'capture-kit': {'type': 'typeahead', 'default': ''},
-        'reference': {'type': 'typeahead', 'default': ''}
+        'study-type': {'type': 'freetext', 'default':''},
+        'site-code': {'type': 'freetext', 'default':''},
+        'time-point': {'type': 'freetext', 'default':''}
     };
     var fieldNames = $.map(fieldProperties, function (value, key) { return key });
     var fileExtensions = {
@@ -137,16 +133,9 @@ $(function () {
         return {
             'authToken': $('#auth-token').val(),
             'sampleName': fileRow.closest('.sample-section').attr('name'),
-            // 'fileType': fileRow.find('.file-type').text(),
-            // 'readset': fileRow.find('.file-readset').text(),
-            // 'platform': fileRow.find('.file-platform').text(),
-            // 'runType': fileRow.find('.file-run-type').text(),
-            // 'captureKit': fileRow.find('.file-capture-kit').text(),
-            // 'library': fileRow.find('.file-library').text(),
-            // 'reference': fileRow.find('.file-reference').text(),
             'studyType': fileRow.find('.file-study-type').text(),
-            'siteName' : fileRow.find('.file-site-name').text(),
-            'imageType' : fileRow.find('.file-time-point').text()
+            'siteName' : fileRow.find('.file-site-code').text(),
+            'timePoint' : fileRow.find('.file-time-point').text()
         };
     }
 
@@ -192,6 +181,7 @@ $(function () {
     function updateFileMetadata(metadata, table) {
         var fileRow = table.find('#'+metadata.identifier);
         for (var fieldName in fieldProperties) {
+            console.log(fieldName)
             if (fieldProperties.hasOwnProperty(fieldName)) {
                 var fieldType = fieldProperties[fieldName]['type'];
                 var value = metadata[fieldName];
@@ -288,21 +278,8 @@ $(function () {
         var fileRow = getFileRow(file, $('.sample-table'));
         var fileType = 'Other';
 
-        //Automatically 'other'
-
-
-        // for (var ext in fileExtensions) {
-        //     if (fileExtensions.hasOwnProperty(ext) &&
-        //         file.name.toLowerCase().endsWith(ext)) {
-        //         fileType = fileExtensions[ext];
-        //     }
-        // }
-        // fileRow.find('.file-platform').text($('#add-platform').val());
-        // fileRow.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
-        // fileRow.find('.file-capture-kit').text($('#add-capture-kit').val());
-        // fileRow.find('.file-library').text($('#add-library').val());
         fileRow.find('.file-study-type').text($('#add-study-type').val());
-        fileRow.find('.file-site-name').text($('#add-site-name').val());
+        fileRow.find('.file-site-code').text($('#add-site-code').val());
         fileRow.find('.file-time-point').text($('#add-time-point').val());
         if (fileType !== 'FASTQ') {
             fileRow.find('.file-reference').text($('#add-reference').val());
@@ -629,9 +606,9 @@ $(function () {
         text: value}));
     })
 
-    //Add select options to site-name
+    //Add select options to site-code
     $.each(siteList, function(index, value){
-        $('.field-site-name').append($('<option>', {value: value.siteCode, 
+        $('.field-site-code').append($('<option>', {value: value.siteCode, 
         text: value.siteName}));
     })
 
@@ -642,7 +619,7 @@ $(function () {
     $('.field-study-type').on('input',function(e){
         validateImageForm();
     })
-    $('.field-site-name').on('input', function (e) {
+    $('.field-site-code').on('input', function (e) {
         validateImageForm();
     });
     $('.field-time-point').on('input', function (e) {
@@ -806,6 +783,7 @@ $(function () {
         var modal = $('#edit-file-modal');
         modal.attr('data-file-id', fileRow.attr('id'));
         $('.file-name-title').text(fileRow.find('.file-name').text());
+        $('.file-sample-name').text(fileRow.find('.sample-name').text());
         copyFromTableToModal(fileRow, modal);
         toggleEditableFields(fileType);
     });
@@ -851,7 +829,6 @@ $(function () {
                     'flowTotalChunks': file.chunks.length
                 };
                 var data = getExtraParams(file);
-                console.log(data)
                 for (var attrname in fileData) { data[attrname] = fileData[attrname]; }
                 (function (file) {
                     $.ajax({

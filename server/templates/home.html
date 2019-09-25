@@ -71,30 +71,26 @@
                 <table class="table table-condensed table-data">
                         <thead>
                         <tr class="active">
-                            <th class="files header" style="text-align:left; padding-left:20px">Files</th>
+                            <th class="files header col-sm-4" style="text-align:left; padding-left:20px">Files</th>
                             <th class="study-type header">Study Type</th>
-                            <th class="site-name header">Site Code</th>
+                            <th class="site-code header">Site Code</th>
                             <th class="time-point header">Time-Point</th>
                             <th class="progress header">Status</th>
                             <th class="option header" style='text-align:right; padding-right:20px;'>Options</th>
                         </tr>
                         </thead>
-                        <!-- File EDIT MODAL TRIGGER -->
+                        <!-- Sample List -->
                         <tbody class="sample-template sample-section">
                         <tr class="sample-header-row sample-header-template">
                             <td class="sample-collapse" style="text-align:left; padding-left:20px;">
                                 <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
                                 <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
-                                <a class="sample-name sample-name" data-toggle="modal" data-target="#edit-sample-modal" style="padding-left: 15px"></a>
+                                <a class="sample-name sample-name" style="padding-left: 15px"></a>
                             </td>
                             <td class="sample-collapse"></td>
                             <td class="sample-collapse"></td>
                             <td class="sample-collapse"></td>
                             <td class="sample-collapse sample-option">
-                                 <span class="option-icon edit-sample glyphicon glyphicon-pencil"
-                                       data-toggle="modal"
-                                       data-target="#edit-sample-modal"
-                                       title="Edit metadata for entire sample"></span>
                                 <span class="option-icon resumable-add add-files glyphicon glyphicon-plus"
                                       data-toggle="modal"
                                       data-target="#add-sample-modal"
@@ -104,21 +100,17 @@
                             </td>
                         </tr>
     
-                        <!-- SAMPLES LISTED -->
+                        <!-- File LISTED -->
                         <tr class="sample-file-row sample-file-template">
-                            <td class="file-icon pull-left" style="padding-left:30px"><span class="glyphicon glyphicon-file"></span>
-                                <a class="file-name" data-toggle="modal" data-target="#edit-file-modal" style="padding-left: 5px"></a></td>
+                            <td class="file-icon" style="text-align:left;padding-left:30px"><span class="glyphicon glyphicon-file"></span>
+                                <a class="file-name" data-toggle="modal" style="padding-left: 5px"></a></td>
                             <td class="file-study-type cell"></td>
-                            <td class="file-site-name cell"></td> 
+                            <td class="file-site-code cell"></td> 
                             <td class="file-time-point cell"></td>                           
                             <td class="file-progress progress cell">
                                 <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                             </td>
                             <td class="file-option option cell">
-                                <span class="option-icon edit-file glyphicon glyphicon-pencil"
-                                      data-toggle="modal"
-                                      data-target="#edit-file-modal"
-                                      title="Edit file metadata"></span>
                                 <span class="option-icon remove-file glyphicon glyphicon-remove" data-toggle="tooltip"
                                       title="Remove file"></span>
                             </td>
@@ -165,9 +157,9 @@
                                 </div>
                             </div>
                             <div class="form-group has-error">
-                                <label for="add-site-name" class="col-sm-3 control-label">Site</label>
+                                <label for="add-site-code" class="col-sm-3 control-label">Site</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control field-site-name dropdown" id="add-site-name">
+                                    <select class="form-control field-site-code dropdown" id="add-site-code">
                                         <option selected disabled value="">Please select</option>
                                     </select>
                                     <p class="error-description">* Required</p>                              
@@ -206,171 +198,7 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Edit sample modal -->
-        <div id="edit-sample-modal" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Edit Sample Metadata</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form class="form-horizontal modal-sample-form">
-                            <p>
-                                Check off <em>Edit All</em> to make changes across all the files included in this
-                                sample. Readset and library must be composed solely of letters, numbers, hyphens,
-                                and/or underscores. Sequencing metadata (except for readset) will not apply to file
-                                types detected as <em>Other</em>. Individual file types can be changed along with
-                                individual metadata by clicking the edit
-                                 <span class="glyphicon glyphicon-pencil"></span> button at the end of the respective
-                                file row.
-                            </p>
-
-                            <div class="form-group">
-                                <label for="edit-study-type" class="col-sm-3 control-label">Study</label>
-                                <div class="col-sm-7">
-                                    <select class="form-control field-study-type dropdown" id="edit-study-type" disabled>
-                                    </select>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                    <input type="checkbox" value="">
-                                    Edit All
-                               </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-site-name" class="col-sm-3 control-label">Site</label>
-                                <div class="col-sm-7">
-                                    <select class="form-control field-site-name dropdown" id="edit-site-name" disabled>
-                                        <option selected disabled value="">Please select</option>
-                                    </select>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                    <input type="checkbox" value="">
-                                    Edit All
-                               </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-sample-name" class="col-sm-3 control-label">Subject ID</label>
-                                <div class="col-sm-9">
-                                    <input type="text" class="form-control field-sample-name" id="edit-sample-name" placeholder="Subject-ID/Patient ID">
-                                    <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-time-point" class="col-sm-3 control-label">Acute/Follow Up</label>
-                                <div class="col-sm-7">
-                                    <select class="form-control field-time-point dropdown" id="edit-time-point" disabled>
-                                        <option selected disabled value="">Please select</option>
-                                        <option>Acute</option>
-                                        <option>Follow-Up</option>
-                                    </select>
-                                </div>
-                                <label class="col-sm-2 edit-checkbox">
-                                    <input type="checkbox" value="">
-                                    Edit All
-                               </label>
-                            </div>
-
-                           
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default cancel-edit-sample" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary save-edit-sample save-edit-button">Save changes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit file modal -->
-        <div id="edit-file-modal" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Edit File Metadata</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form class="form-horizontal modal-sample-form">
-                            <p>
-                                Sequencing metadata options are only available for BAM/SAM, FASTQ, and VCF files. If you
-                                would like to make changes across files in the whole sample, click the edit
-                                 <span class="glyphicon glyphicon-pencil"></span> button at the end of the respective
-                                sample header row. Readset and library must be composed solely of letters, numbers,
-                                hyphens, and/or underscores.
-                            </p>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">File Name</label>
-                                <div class="col-sm-9"><p class="form-control-static file-name-title">filename.txt</p></div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">File Type</label>
-                                <div class="col-sm-9">
-                                    <select class="form-control field-type" id="edit-file-type">
-                                        <option>BAM/SAM</option>
-                                        <option>BED</option>
-                                        <option>FASTQ</option>
-                                        <option>VCF</option>
-                                        <option>Other</option>
-                                    </select>
-                                </div>
-                            </div>
-                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Readset</label>
-                                <div class="col-sm-9">
-                                    <input type="text" class="form-control field-readset" id="edit-file-readset" placeholder="Readset name">
-                                    <p class="error-description readset-field-error">Optional: may contain letters, numbers, hyphens, or underscores only.</p>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Platform</label>
-                                <div class="col-sm-9">
-                                    <input class="typeahead form-control field-platform" id="edit-file-platform" type="text" placeholder="Sequencing platform">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Run Type</label>
-                                <div class="col-sm-9">
-                                    <select class="form-control field-run-type" id="edit-file-run-type">
-                                        <option>N/A</option>
-                                        <option>Single End</option>
-                                        <option>Paired End</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Capture Kit</label>
-                                <div class="col-sm-9">
-                                    <input class="typeahead form-control field-capture-kit" id="edit-file-capture-kit" type="text" placeholder="Capture kit name">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Library Name</label>
-                                <div class="col-sm-9">
-                                    <input type="text" class="form-control field-library" id="edit-file-library" placeholder="Library name">
-                                    <p class="error-description library-field-error">Optional: may contain letters, numbers, hyphens, or underscores only.</p>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Reference Genome</label>
-                                <div class="col-sm-9">
-                                    <input class="typeahead form-control field-reference" id="edit-file-reference" type="text" placeholder="Reference genome">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default cancel-edit-file" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary save-edit-file save-edit-button">Save changes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        </div>        
         <!-- Download complete modal -->
         <div id="upload-complete-modal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
@@ -424,45 +252,35 @@
                 <table class="table table-condensed table-data">
                     <thead>
                     <tr class="active">
-                        <th></th>
-                        <th class="files header" colspan="2">Files</th>
-                        <th class="type header hiddenAway">File Type</th>
-                        <th class="readset header hiddenAway">Readset</th>
-                        <th class="platform header hiddenAway">Platform</th>
-                        <th class="run-type header hiddenAway">Run Type</th>
-                        <th class="capture-kit header hiddenAway">Capture Kit</th>
-                        <th class="library header hiddenAway">Library</th>
-                        <th class="reference header hiddenAway">Reference</th>
-                        <th class="progress header">Status</th>
-                        <th class="option header hiddenAway">Options</th>
+                        <th class="files header col-sm-4" style="text-align:left; padding-left:20px">Files</th>
+                        <th class="study-type header">Study Type</th>
+                        <th class="site-code header">Site Code</th>
+                        <th class="time-point header">Time-Point</th>
+                        <th class="progress header"></th>
+                        <th class="option header hiddenAway" style='text-align:right; padding-right:20px;'>Options</th>
                     </tr>
                     </thead>
                     <tbody class="sample-template sample-section">
                     <tr class="sample-header-row sample-header-template">
-                        <td class="sample-collapse">
+                        <td class="sample-collapse" style="text-align:left; padding-left:20px">
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
                             <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
+                            <span class="sample-name" style="padding-left:10px;"></span>
                         </td>
-                        <td class="sample-collapse"><span class="sample-name pull-left"></span></td>
-                        <td class="sample-collapse" colspan="8"></td>
-                        <td class="sample-collapse sample-option">
-                        </td>
+                        <td class="sample-collapse"></td>
+                        <td class="sample-collapse"></td>
+                        <td class="sample-collapse"></td>
+                        <td class="sample-collapse"></td>
                     </tr>
                     <tr class="sample-file-row sample-file-template">
-                        <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
-                        <td class="cell" colspan="2"><span class="file-name"></span></td>
-                        <td class="file-type cell"></td>
-                        <td class="file-readset cell"></td>
-                        <td class="file-platform cell"></td>
-                        <td class="file-run-type cell"></td>
-                        <td class="file-capture-kit cell"></td>
-                        <td class="file-library cell"></td>
-                        <td class="file-reference cell"></td>
-                        <td class="file-progress progress cell">
-                            <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
+                        <td class="file-icon" style="text-align:left; padding-left:30px">
+                            <span class="glyphicon glyphicon-file"></span>
+                            <span class="file-name" ></span>
                         </td>
-                        <td class="file-option option cell">
-                        </td>
+                        <td class="file-study-type cell"></td>
+                        <td class="file-site-code cell"></td>
+                        <td class="file-time-point cell"></td>
+                        <td></td>
                     </tr>
                     </tbody>
                 </table>
