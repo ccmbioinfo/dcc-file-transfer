@@ -283,15 +283,15 @@ def get_or_create_file(data):
     file.identifier = data.get('identifier')
     file.filename = data.get('filename')
     file.total_size = data.get('total_size')
-    file.file_type = data.get('file_type')
+    # file.file_type = data.get('file_type')
     file.user_id = user.user_id
     file.access_id = access.id
-    file.readset = data.get('readset')
-    file.platform = data.get('platform')
-    file.run_type = data.get('run_type')
-    file.capture_kit = data.get('capture_kit')
-    file.library = data.get('library')
-    file.reference = data.get('reference')
+    # file.readset = data.get('readset')
+    # file.platform = data.get('platform')
+    # file.run_type = data.get('run_type')
+    # file.capture_kit = data.get('capture_kit')
+    # file.library = data.get('library')
+    # file.reference = data.get('reference')
     file.studyType = data.get('studyType')
     file.siteCode = data.get('siteCode')
     file.timePoint = data.get('timePoint')
@@ -344,13 +344,13 @@ def get_files(server_token, filters=None):
                 'sample-name': file.samples[0].sample_name,
                 'filename': file.filename,
                 'total_size': file.total_size,
-                'file_type': file.file_type,
-                'readset': file.readset,
-                'platform': file.platform,
-                'run_type': file.run_type,
-                'capture_kit': file.capture_kit,
-                'library': file.library,
-                'reference': file.reference,
+                # 'file_type': file.file_type,
+                # 'readset': file.readset,
+                # 'platform': file.platform,
+                # 'run_type': file.run_type,
+                # 'capture_kit': file.capture_kit,
+                # 'library': file.library,
+                # 'reference': file.reference,
                 'studyType': file.studyType,
                 'siteCode': file.siteCode,
                 'timePoint': file.timePoint,

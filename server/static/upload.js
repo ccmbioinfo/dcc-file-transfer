@@ -137,16 +137,16 @@ $(function () {
         return {
             'authToken': $('#auth-token').val(),
             'sampleName': fileRow.closest('.sample-section').attr('name'),
-            'fileType': fileRow.find('.file-type').text(),
-            'readset': fileRow.find('.file-readset').text(),
-            'platform': fileRow.find('.file-platform').text(),
-            'runType': fileRow.find('.file-run-type').text(),
-            'captureKit': fileRow.find('.file-capture-kit').text(),
-            'library': fileRow.find('.file-library').text(),
-            'reference': fileRow.find('.file-reference').text(),
+            // 'fileType': fileRow.find('.file-type').text(),
+            // 'readset': fileRow.find('.file-readset').text(),
+            // 'platform': fileRow.find('.file-platform').text(),
+            // 'runType': fileRow.find('.file-run-type').text(),
+            // 'captureKit': fileRow.find('.file-capture-kit').text(),
+            // 'library': fileRow.find('.file-library').text(),
+            // 'reference': fileRow.find('.file-reference').text(),
             'studyType': fileRow.find('.file-study-type').text(),
             'siteName' : fileRow.find('.file-site-name').text(),
-            'imageType' : fileRow.find('.file-image-type').text()
+            'imageType' : fileRow.find('.file-time-point').text()
         };
     }
 
@@ -297,13 +297,13 @@ $(function () {
         //         fileType = fileExtensions[ext];
         //     }
         // }
-        fileRow.find('.file-platform').text($('#add-platform').val());
-        fileRow.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
-        fileRow.find('.file-capture-kit').text($('#add-capture-kit').val());
-        fileRow.find('.file-library').text($('#add-library').val());
+        // fileRow.find('.file-platform').text($('#add-platform').val());
+        // fileRow.find('.file-run-type').text($('#add-run-type').find('option:selected').text());
+        // fileRow.find('.file-capture-kit').text($('#add-capture-kit').val());
+        // fileRow.find('.file-library').text($('#add-library').val());
         fileRow.find('.file-study-type').text($('#add-study-type').val());
         fileRow.find('.file-site-name').text($('#add-site-name').val());
-        fileRow.find('.file-image-type').text($('#add-image-type').val());
+        fileRow.find('.file-time-point').text($('#add-time-point').val());
         if (fileType !== 'FASTQ') {
             fileRow.find('.file-reference').text($('#add-reference').val());
         }
@@ -645,7 +645,7 @@ $(function () {
     $('.field-site-name').on('input', function (e) {
         validateImageForm();
     });
-    $('.field-image-type').on('input', function (e) {
+    $('.field-time-point').on('input', function (e) {
         validateImageForm();
     });
     $('#add-sample-modal').on('fieldValidation', function(e) {

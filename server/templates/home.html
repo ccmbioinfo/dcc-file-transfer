@@ -71,31 +71,25 @@
                 <table class="table table-condensed table-data">
                         <thead>
                         <tr class="active">
-                            <th></th>
-                            <th class="files header" colspan="2">Files</th>
-                            <th class="type header hiddenAway">File Type</th>
-                            <th class="readset header hiddenAway">Readset</th>
-                            <th class="platform header hiddenAway">Platform</th>
-                            <th class="run-type header hiddenAway">Run Type</th>
-                            <th class="capture-kit header hiddenAway">Capture Kit</th>
-                            <th class="library header hiddenAway">Library</th>
-                            <th class="reference header hiddenAway">Reference</th>
+                            <th class="files header" style="text-align:left; padding-left:20px">Files</th>
                             <th class="study-type header">Study Type</th>
                             <th class="site-name header">Site Code</th>
-                            <th class="image-type header">Image-Type</th>
+                            <th class="time-point header">Time-Point</th>
                             <th class="progress header">Status</th>
-                            <th class="option header">Options</th>
+                            <th class="option header" style='text-align:right; padding-right:20px;'>Options</th>
                         </tr>
                         </thead>
                         <!-- File EDIT MODAL TRIGGER -->
                         <tbody class="sample-template sample-section">
                         <tr class="sample-header-row sample-header-template">
-                            <td class="sample-collapse">
+                            <td class="sample-collapse" style="text-align:left; padding-left:20px;">
                                 <span class="sample-collapse-icon glyphicon glyphicon-folder-open"></span>
                                 <span class="sample-collapse-icon glyphicon glyphicon-folder-close" style="display: none;"></span>
+                                <a class="sample-name sample-name" data-toggle="modal" data-target="#edit-sample-modal" style="padding-left: 15px"></a>
                             </td>
-                            <td class="sample-collapse"><a class="sample-name sample-name pull-left" data-toggle="modal" data-target="#edit-sample-modal"></a></td>
-                            <td class="sample-collapse" colspan="8"></td>
+                            <td class="sample-collapse"></td>
+                            <td class="sample-collapse"></td>
+                            <td class="sample-collapse"></td>
                             <td class="sample-collapse sample-option">
                                  <span class="option-icon edit-sample glyphicon glyphicon-pencil"
                                        data-toggle="modal"
@@ -112,18 +106,11 @@
     
                         <!-- SAMPLES LISTED -->
                         <tr class="sample-file-row sample-file-template">
-                            <td class="file-icon"><span class="glyphicon glyphicon-file pull-right"></span></td>
-                            <td class="cell" colspan="2"><a class="file-name" data-toggle="modal" data-target="#edit-file-modal"></a></td>
-                            <td class="file-type cell"></td>
-                            <td class="file-readset cell"></td>
-                            <td class="file-platform cell"></td>
-                            <td class="file-run-type cell"></td>
-                            <td class="file-capture-kit cell"></td>
-                            <td class="file-library cell"></td>
-                            <td class="file-reference cell"></td>
+                            <td class="file-icon pull-left" style="padding-left:30px"><span class="glyphicon glyphicon-file"></span>
+                                <a class="file-name" data-toggle="modal" data-target="#edit-file-modal" style="padding-left: 5px"></a></td>
                             <td class="file-study-type cell"></td>
                             <td class="file-site-name cell"></td> 
-                            <td class="file-image-type cell"></td>                           
+                            <td class="file-time-point cell"></td>                           
                             <td class="file-progress progress cell">
                                 <div class="progress-bar progress-bar-striped active" role="progressbar"></div>
                             </td>
@@ -168,7 +155,6 @@
                                 and/or underscores.
                             </p>
 
-                            <!-- add-study-type, add-run-type, add-sample-name -->
                             <div class="form-group has-error">
                                 <label for="add-study-type" class="col-sm-3 control-label">Study</label>
                                 <div class="col-sm-9">
@@ -195,9 +181,9 @@
                                 </div>
                             </div>
                             <div class="form-group has-error">
-                                <label for="add-image-type" class="col-sm-3 control-label">Acute/Follow Up</label>
+                                <label for="add-time-point" class="col-sm-3 control-label">Acute/Follow Up</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control field-image-type dropdown" id="add-image-type">
+                                    <select class="form-control field-time-point dropdown" id="add-time-point">
                                         <option selected disabled value="">Please select</option>
                                         <option>Acute</option>
                                         <option>Follow-Up</option>
@@ -247,7 +233,6 @@
                                 <label for="edit-study-type" class="col-sm-3 control-label">Study</label>
                                 <div class="col-sm-7">
                                     <select class="form-control field-study-type dropdown" id="edit-study-type" disabled>
-                                        <option selected disabled value="">Please select</option>
                                     </select>
                                 </div>
                                 <label class="col-sm-2 edit-checkbox">
@@ -275,9 +260,9 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="edit-image-type" class="col-sm-3 control-label">Acute/Follow Up</label>
+                                <label for="edit-time-point" class="col-sm-3 control-label">Acute/Follow Up</label>
                                 <div class="col-sm-7">
-                                    <select class="form-control field-image-type dropdown" id="edit-image-type" disabled>
+                                    <select class="form-control field-time-point dropdown" id="edit-time-point" disabled>
                                         <option selected disabled value="">Please select</option>
                                         <option>Acute</option>
                                         <option>Follow-Up</option>
