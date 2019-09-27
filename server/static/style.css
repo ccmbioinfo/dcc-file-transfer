@@ -601,3 +601,16 @@ p.error-description {
 .hiddenAway {
     color: #eee;
 }
+
+.multiselect.btn {
+    background-color:white;
+    height: 35px;
+    font-family: Helvetica, Arial;
+    font-size: 14px;
+    text-align: left;
+    padding-left: 15px;
+}
+
+.multiselect-container.dropdown-menu {
+    width: 100%;
+}

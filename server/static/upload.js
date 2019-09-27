@@ -878,4 +878,9 @@ $(function () {
     $('body').on('click', '.logout-button', function (e){
         document.location.reload();
     });
+
+    $('#add-study-type').multiselect({
+        nonSelectedText: 'Please select',
+        buttonWidth: '100%'
+    });
 });
