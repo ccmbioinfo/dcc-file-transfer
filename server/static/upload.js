@@ -84,7 +84,7 @@ $(function () {
     {siteCode: 'BGU ', siteName: "Ben-Gurion University of the Negev"}
     ];
     
-    var studyList = ['IPSS', 'VIPS', 'VIPS', 'SIPS', 'CPNET', 'SPORT', 'Brain Canada'];
+    var studyList = ['IPSS', 'VIPS I', 'VIPS II', 'SIPS', 'CPNET', 'SPORT', 'Brain Canada'];
     
     var substringMatcher = function(strs) {
         return function findMatches(queryString, cb) {

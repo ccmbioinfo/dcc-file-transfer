@@ -150,12 +150,27 @@
                             <div class="form-group has-error">
                                 <label for="add-study-type" class="col-sm-3 control-label">Study</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control field-study-type dropdown" id="add-study-type">
+                                    <select class="form-control field-study-type dropdown selectpicker" id="add-study-type">
                                         <option selected disabled value="">Please select</option>
                                     </select>
                                     <p class="error-description">* Required</p>
                                 </div>
                             </div>
+                            <!-- asfasdfasf -->
+                            <!-- <div>
+                                <label for="add-dummy-type" class="col-sm-3 control-label">dummy</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control field-dummy-type" id="add-dummy-type" multiple="multiple">
+                                        <option disabled value="">Please select</option>
+                                        <option>Option1</option>
+                                        <option>Option2</option>
+                                        <option>Option3</option>
+                                        <option>Option4</option>
+                                        <option>Option5</option>
+                                    </select>
+                                </div>
+                            </div> -->
+                            <!-- sfasdfdf -->
                             <div class="form-group has-error">
                                 <label for="add-site-code" class="col-sm-3 control-label">Site</label>
                                 <div class="col-sm-9">
@@ -303,6 +318,8 @@
             crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='flow.js') }}"></script>
     <script src="{{ url_for('static', filename='typeahead.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='upload.js') }}"></script>
+    <script src="{{ url_for('static', filename='upload.js') }}"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css">
 </body>
 </html>

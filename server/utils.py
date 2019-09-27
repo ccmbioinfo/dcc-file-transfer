@@ -384,7 +384,7 @@ def update_file(server_token, identifier, column, value):
 def create_json(data):
     path=get_tempdir(data['auth_token'], data['identifier'])
     file=File.query.filter_by(identifier=data['identifier']).first()
-
+    # Create a json file and save it in the same folder as the file
     jsonData={}
     for c in File.__table__.columns._data.keys(): 
         jsonData[str(c)]=str(getattr(file,str(c)))
@@ -394,5 +394,23 @@ def create_json(data):
     except IOError:
         pass
 
+    #Make an entry in the database of files
 
+    auth_token = data['auth_token']
 
+    user = User.query.filter_by(user_id=get_user_by_auth_token(auth_token)).first()
+    sample = get_or_create_sample(data['sample_name'], user.user_id)
+    access = Access.query.filter_by(auth_token=auth_token).first()
+
+    file = File()
+    file.filename = data['filename']+'.json'
+    file.upload_status = 'complete'
+    file.user_id= user.user_id
+    file.identifier = data['identifier']+'_json'
+    file.is_archived = 0
+
+    sample.files.append(file)
+    access.files.append(file)
+    # Attach the file to this sample and access objects
+    db.session.add(file)
+    db.session.commit()
