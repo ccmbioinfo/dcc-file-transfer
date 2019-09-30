@@ -318,11 +318,14 @@ $(function () {
         //Validate the dropdown fields
         $.each($('.dropdown'), function(index, value){  
             dropdown=jQuery(value)
-            isValid = (dropdown.context.value=="" ? false:true);
+            isValid = (dropdown.context.value=="" ? false:true);    
             dropdown.closest('.form-group')
             .toggleClass('has-error', !isValid)
             .find('.error-description').toggle(!isValid);
-
+            //for the study-type dropdown
+            if (dropdown.hasClass('field-study-type')) {
+                $('.multiselect.dropdown-toggle').css('border-color',isValid? '#ccc':'#a94442')
+            }
         })
         subjectId.closest('.modal').trigger('fieldValidation');
     }
@@ -616,7 +619,7 @@ $(function () {
     $('.field-sample-name').on('input', function (e) {
         validateImageForm();
     });
-    $('.field-study-type').on('input',function(e){
+    $('.field-study-type').on('change',function(e){
         validateImageForm();
     })
     $('.field-site-code').on('input', function (e) {
@@ -883,4 +886,8 @@ $(function () {
         nonSelectedText: 'Please select',
         buttonWidth: '100%'
     });
+
+    //Run the validation to toggle has-error classes
+    validateImageForm();
+    // 
 });

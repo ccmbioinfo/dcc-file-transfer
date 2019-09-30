@@ -614,3 +614,7 @@ p.error-description {
 .multiselect-container.dropdown-menu {
     width: 100%;
 }
+
+.multiselect-container>li>a>label {
+    color: #555 !important;
+}
