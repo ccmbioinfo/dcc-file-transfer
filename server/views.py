@@ -156,7 +156,7 @@ def update_upload_status(auth_token, sample_name, identifier):
         return return_message('Success: Upload set to ongoing in db', 200)
 
     elif data['status'] == 'complete':
-        create_json(data)
+        # create_json(data)
         return generate_file(data)
 
     return return_message('Error: Unexpected status', 400)

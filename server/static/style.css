@@ -618,3 +618,35 @@ p.error-description {
 .multiselect-container>li>a>label {
     color: #555 !important;
 }
+
+.paddingLeft5 {
+    padding-left: 5px !important;
+}
+
+.paddingLeft10 {
+    padding-left: 10px !important;
+}
+
+.paddingLeft15 {
+    padding-left: 15px !important;
+}
+
+.paddingLeft20 {
+    padding-left: 20px !important;
+}
+
+.paddingRight20 {
+    padding-right: 20px !important;
+}
+
+.paddingLeft30 {
+    padding-left: 30px !important;
+}
+
+.textAlignLeft {
+    text-align: left !important;
+}
+
+.textAlignRight {
+    text-align: right !important;
+}

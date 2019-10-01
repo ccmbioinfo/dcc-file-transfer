@@ -32,6 +32,7 @@ $(function () {
         'Other': {'fields': ['type', 'readset']}
     };
 
+    // List of site names and corresponding site codes
     var siteList = [{siteCode: 'ACH', siteName: "Alberta Children's Hospital"},
     {siteCode: 'AHC', siteName: "Alder Hey Children's Hospital"},
     {siteCode: 'AKCH', siteName: "Akron Children's Hospital"},
@@ -84,7 +85,7 @@ $(function () {
     {siteCode: 'BGU ', siteName: "Ben-Gurion University of the Negev"}
     ];
     
-    var studyList = ['IPSS', 'VIPS I', 'VIPS II', 'SIPS', 'CPNET', 'SPORT', 'Brain Canada'];
+    var studyList = ['IPSS', 'VIPS', 'SIPS', 'CPNET', 'SPORT', 'Brain Canada'];
     
     var substringMatcher = function(strs) {
         return function findMatches(queryString, cb) {
@@ -615,7 +616,7 @@ $(function () {
         text: value.siteName}));
     })
 
-    // Field validations
+    // Add-sample field validations
     $('.field-sample-name').on('input', function (e) {
         validateImageForm();
     });
@@ -889,5 +890,4 @@ $(function () {
 
     //Run the validation to toggle has-error classes
     validateImageForm();
-    // 
 });
