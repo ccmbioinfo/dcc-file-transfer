@@ -1,0 +1,77 @@
+Test Plan
+
+    i) Image Upload
+        1. Ensure small/medium/large-sized files are uploaded properly on the client side
+        2. Ensure all the uploaded files are found in the uploads folder on the server side
+        3. Ensure previously uploaded files appear properly on the client side, with correct metadata
+        4. Ensure that the image uploads fails gracefully in the event of server disconnection during upload, and 
+            resumes uploading when the connection is re-established. 
+        5. Ensure the tool handles multiple users appropriately.
+
+    ii) Image copy over to hpf script
+        1. Ensure that when the script runs, the files from the server folder is correctly copied over to the hpf folder, with the correct
+            directory hierarchy
+
+    iii) Image delete on the server side
+        2. Ensure that when the script runs, ONLY the files that have been previously copied over to HPF are deleted. 
+
+
+Test Execution Strategy
+
+    i) Image Upload
+        1a. Delete all the entries on the following tables using sqlite3: files, samples, and sample_file_link. 
+        1b. Refresh the uploader page, login, and confirm that the list of previously uploaded files is empty
+        1c. Upload dummy1, dummy2, and largeDummy files, all with the different metadatas. Keep a record of the metadatas so that 
+            they can be compared to ensure proper storage in the database
+        1d. Upon success upload, check the files and samples tables to ensure properly entries are made with correct metadatas
+        1e. Try uploading the same file and confirm that there is no erroneous behaviour, and the duplicate file is not uploaded
+
+        2a. Check that the three uploaded files are found in the following hirearchy: uploads->token->identifier
+
+        3a. Confirm that the uploaded files are listed under "uploaded Images ..." on the client-side as expected, with the correct metadata
+        3b. Duplicate upload should NOT display twice. There should only be one entry.
+
+        4a. Upload another largeDummy file, but during the process, kill the server. There should be a modal indicating an error, and the uploaded
+            process should stop gracefully.
+        4b. Re-start the server, and upload the file again. The process bar should resume where it left off, and the upload should complete 
+            successfully. 
+        4c. Ensure that the correct entry is made in the database and the file is found in the uploads folder
+
+        5a. Create another user with a valid token. Repeat the process above and confirm proper working order as expected
+	5b. Test uploading of files concurrently (two users uploading at the same time)
+.
+    ii) Image copy over to hpf script
+        1a. Change the source and the destination path as required.
+        1b. Run the script, and confirm that the files are properly copied over and saved in the following directory hirearchy:
+            StudyType->Site Name->SampleName->TimePoint.
+        1c. Ensure that the file cron_rsync_uploads.log exists
+        1d. On the server side, use sqlite3 to confirm that all the entries in the files table have been set to is_archived=1
+            Then, set a few files to be is_archived=0
+        1e. Delete all the files in the destination, and re-run the script to confirm that only the files that had status 
+            is_archived=0 have been copied over, with the correct directory hirearchy
+        1f. Delete all the files in the destination folder, set all files to be is_archived=0, and re-run the script in order to prepare
+            for the next test.  
+    
+    iii) Image delete on the server side
+        1a. Run the script on the server side and observe that all the uploaded files have been deleted, including its directory
+        1b. Re-upload several files, and in the files table mark a few as is_archived=1.
+        1c. Re-run the script, and observe that only the files with is_archived=1 is deleted. Also ensure that the token_name directory 
+            is deleted when its contents are empty.
+        1d. Confirm correct working order with file uploads from multiple users (tokens)
+
+
+Bugs Detected
+
+
+
+
+Bugs Fixed
+
+
+
+
+Limitations and Potential Improvements
+
+    1. Ideally the list of studies and site codes should be fetched from RedCap database via api calls. Due to constraints in time and (relative) complexity, 
+        the lists were hardcoded. Thus if a new site were to use the tool, they must be added manually in the file uploads.js
+    2. 
