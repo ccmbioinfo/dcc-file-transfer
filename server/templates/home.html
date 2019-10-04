@@ -10,7 +10,7 @@
     <link rel="stylesheet" dtype="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header><h1>Upload files to the Data Coordination Center (DCC)</h1></header>
+    <header><h1>Upload files to the Children's Stroke Program at The Hospital for Sick Children</h1></header>
     <div class="container-fluid">
 
         <!-- Transfer code and login -->
@@ -52,12 +52,10 @@
                 </div>
                 <div class="panel-body">
                     <p>
-                        To start uploading your files hit the <em>Add Sample</em> button. You will be required to
-                        provide a sample name and specify all applicable metadata for the sample you wish to upload.
-                        You may also alter sample and individual metadata options after attaching your files. Sample
-                        name, readset, and library must be composed solely of letters, numbers, hyphens, and/or
-                        underscores to ensure compatibility with downstream pipelines.
-                    </p>
+                        To start uploading your images hit the <em>Add Images</em> button below. You will be required to
+                        provide the IPSS ID and the metadata of the patient whose images you wish to upload. <br><br>
+                        In the event of persistent errors, try renaming the file and attempt to upload again, or contact the
+                         <a href="mailto:stroke.research@sickkids.ca">Children's Stroke Program</a> for assistance</p>
                     <div data-toggle="tooltip" title="Add a new sample">
                         <button class="btn btn-primary pull-right modal-add-sample-button"
                                 data-toggle="modal"
@@ -140,11 +138,9 @@
                     <div class="modal-body">
                         <form class="form-horizontal modal-sample-form">
                             <p>
-                                Please specify all applicable metadata for the sample you wish to upload. You may
-                                also alter sample and individual metadata options after attaching your files. Files
-                                already added to the queue cannot be added again. A sample name is required and, along
-                                with the readset and library, must be composed solely of letters, numbers, hyphens,
-                                and/or underscores.
+                                Please specify all applicable metadata for the image you wish to upload. While you may
+                                delete the queued images and re-upload, the images already added to the queue cannot be
+                                added again.<br><br>
                             </p>
 
                             <div class="form-group has-error">
@@ -165,7 +161,7 @@
                                 </div>
                             </div>
                             <div class="form-group has-error">
-                                <label for="add-sample-name" class="col-sm-3 control-label">Subject ID</label>
+                                <label for="add-sample-name" class="col-sm-3 control-label">IPSS ID</label>
                                 <div class="col-sm-9">
                                     <input type="text" class="form-control field-sample-name" id="add-sample-name" placeholder="Subject-ID/Patient ID">
                                     <p class="error-description">* Required: may contain letters, numbers, hyphens, or underscores only.</p>
@@ -241,11 +237,11 @@
                 <div class="panel-heading">
                     <span class="collapse-icon glyphicon glyphicon-triangle-bottom pull-left"></span>
                     <span class="collapse-icon glyphicon glyphicon-triangle-right pull-left" style="display: none;"></span>
-                    Uploaded Images on the DCC
+                    Previously Uploaded Images
                 </div>
                 <div class="panel-body">
                     <p>
-                        The Images below have been successfully uploaded to the DCC.
+                        The Images below have been successfully uploaded to the Children's Stroke Program.
                     </p>
                 </div>
                 <table class="table table-condensed table-data">
@@ -288,12 +284,11 @@
         </div>
 
         <!-- Footer row -->
-        <!-- <div class="row col-sm-8 col-sm-offset-2 footer-row">
+        <div class="row col-sm-8 col-sm-offset-4 footer-row">
             <div class="footer">
-                <a href="mailto:daniel.snider@sickkids.ca">Support</a> Provided by <a href="https://ccm.sickkids.ca/">
-                    The Center for Computational Medicine </a>
+                <p>Support provided by the <a href="mailto:stroke.research@sickkids.ca">Children's Stroke Program</a></p> 
             </div>
-        </div> -->
+        </div> 
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
